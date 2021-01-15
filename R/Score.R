@@ -106,13 +106,12 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
       sub.expr.matrix <- expr.matrix[common.genes, , drop = FALSE]
       ### Sum expression of those genes for each cell.
       sum.expr <- colSums(sub.expr.matrix)
-      ### Mean and stdev (for bc score normalization).
-      sig.mean <- colMeans(sub.expr.matrix)
+      ### Raw score (mean).
+      raw <- colMeans(sub.expr.matrix)
+      ### Stdev (for bc score normalization).
       sig.stdev <- apply(sub.expr.matrix, 2, sd)
-      ### Raw score.
-      raw <- sum.expr/length(common.genes)
       ### Normalized score.
-      norm.score <- raw * ((sum.expr - sig.stdev)/(sig.mean + sig.stdev))
+      norm.score <- raw * ((sum.expr - sig.stdev)/(raw + sig.stdev))
       ### Update the progress bar.
       step <- len.gs + (j - 1) * len.gs + k
       if (step%%bins == 0 | step == total) {
