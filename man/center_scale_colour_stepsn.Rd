@@ -9,7 +9,7 @@ center_scale_colour_stepsn(
   limits = c(NA, NA),
   center = NULL,
   breaks = 0.1,
-  colorscale = NULL,
+  colorscale,
   alpha = 0.7,
   na.value = "grey50"
 )
