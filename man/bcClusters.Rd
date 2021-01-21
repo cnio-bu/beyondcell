@@ -4,7 +4,7 @@
 \alias{bcClusters}
 \title{Plots the UMAP reduction colored by metadata information}
 \usage{
-bcClusters(bc, UMAP = "beyondcell", idents = NULL, factor.col = TRUE, ...)
+bcClusters(bc, UMAP = "beyondcell", idents, factor.col = TRUE, ...)
 }
 \arguments{
 \item{bc}{\code{\link[beyondcell]{beyondcell}} object.}
