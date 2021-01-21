@@ -189,8 +189,11 @@ bcRegressOut <- function(bc, vars.to.regress) {
   # Check that bc is a beyondcell object.
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
   # Check vars.to.regress.
-  in.vars.to.regress <- vars.to.regress %in% colnames(bc@meta.data)
-  if (!all(in.vars.to.regress)) {
+  in.vars.to.regress <- !is.null(vars.to.regress) &
+    vars.to.regress %in% colnames(bc@meta.data)
+  if (all(!in.vars.to.regress)) {
+    stop('vars.to.regress not found.')
+  } else if (any(!in.vars.to.regress)) {
     stop(paste0('Some vars.to.regress not found: ',
                 paste0(vars.to.regress[!in.vars.to.regress], collapse = ", "),
                 '.'))
