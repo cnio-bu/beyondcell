@@ -43,6 +43,9 @@ bcClusters <- function(bc, UMAP = "beyondcell", idents,
     stop('Incorrect UMAP argument. Please use either "Seurat" or "beyondcell".')
   }
   # Check idents.
+  if (length(idents) != 1) {
+    stop('Idents must be a single metadata column.')
+  }
   if (idents %in% colnames(bc@meta.data)) {
     meta <- bc@meta.data[colnames(bc@scaled), idents, drop = FALSE]
   } else {
