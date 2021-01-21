@@ -20,11 +20,8 @@ center_scale_colour_stepsn(
 \item{limits}{Vector with the desired limits.}
 
 \item{center}{A single number indicating the center of the \code{colorscale}.
-Alternatively, the \code{center} can be a vector of two numbers. In this
-case, the \code{center} of the \code{colorscale} is the middle point between
-these two numbers and the \code{breaks} are computed using the difference
-between them. If \code{center = NULL} (default), the center is set to the
-middle point of \code{x}.}
+If \code{center = NULL} (default), the center is set to the middle point of
+\code{x}.}
 
 \item{breaks}{A single number indicating the break size of the
 \code{colorscale}. Alternatively, it can be a vector with the desired breaks
