@@ -375,8 +375,9 @@ bcRecompute <- function(bc, slot = "data") {
 #' \code{\link[beyondcell]{beyondcell}} object.
 #' @name bcAddMetatada
 #' @param bc \code{beyondcell} object.
-#' @param metadata Dataframe with metadata to add. Rownames should be cell names
-#' and colnames should not be already present in \code{beyondcell@@meta.data}.
+#' @param metadata Matrix or dataframe with metadata to add. Rownames should be
+#' cell names and colnames should not be already present in
+#' \code{beyondcell@@meta.data}.
 #' @return Returns a \code{beyondcell} object with new added metadata columns.
 #' @examples
 #' @export
@@ -386,8 +387,8 @@ bcAddMetatada<- function(bc, metadata) {
   # Check that bc is a beyondcell object.
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
   # Check metadata.
-  if (class(metadata) != "data.frame") {
-    stop('metadata must be an object of class data.frame.')
+  if (all(!(class(a) %in% c("matrix", "data.frame")))) {
+    stop('metadata must be an object of class matrix or data.frame.')
   }
   # Check that the rownames of bc@meta.data and the new metadata are the same.
   if (!identical(sort(rownames(bc@meta.data)), sort(rownames(metadata)))) {
