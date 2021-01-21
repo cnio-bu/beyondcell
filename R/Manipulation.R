@@ -381,7 +381,7 @@ bcRecompute <- function(bc, slot = "data") {
 #' @examples
 #' @export
 
-bcAddMetatada<- function(bc, metadata = NULL) {
+bcAddMetatada<- function(bc, metadata) {
   # --- Checks ---
   # Check that bc is a beyondcell object.
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
