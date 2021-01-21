@@ -206,8 +206,7 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
 #' \item{\code{values}:} {Vector with the names of the signatures of interest.
 #' If \code{signatures[["values"]] = "all"}, all signatures are selected.}
 #' \item{\code{limits}:} {Vector with the desired limits for all signatures'
-#' plots. If \code{limits = c(NA, NA)} (default), the \code{limits} are computed
-#' for each signature independently.}
+#' plots.}
 #' \item{\code{center}:} {A single number indicating the center of the
 #' \code{colorscale} for all signatures' plots. Alternatively, the \code{center}
 #' can be a vector of two numbers. In this case, the \code{center} of the
@@ -220,11 +219,6 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
 #' (which don't have to be symmetric or equally distributed). If \code{center}
 #' is a vector of two numbers, \code{breaks} are computed using the difference
 #' between them.}
-#' \item{\code{share.limits}:} {Logical argument. If \code{share.limits = TRUE}
-#' (default), all signatures' plots will have the same \code{limits = c(0, 1)}.
-#' If \code{share.limits = FALSE}, each signature plot will have its own
-#' \code{limits}. Note that if \code{limits != c(NA, NA)},
-#' \code{share.limits = TRUE}.}
 #' \item{\code{colorscale}:} {Either a \code{viridis}, \code{RColorBrewer} or a
 #' custom palette of 3 colors (low, medium and high) to color all signatures'
 #' plots. If \code{colorscale = NULL} (default), the plots are colored using
@@ -268,8 +262,8 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
 bcSignatures <- function(bc, UMAP = "beyondcell",
                          signatures = list(values = NULL, limits = c(0, 1),
                                            center = NULL, breaks = 0.1,
-                                           share.limits = TRUE, colorscale = NULL,
-                                           alpha = 0.7, na.value = "grey50"),
+                                           colorscale = NULL, alpha = 0.7,
+                                           na.value = "grey50"),
                          genes = list(values = NULL, limits = c(NA, NA),
                                       share.limits = FALSE),
                          merged = NULL, blend = FALSE, mfrow = c(1, 1), ...) {
@@ -295,8 +289,8 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
   }
   # Check signatures' list values.
   default.sigs <- list(values = NULL, limits = c(0, 1), center = NULL,
-                       breaks = 0.1, share.limits = TRUE, colorscale = NULL,
-                       alpha = 0.7, na.value = "grey")
+                       breaks = 0.1, colorscale = NULL, alpha = 0.7,
+                       na.value = "grey")
   selected.sigs <- names(signatures) %in% names(default.sigs)
   if (any(!selected.sigs)) {
     warning(paste0('Incorrect entries in signatures: ',
@@ -359,14 +353,10 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
   if (length(signatures[["limits"]]) != 2) {
     stop('Signatures\' limits must be a vector of length 2.')
   }
-  na.limits.sigs <- is.na(signatures[["limits"]])
-  if (length(signatures[["limits"]][!na.limits.sigs]) > 0 &
-      (!is.numeric(signatures[["limits"]][!na.limits.sigs]) |
-       any(signatures[["limits"]][!na.limits.sigs] < 0))) {
-    stop('Signatures\' limits must be numeric (>= 0) or NAs.')
+  if (!is.numeric(signatures[["limits"]]) | any(signatures[["limits"]] < 0)) {
+    stop('Signatures\' limits must be numeric (>= 0).')
   }
-  if (all(!na.limits.sigs) &
-      signatures[["limits"]][2] < signatures[["limits"]][1]) {
+  if (signatures[["limits"]][2] < signatures[["limits"]][1]) {
     warning(paste('Signatures\' upper limit is smaller than lower limit.',
                   'Sorting limits in increasing order.'))
     signatures[["limits"]] <- sort(signatures[["limits"]])
@@ -385,16 +375,6 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
     warning(paste('Genes\' upper limit is smaller than lower limit.',
                   'Sorting limits in increasing order.'))
     genes[["limits"]] <- sort(genes[["limits"]])
-  }
-  # Check signatures' share.limits.
-  if (length(signatures[["share.limits"]]) != 1 |
-      !is.logical(signatures[["share.limits"]])) {
-    stop('signatures$share.limits must be TRUE or FALSE.')
-  }
-  if (!signatures[["share.limits"]] &
-      !identical(signatures[["limits"]], c(NA, NA))) {
-    warning(paste('Signatures\' limits were specified, setting',
-                  'signatures[["share.limits"]] = TRUE.'))
   }
   # Check genes' share.limits.
   if (length(genes[["share.limits"]]) != 1 | !is.logical(genes[["share.limits"]])) {
@@ -500,10 +480,6 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
     } else {
       center.sigs <- setNames(rep(signatures[["center"]], length(merged.sigs)),
                               merged.sigs)
-    }
-    ### Signature's limits.
-    if (signatures[["share.limits"]] & any(na.limits.sigs)) {
-      signatures[["limits"]][na.limits.sigs] <- c(0, 1)[na.limits.sigs]
     }
     ### Gene's colors.
     if ((genes[["share.limits"]] | !identical(genes[["limits"]], c(NA, NA))) &
