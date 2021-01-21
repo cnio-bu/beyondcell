@@ -14,10 +14,10 @@
 #' \code{cells = NULL}, all cells will be kept.
 #' @param nan.sigs Maximum desired proportion of \code{NaN} values per signature
 #' in the output \code{beyondcell} object. All signatures with a proportion of
-#' \code{NaN >= nan.sig} will be removed.
+#' \code{NaN > nan.sig} will be removed.
 #' @param nan.cells Maximum desired proportion of \code{NaN} values per cell
 #' in the output \code{beyondcell} object. All cells with a proportion of
-#' \code{NaN >= nan.cells} will be removed.
+#' \code{NaN > nan.cells} will be removed.
 #' @details This function can subset a \code{beyondcell} object using its 5
 #' parameters alone or in combination.
 #'
@@ -42,7 +42,7 @@
 #' @export
 
 bcSubset <- function(bc, signatures = NULL, bg.signatures = NULL, cells = NULL,
-                     nan.sigs = NULL, nan.cells = NULL) {
+                     nan.sigs = 1, nan.cells = 1) {
   # --- Checks ---
   # Check that bc is a beyondcell object.
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
@@ -88,38 +88,29 @@ bcSubset <- function(bc, signatures = NULL, bg.signatures = NULL, cells = NULL,
     pass.cells <- unique(cells[in.cells])
   }
   # Check nan.sigs.
-  if (is.null(nan.sigs)) {
-    pass.nan.sigs <- rownames(bc@scaled)
-    pass.nan.sigs.bg <- rownames(bc@background)
-  } else {
-    if (length(nan.sigs) != 1 | !is.numeric(nan.sigs)) {
-      stop('nan.sigs must be a single number.')
-    }
-    if (nan.sigs < 0 | nan.sigs > 1) {
-      stop('nan.sigs must be a positive number between 0 and 1.')
-    }
-    pass.nan.sigs <- rownames(bc@scaled)[apply(bc@scaled, 1, function(x) {
-      sum(is.na(x)) < ncol(bc@scaled) * nan.sigs
-    })]
-    pass.nan.sigs.bg <- rownames(bc@background)[apply(bc@background, 1,
-                                                      function(y) {
-      sum(is.na(y)) < ncol(bc@background) * nan.sigs
-    })]
+  if (length(nan.sigs) != 1 | !is.numeric(nan.sigs)) {
+    stop('nan.sigs must be a single number.')
   }
+  if (nan.sigs < 0 | nan.sigs > 1) {
+    stop('nan.sigs must be a positive number between 0 and 1.')
+  }
+  pass.nan.sigs <- rownames(bc@scaled)[apply(bc@scaled, 1, function(x) {
+    sum(is.na(x)) < ncol(bc@scaled) * nan.sigs
+  })]
+  pass.nan.sigs.bg <- rownames(bc@background)[apply(bc@background, 1,
+                                                    function(y) {
+    sum(is.na(y)) < ncol(bc@background) * nan.sigs
+  })]
   # Check nan.cells.
-  if (is.null(nan.cells)) {
-    pass.nan.cells <- colnames(bc@scaled)
-  } else {
-    if (length(nan.cells) != 1 | !is.numeric(nan.cells)) {
-      stop('nan.cells must be a single number.')
-    }
-    if (nan.cells < 0 | nan.cells > 1) {
-      stop('nan.cells must be a positive number between 0 and 1.')
-    }
-    pass.nan.cells <- colnames(bc@scaled)[apply(bc@scaled, 2, function(y) {
-      sum(is.na(y)) < nrow(bc@scaled) * nan.cells
-    })]
+  if (length(nan.cells) != 1 | !is.numeric(nan.cells)) {
+    stop('nan.cells must be a single number.')
   }
+  if (nan.cells < 0 | nan.cells > 1) {
+    stop('nan.cells must be a positive number between 0 and 1.')
+  }
+  pass.nan.cells <- colnames(bc@scaled)[apply(bc@scaled, 2, function(y) {
+    sum(is.na(y)) < nrow(bc@scaled) * nan.cells
+  })]
   # Check regression and subset order.
   reg.order <- bc@regression$order
   reg.order.bg <- bc@regression$order.background
