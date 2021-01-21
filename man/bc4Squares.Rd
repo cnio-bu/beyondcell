@@ -6,7 +6,7 @@
 \usage{
 bc4Squares(
   bc,
-  idents = NULL,
+  idents,
   lvl = NULL,
   top = 3,
   topnames = NULL,

@@ -658,21 +658,17 @@ bcCellCycle <- function(bc, signatures) {
 #' @examples
 #' @export
 
-bc4Squares <- function(bc, idents = NULL, lvl = NULL, top = 3,
+bc4Squares <- function(bc, idents, lvl = NULL, top = 3,
                        topnames = NULL, force = 1, alpha = 0.7, pt.size = 3) {
   # --- Checks ---
   # Check that bc is a beyondcell object.
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
   # Check idents.
-  if (is.null(idents)) {
-    stop("You must specify an idents value.")
-  } else {
-    if (length(idents) != 1) stop('Idents must be a single metadata column.')
-    if (!(idents %in% names(bc@ranks))) {
-      stop(paste0('$', idents, ' not found in bc@ranks.'))
-    } else if (idents == "general") {
-      stop('General rank cant be used in bc4Squares(). All residuals are 0.')
-    }
+  if (length(idents) != 1) stop('Idents must be a single metadata column.')
+  if (!(idents %in% names(bc@ranks))) {
+    stop(paste0('$', idents, ' not found in bc@ranks.'))
+  } else if (idents == "general") {
+    stop('General rank can\'t be used in bc4Squares(). All residuals are 0.')
   }
   # Check lvl.
   if (is.null(lvl)) {
