@@ -93,14 +93,11 @@ bcClusters <- function(bc, UMAP = "beyondcell", idents,
 #' @examples
 #' @export
 
-bcHistogram <- function(bc, signatures = NULL, idents = NULL) {
+bcHistogram <- function(bc, signatures, idents = NULL) {
   # --- Checks ---
   # Check that bc is a beyondcell object.
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
   # Check signatures.
-  if (is.null(signatures)) {
-    stop('You must specify the signatures of interest.')
-  }
   if (!is.character(signatures)) {
     stop("Signatures must be a character vector.")
   }
