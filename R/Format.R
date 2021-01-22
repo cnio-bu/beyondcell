@@ -56,8 +56,8 @@ get_colour_stepsn <- function(colorscale = NULL) {
             colors <- c(colorscale[1], color.low, color.middle, color.high,
                         colorscale[len.colors])
             if (len.colors > 3) {
-              warning(paste('Custom colorscale too long. It must contain 3',
-                            'colors: high, medium and low. Colors chosen:',
+              warning(paste('Colorscale too long. It must contain 3 colors:',
+                            'high, medium and low. Colors chosen:',
                             paste0(colors[c(1, 3, 5)], collapse = ", ")))
             }
           }
@@ -114,13 +114,26 @@ center_scale_colour_stepsn <- function(x, colorscale, alpha = 0.7,
     stop('x must be a numeric vector.')
   }
   range.values <- pretty(x)
+  # Check colorscale.
+  if (length(colorscale) != 5 |
+      !tryCatch(is.matrix(col2rgb(colorscale)), error = function(e) FALSE)) {
+    stop('colorscale must contain exactly 5 colours.')
+  }
+  # Check alpha.
+  if (length(alpha) != 1 | alpha[1] < 0 | alpha[1] > 1) {
+    stop('alpha must be a positive number between 0 and 1.')
+  }
+  # Check na.value.
+  if (!tryCatch(is.matrix(col2rgb(na.value)), error = function(e) FALSE)) {
+    stop('na.value is not a colour.')
+  }
   # Check limits.
   if (length(limits) != 2) {
-    stop('Limits must be a vector of length 2.')
+    stop('limits must be a vector of length 2.')
   }
   na.limits <- is.na(limits)
   if (length(limits[!na.limits]) > 0 & !is.numeric(limits[!na.limits])) {
-    stop('Limits must be numeric or NAs.')
+    stop('limits must be numeric or NAs.')
   }
   # If some limits are NAs, compute them.
   if (any(na.limits)) {
@@ -135,11 +148,11 @@ center_scale_colour_stepsn <- function(x, colorscale, alpha = 0.7,
   # Check center.
   if (!is.null(center)) {
     if (length(center)!= 1| !is.numeric(center)) {
-      stop('Center must be a single number.')
+      stop('center must be a single number.')
     }
     if (center < limits[1] | center > limits[2]) {
-      stop(paste('center =', paste0(center, collapse = ", "),
-                 'outside of limits =', paste0(limits, collapse = ", ")))
+      stop(paste('center =', center, 'outside of limits =',
+                 paste0(limits, collapse = ", ")))
     }
     # If center = NULL, set center to middle point in range.values.
   } else {
@@ -147,7 +160,7 @@ center_scale_colour_stepsn <- function(x, colorscale, alpha = 0.7,
     ### If len.range is odd, get the middle point.
     if (len.range%%2 == 1) {
       center <- range.values[ceiling(len.range/2)]
-      ### If len.range is pair, get the two middle points and do the mean.
+      ### If len.range is even, get the two middle points and do the mean.
     } else if (len.range%%2 == 0) {
       center <- round(sum(range.values[(len.range/2):((len.range/2)+1)])/2,
                       digits = 2)
@@ -157,33 +170,17 @@ center_scale_colour_stepsn <- function(x, colorscale, alpha = 0.7,
   if (!is.numeric(breaks)) {
     stop('breaks must be numeric.')
   }
-  # If breaks is a single number.
+  # If breaks is a single number...
   if (length(breaks) == 1) {
     if (breaks > abs(limits[1] - limits[2])) {
       stop('breaks is bigger than the difference between limits.')
     }
-  # Else, if breaks is a vector.
+  # Else, if breaks is a vector...
   } else {
     if (any(breaks < limits[1]) | any(breaks > limits[2])) {
       warning('Removing breaks outside the specified limits.')
       breaks <- breaks[which(breaks >= limits[1] & breaks <= limits[2])]
     }
-  }
-  # Check colorscale.
-  if (length(colorscale) != 5 |
-      !tryCatch(is.matrix(col2rgb(colorscale)), error = function(e) FALSE)) {
-    stop('colorscale must contain exactly 5 colours.')
-  }
-  # Check alpha.
-  if (length(alpha) != 1 | !is.numeric(alpha)) {
-    stop('alpha must be a single number.')
-  }
-  if (alpha < 0 | alpha > 1) {
-    stop('alpha must be a positive number between 0 and 1.')
-  }
-  # Check na.value.
-  if (!tryCatch(is.matrix(col2rgb(na.value)), error = function(e) FALSE)) {
-    stop('na.value is not a color.')
   }
   # --- Code ---
   # If breaks is not a vector...
@@ -304,11 +301,8 @@ BreakString <- function(x, split = ", ", line.length = 50) {
     stop('split must be a single string.')
   }
   # Check line.length.
-  if (length(line.length) != 1 | !is.numeric(line.length)) {
-    stop('line.length must be a single number.')
-  }
-  if (line.length < 1 | line.length%%1 != 0) {
-    stop('line.length must be an integer > 0.')
+  if (length(line.length) != 1 | line.length[1] < 1 | line.length[1]%%1 != 0) {
+    stop('line.length must be a single integer > 0.')
   }
   # --- Code ---
   if (nchar(x) <= line.length) final.x <- x
