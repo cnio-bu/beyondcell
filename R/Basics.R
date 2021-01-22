@@ -50,7 +50,7 @@ colMinus <- function(x, na.rm = FALSE) {
   }
   # --- Code ---
   # If x has a single row, append a row of zeros so we can run the next step.
-  if (dim(x)[1] == 1) x <- rbind(x, rep(0, ncol(x)))
+  if (dim(x)[1] == 1) x <- rbind(x, rep(0, times = ncol(x)))
   # Substract to the first row of x the rest of rows.
   first.row <- x[1, , drop = FALSE]
   out <- first.row - colSums(x[2:nrow(x), , drop = FALSE], na.rm = na.rm)
@@ -152,11 +152,11 @@ GetStatistics <- function(bc, signatures, cells, pb, total, i, n.rows,
     data <- cbind(seq_len(n.rows) + (n.rows * 6) * (i - 1),
                   bc@data[signatures, cells])
     mean.med.sd <- as.data.frame(t(apply(data, 1, function(u) {
-      mms <- round(Mean.Med.SD(u[-1]), 2)
+      mms <- round(Mean.Med.SD(u[-1]), digits = 2)
       ### Update the progress bar.
       if (u[1]%%bins == 0) {
         Sys.sleep(0.1)
-        setTxtProgressBar(pb, u[1])
+        setTxtProgressBar(pb, value = u[1])
       }
       return(mms)
     })))
@@ -167,7 +167,7 @@ GetStatistics <- function(bc, signatures, cells, pb, total, i, n.rows,
       ### Update the progress bar.
       if (v[1]%%bins == 0) {
         Sys.sleep(0.1)
-        setTxtProgressBar(pb, v[1])
+        setTxtProgressBar(pb, value = v[1])
       }
       return(variance)
     })
@@ -178,7 +178,7 @@ GetStatistics <- function(bc, signatures, cells, pb, total, i, n.rows,
       ### Update the progress bar.
       if (w[1]%%bins == 0) {
         Sys.sleep(0.1)
-        setTxtProgressBar(pb, w[1])
+        setTxtProgressBar(pb, value = w[1])
       }
       return(min.bcs)
     })
@@ -189,18 +189,18 @@ GetStatistics <- function(bc, signatures, cells, pb, total, i, n.rows,
       ### Update the progress bar.
       if (x[1]%%bins == 0) {
         Sys.sleep(0.1)
-        setTxtProgressBar(pb, x[1])
+        setTxtProgressBar(pb, value = x[1])
       }
       return(max.bcs)
     })
     # NA proportion per signature.
     data[, 1] <- data[, 1] + n.rows
     prop.na <- apply(data, 1, function(y) {
-      nas <- round(sum(is.na(y[-1]))/length(y[-1]), 2)
+      nas <- round(sum(is.na(y[-1]))/length(y[-1]), digits = 2)
       ### Update the progress bar.
       if (y[1]%%bins == 0) {
         Sys.sleep(0.1)
-        setTxtProgressBar(pb, y[1])
+        setTxtProgressBar(pb, value = y[1])
       }
       return(nas)
     })
@@ -215,7 +215,8 @@ GetStatistics <- function(bc, signatures, cells, pb, total, i, n.rows,
                         row.names = signatures)
   } else {
     # Mean bcscores per signature.
-    mean.bc <- round(rowMeans(bc@data[signatures, cells], na.rm = TRUE), 2)
+    mean.bc <- round(rowMeans(bc@data[signatures, cells], na.rm = TRUE),
+                     digits = 2)
     # Residuals.
     normalized <- cbind(seq_len(n.rows) + (n.rows * (i - 1)),
                         bc@normalized[signatures, cells])
@@ -225,11 +226,11 @@ GetStatistics <- function(bc, signatures, cells, pb, total, i, n.rows,
   }
   # Regression residuals.
   resid <- apply(normalized, 1, function(z) {
-    res <- round(mean(z[-1], na.rm = TRUE), 2)
+    res <- round(mean(z[-1], na.rm = TRUE), digits = 2)
     ### Update the progress bar.
     if (z[1]%%bins == 0 | z[1] == total) {
       Sys.sleep(0.1)
-      setTxtProgressBar(pb, z[1])
+      setTxtProgressBar(pb, value = z[1])
     }
     return(res)
   })

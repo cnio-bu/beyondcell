@@ -90,7 +90,7 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
     ### Update the progress bar.
     if (i%%bins == 0) {
       Sys.sleep(0.1)
-      setTxtProgressBar(pb, i)
+      setTxtProgressBar(pb, value = i)
     }
     ### Is n.expr.genes < all.genes * expr.thres?
     return(n.expr.genes < (length(all.genes) * expr.thres))
@@ -116,7 +116,7 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
       step <- len.gs + (j - 1) * len.gs + k
       if (step%%bins == 0 | step == total) {
         Sys.sleep(0.1)
-        setTxtProgressBar(pb, step)
+        setTxtProgressBar(pb, value = step)
       }
       return(norm.score)
     }))
@@ -156,10 +156,10 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
       scoring.matrix <- (-1) * scoring.matrix[, , drop = FALSE]
     }
   }
-  slot(bc, "normalized") <- slot(bc, "data") <- round(scoring.matrix, 2)
+  slot(bc, "normalized") <- slot(bc, "data") <- round(scoring.matrix, digits = 2)
   # Scale the final matrix [0, 1] for each signature (for visualization).
   scaled.matrix <- t(apply(bc@normalized, 1, scales::rescale, to = c(0, 1)))
-  slot(bc, "scaled") <- round(scaled.matrix, 2)
+  slot(bc, "scaled") <- round(scaled.matrix, digits = 2)
   # Compute the switch point.
   switch.point <- SwitchPoint(bc)
   slot(bc, "switch.point") <- switch.point
@@ -193,7 +193,7 @@ GeneCase <- function(x) {
       p <- sum(useful::upper.case(first.letter) &
                  useful::lower.case(rest.letters))/length(x)
     }
-    return(round(p, 2))
+    return(round(p, digits = 2))
   })
   names(perc)[1:2] <- paste0("in ", names(perc)[1:2], "case")
   return(perc)
@@ -229,11 +229,11 @@ SwitchPoint <- function(bc) {
   # If bc@mode == "up", all normalized bcscores will be positive and all
   # switch points will be 0.
   if (all(bc@mode == "up")) {
-    switch.point <- rep(0, length(sigs))
+    switch.point <- rep(0, times = length(sigs))
   # If bc@mode == "down", all normalized bcscores will be negative and all
   # switch points will be 1.
   } else if (all(bc@mode == "down")) {
-    switch.point <- rep(1, length(sigs))
+    switch.point <- rep(1, times = length(sigs))
   # If bc@mode == c("up", "down")...
   } else if(length(bc@mode) == 2) {
     ### Create a list with an entry for each signature. If the entry has
@@ -255,7 +255,7 @@ SwitchPoint <- function(bc) {
         exact.0 <- m.nona == 0
         ### If any of the normalized bcscores == 0, return its index (we repeat
         ### it twice to indicate it's an index and not the final switch point).
-        if (any(exact.0)) return(rep(which(m == 0)[1], 2))
+        if (any(exact.0)) return(rep(which(m == 0)[1], times = 2))
         ### Else, get the indexes of the values closer to 0.
         else {
           lower.bound <- which(m == max(m.nona[m.nona <= 0]))[1]
@@ -270,7 +270,7 @@ SwitchPoint <- function(bc) {
       ### If length(entry) == 2, the values are indexes. We subset those
       ### indexes in the scaled bcsores and take the arithmetic mean.
       if (length(indexes[[y]]) == 2) {
-        return(round(sum(bc@scaled[y, indexes[[y]]])/2, 2))
+        return(round(sum(bc@scaled[y, indexes[[y]]])/2, digits = 2))
         ### If length(entry) == 1, the value is the final switch point.
       } else {
         return(indexes[[y]])
