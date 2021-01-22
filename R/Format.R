@@ -26,10 +26,10 @@ get_colour_stepsn <- function(colorscale = NULL) {
                              warning = function(cond) cond)
     if (inherits(guess.colors, "error") | inherits(guess.colors, "warning")) {
       ### Is colorscale an RColorBrewer palette?
-      guess.colors <- tryCatch(RColorBrewer::brewer.pal(11, name = colorscale),
-                               error = function(cond) cond,
-                               warning = function(cond) cond)
-      if (inherits(guess.colors, "error") | inherits(guess.colors, "warning")) {
+      guess.colors <- tryCatch(suppressWarnings(
+        RColorBrewer::brewer.pal(12, name = colorscale)),
+        error = function(cond) cond)
+      if (inherits(guess.colors, "error")) {
         ### Is colorscale any other palette?
         guess.colors <- tryCatch(scale_colour_stepsn(colours = colorscale),
                                  error = function(cond) cond)
@@ -65,12 +65,15 @@ get_colour_stepsn <- function(colorscale = NULL) {
         ### If colorscale is an RColorBrewer palette, subset 5 values to create
         ### the final palette.
       } else {
-        colors <- c(guess.colors[c(1, 5, 6, 7, 11)])
+        len.guess <- length(guess.colors)
+        idx.middle <- ceiling(len.guess/2)
+        colors <- guess.colors[c(1, idx.middle - 1, idx.middle,
+                                 idx.middle + 1, len.guess)]
       }
       ### If colorscale is a viridis palette, subset 5 values to create the final
       ### palette.
     } else {
-      colors <- c(guess.colors[c(1, 5, 6, 7, 11)])
+      colors <- guess.colors[c(1, 5, 6, 7, 11)]
     }
   }
   return(colors)
