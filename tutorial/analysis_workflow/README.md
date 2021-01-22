@@ -25,7 +25,7 @@ Beyondcell can accept both a single-cell matrix or a Seurat object. In order to 
 > Note: We recommend using a Seurat object.
 
 ```r
-library("Beyondcell")
+library("beyondcell")
 library("Seurat")
 # Read single cell experiment
 sc = readRDS(path_to_sc)
@@ -88,13 +88,13 @@ It is important to check whether any unwanted source of variation is guiding the
 
 ```r
 # Visualize whether cells are clustered based on the number of genes detecter per each cell
-bcClusters(bc, UMAP = "Beyondcell", idents = "nFeature_RNA", factor.col = FALSE)
+bcClusters(bc, UMAP = "beyondcell", idents = "nFeature_RNA", factor.col = FALSE)
 ```
 <img src=".img/nFeature_variation.png" width="500">
 
 ```r
 # Visualize whether cells are clustered based on their cell cycle status
-bcClusters(bc, UMAP = "Beyondcell", idents = "Phase", factor.col = TRUE)
+bcClusters(bc, UMAP = "beyondcell", idents = "Phase", factor.col = TRUE)
 ```
 <img src=".img/Phase_variation.png" width="500">
 
@@ -115,9 +115,9 @@ Once corrected, you will need to recompute the dimensionality reduction and clus
 # Recompute UMAP
 bc <- bcUMAP(bc, pc = 5, res = 0.2, add.DSS = FALSE, k.neighbors = 20) 
 # Visualize UMAP
-bcClusters(bc, UMAP = "Beyondcell", idents = "nFeature_RNA", factor.col = FALSE, pt.size = 1)
+bcClusters(bc, UMAP = "beyondcell", idents = "nFeature_RNA", factor.col = FALSE, pt.size = 1)
 # Visualize Therapeutic clusters
-bcClusters(bc, UMAP = "Beyondcell", idents = "bc_clusters_res.0.2", pt.size = 1)
+bcClusters(bc, UMAP = "beyondcell", idents = "bc_clusters_res.0.2", pt.size = 1)
 ```
 
 <p float="left">
