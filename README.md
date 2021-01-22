@@ -23,14 +23,15 @@ Depending on the evaluated signatures, the BCS represents the cell perturbation 
  * Identify mechanisms of resistance
 
 ## Installing Beyondcell
-The Beyondcell algorithm is implemented in R (v. 4.0.0 or greater). We recommend running the installation via gitlab using devtools:
+The Beyondcell algorithm is implemented in R (v. 4.0.0 or greater). We recommend running the installation via conda: 
 
 ```r
-library("devtools")
-devtools::install_gitlab("bu_cnio/Beyondcell")
+# Create a conda environment
+conda create -n beyondcell 
+# Install Beyondcell package and dependencies
+conda install -c bu_cnio beyondcell
 ```
 
-See the DESCRIPTION file for a complete list of R dependencies. If the R dependencies are already installed, installation should finish promptly.
 
 ## Results
 We have validated Beyondcell in a population of MCF7-AA cells exposed to 500nM of bortezomib and collected at different time points: t0 (before treatment), t12, t48 and t96 (72h treatment followed by drug wash and 24h of recovery) obtained from *Ben-David U, et al., Nature, 2018*. We integrated all four conditions using the Seurat pipeline (left). After calculating the BCS for each cell, a clustering analysis was applied. Beyondcell was able to cluster the cells based on their treatment time point, to separate untreated cells from treated cells (center) and to recapitulate the changes arisen by the treatment with bortezomib (right). 
