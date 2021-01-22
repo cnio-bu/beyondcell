@@ -83,6 +83,11 @@ get_colour_stepsn <- function(colorscale = NULL) {
 #' @import ggplot2
 #' @import scales
 #' @param x A numeric vector. Can contain \code{NA}s.
+#' @param colorscale A vector with 5 colors which can be obtained using
+#' \code{\link[get_colour_stepsn]{get_colour_stepsn}}.
+#' @param alpha Transparency level between 0 (not transparent) and 1 (fully
+#' transparent).
+#' @param na.value Color to use for missing values.
 #' @param limits Vector with the desired limits.
 #' @param center A single number indicating the center of the \code{colorscale}.
 #' If \code{center = NULL} (default), the center is set to the middle point of
@@ -92,19 +97,14 @@ get_colour_stepsn <- function(colorscale = NULL) {
 #' (which don't have to be symmetric or equally distributed). If \code{center}
 #' is a vector of two numbers, \code{breaks} are computed using the difference
 #' between them.
-#' @param colorscale A vector with 5 colors which can be obtained using
-#' \code{\link[get_colour_stepsn]{get_colour_stepsn}}.
-#' @param alpha Transparency level between 0 (not transparent) and 1 (fully
-#' transparent).
-#' @param na.value Color to use for missing values.
 #' @return A centered diverging binned colour gradient that can be use to color
 #' \code{\link[ggplot2]{ggplot2}} objects.
 #' @examples
 #' @export
 
-center_scale_colour_stepsn <- function(x, limits = c(NA, NA), center = NULL,
-                                       breaks = 0.1, colorscale, alpha = 0.7,
-                                       na.value = "grey50") {
+center_scale_colour_stepsn <- function(x, colorscale, alpha = 0.7,
+                                       na.value = "grey50", limits = c(NA, NA),
+                                       center = NULL, breaks = 0.1) {
   # --- Checks ---
   # Check x.
   if (!is.numeric(x)) {

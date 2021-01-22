@@ -6,16 +6,24 @@
 \usage{
 center_scale_colour_stepsn(
   x,
-  limits = c(NA, NA),
-  center = NULL,
-  breaks = 0.1,
   colorscale,
   alpha = 0.7,
-  na.value = "grey50"
+  na.value = "grey50",
+  limits = c(NA, NA),
+  center = NULL,
+  breaks = 0.1
 )
 }
 \arguments{
 \item{x}{A numeric vector. Can contain \code{NA}s.}
+
+\item{colorscale}{A vector with 5 colors which can be obtained using
+\code{\link[get_colour_stepsn]{get_colour_stepsn}}.}
+
+\item{alpha}{Transparency level between 0 (not transparent) and 1 (fully
+transparent).}
+
+\item{na.value}{Color to use for missing values.}
 
 \item{limits}{Vector with the desired limits.}
 
@@ -28,14 +36,6 @@ If \code{center = NULL} (default), the center is set to the middle point of
 (which don't have to be symmetric or equally distributed). If \code{center}
 is a vector of two numbers, \code{breaks} are computed using the difference
 between them.}
-
-\item{colorscale}{A vector with 5 colors which can be obtained using
-\code{\link[get_colour_stepsn]{get_colour_stepsn}}.}
-
-\item{alpha}{Transparency level between 0 (not transparent) and 1 (fully
-transparent).}
-
-\item{na.value}{Color to use for missing values.}
 }
 \value{
 A centered diverging binned colour gradient that can be use to color
