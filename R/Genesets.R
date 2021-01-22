@@ -72,7 +72,7 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
     x <- as.matrix(x)
     ### Check if there are missing values.
     if (sum(is.na(x)) > 0) {
-      warning('x contains NAs that will not be used to compute the genesets.')
+      warning('x contains NAs that will not be used to compute the geneset object.')
     }
     ### Check if there are duplicated values in the same column.
     dup.values <- apply(x, 2, FUN = function(y) any(duplicated(na.omit(y))))
@@ -97,11 +97,12 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
       warning(paste0(cond))
       return(suppressWarnings(qusage::read.gmt(x)))
     })
-    ### Check for duplicated genesets.
-    if (anyDuplicated(names(gmt.file)) != 0) {
-      duplicated_genesets <- unique(names(gmt.file)[duplicated(names(gmt.file))])
-      stop(paste0('The GMT file contains duplicated geneset\'s names: ',
-                  paste0(duplicated_genesets, collapse = ", "), '.'))
+    ### Check for duplicated gene sets.
+    upper.gmt.names <- toupper(names(gmt.file))
+    if (anyDuplicated(upper.gmt.names) != 0) {
+      duplicated.gene.sets <- unique(names(gmt.file)[duplicated(upper.gmt.names)])
+      stop(paste0('The GMT file contains duplicated gene set\'s: ',
+                  paste0(duplicated.gene.sets, collapse = ", "), '.'))
     }
   }
   # Check n.genes and mode.
@@ -122,28 +123,26 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
     ### Number of genes.
     if (!identical(n.genes, 250)) warning('x is a GMT file, n.genes is deprecated.')
     ### Mode in GMT files.
-    n.up <- length(unique(grep(pattern = "_UP$", x = names(gmt.file),
-                               ignore.case = TRUE)))
-    n.down <- length(unique(grep(pattern = "_DOWN$", x = names(gmt.file),
-                                 ignore.case = TRUE)))
+    n.up <- length(unique(grep(pattern = "_UP$", x = upper.gmt.names)))
+    n.down <- length(unique(grep(pattern = "_DOWN$", x = upper.gmt.names)))
     if (n.up + n.down != length(names(gmt.file))) {
-      stop('All geneset in the GMT file names must be finished in _UP or _DOWN.')
+      stop('All gene sets\' names in the GMT file must end in "_UP" or "_DOWN".')
     } else {
       if (n.up > 0 & n.down > 0) {
         if (!identical(mode, c("up", "down"))) {
           mode <- c("up", "down")
-          warning(paste('The GMT file includes UP and DOWN genesets. mode',
+          warning(paste('The GMT file includes UP and DOWN gene sets. mode',
                         'changed to c("up", "down").'))
         }
       } else if (n.up > 0) {
         if (mode != "up") {
           mode <- "up"
-          warning('The GMT file only includes UP genesets. mode changed to "up".')
+          warning('The GMT file only includes UP gene sets. mode changed to "up".')
         }
       } else if (n.down > 0) {
         if (mode != "down") {
           mode <- "down"
-          warning('The GMT file only includes DOWN genesets. mode changed to "down".')
+          warning('The GMT file only includes DOWN gene sets. mode changed to "down".')
         }
       }
     }
@@ -279,13 +278,20 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
     })
   # Else if x is a GMT file.
   } else if (type == "gmt") {
-    unique_genesets <- unique(gsub(pattern = "_UP$|_DOWN$", replacement = "",
-                                   x = names(gmt.file)))
-    genes <- setNames(lapply(unique_genesets, function(sig) {
-      entry <- gmt.file[grep(pattern = paste0("^", sig), x = names(gmt.file),
-                             value = TRUE)]
-      return(Genelist(entry, mode = mode))
-    }), unique_genesets)
+    unique.gene.sets <- unique(gsub(pattern = "_UP$|_DOWN$", replacement = "",
+                                   x = names(gmt.file), ignore.case = TRUE))
+    genes <- setNames(lapply(unique.gene.sets, function(sig) {
+      l <- list()
+      if (toupper(paste0(sig, "_UP")) %in% upper.gmt.names) {
+        l <- c(l, list(up = gmt.file[[match(toupper(paste0(sig, "_UP")),
+                                            table = upper.gmt.names)]]))
+      }
+      if (toupper(paste0(sig, "_DOWN")) %in% upper.gmt.names) {
+        l <- c(l, list(down = gmt.file[[match(toupper(paste0(sig, "_DOWN")),
+                                              table = upper.gmt.names)]]))
+      }
+      return(l)
+    }), unique.gene.sets)
   }
   # Drug IDs.
   if (type == "pre-loaded matrix") {
