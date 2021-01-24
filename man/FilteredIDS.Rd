@@ -9,7 +9,7 @@ FilteredIDS(infodf, col, filter, filtername)
 \arguments{
 \item{infodf}{\code{data.frame} with all drug information.}
 
-\item{col}{Column name to subset by.}
+\item{col}{Column name to subset by. You can also spcify the colum}
 
 \item{filter}{User-supplied filtering vector for either drugs, MoA, target
 genes or source database.}
