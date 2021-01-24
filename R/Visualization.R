@@ -134,8 +134,7 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
   lvls <- levels(as.factor(meta))
   # Subset bc to the selected signatures.
   sub.bc <- bc@data[signatures[in.signatures], , drop = FALSE]
-  # Get maximum and minimum normalized bcscores (for common x axis in all
-  # plots).
+  # Get maximum and minimum normalized BCS (for common x axis in all plots).
   limits <- c(min(as.vector(sub.bc), na.rm = TRUE),
               max(as.vector(sub.bc), na.rm = TRUE))
   # Get the names and pathways of the selected signatures.
@@ -147,7 +146,7 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
   }
   # For each signature.
   p <- lapply(signatures[in.signatures], function(x) {
-    ### Data frame of normalized bcscores and metadata.
+    ### Data frame of normalized BCS and metadata.
     sub.df <- na.omit(data.frame(bcscore = sub.bc[x, ],
                                  condition = as.factor(meta),
                                  row.names = colnames(sub.bc)))
@@ -445,7 +444,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
       })
     }
     ### If we want to merge signatures, we must recompute the bc object using
-    ### the added or substracted bc@normalized scores.
+    ### the added or substracted bc@normalized BCS.
     if (!is.null(merged)) {
       if (merged == "direct") {
         merged.bcscores <- colSums(bc@normalized[sigs, cells, drop = FALSE],
@@ -458,7 +457,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
       bc <- bcRecompute(bc, slot = "data")
       features <- merged.sigs
     }
-    ### Join scaled bcscores and gene expression values for selected features.
+    ### Join scaled BCS and gene expression values for selected features.
     full.matrix <- rbind(bc@scaled[merged.sigs, cells, drop = FALSE],
                          bc@expr.matrix[gene, cells, drop = FALSE])[features, ,
                                                                     drop = FALSE]
@@ -469,7 +468,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
       center.sigs <- setNames(rep(signatures[["center"]],
                                   times = length(merged.sigs)), merged.sigs)
     }
-    ### Gene's colors.
+    ### Gene's colours.
     if ((genes[["share.limits"]] | !identical(genes[["limits"]], c(NA, NA))) &
         !is.null(genes[["values"]])) {
       if (any(na.limits.genes)) {
@@ -506,7 +505,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
         ### Empty subtitle.
         drug.and.MoA <- c(paste0(ids, collapse = merged.symbol), "")
       }
-      ### Colors (depending on wether y is a signature or a gene).
+      ### Colours (depending on wether y is a signature or a gene).
       if (all(ids %in% sigs)) {
         ### Binned colorscale centered around the switch point or the
         ### specified center.
@@ -518,7 +517,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
                                              center = center.sigs[y],
                                              breaks = signatures[["breaks"]])
       } else {
-        ### Continuous colorscale with default seurat colors.
+        ### Continuous colorscale with default Seurat colours.
         colors <- colors.genes
       }
       ### Plot.
@@ -601,7 +600,7 @@ bcCellCycle <- function(bc, signatures) {
   })
   # For each signature...
   p <- lapply(signatures[in.signatures], function(x) {
-    ### Data frame of normalized bcscores and phase metadata.
+    ### Data frame of normalized BCS and phase metadata.
     sub.df <- na.omit(data.frame(bcscore = bc@data[x, cells],
                                  phase = bc@meta.data[cells, "Phase"],
                                  row.names = cells))
@@ -766,12 +765,12 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3,
       topnames <- FindDrugs(bc, x = topnames[in.topnames])
       df[match(topnames$bc_Name, table = rownames(df)), "labels"] <- topnames$Preferred_and_sig
     }
-    ### Colors and names.
+    ### Colours and names.
     colors <- c("#1D61F2", "#DA0078", "orange", "#C7A2F5", "grey80", "black")
     names <- c("TOP-LowSensitivityDrugs", "TOP-HighSensitivityDrugs",
                "TOP-Differential-HighSensitivityDrugs",
                "TOP-Differential-LowSensitivityDrugs", "no", "black")
-    ### Circle's borders color.
+    ### Circle's borders colour.
     df$borders <- df$annotation
     df$borders[df$labels != ""] <- "black"
     ### Reorder df so labeled points are plotted on top.

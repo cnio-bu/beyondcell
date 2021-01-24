@@ -41,13 +41,13 @@ get_colour_stepsn <- function(colorscale = NULL) {
           ### If colorscale contains less than 3 values, set default colorscale.
           len.colors <- length(colorscale)
           if (len.colors < 3) {
-            warning(paste('Colorscale too short. It must contain 3 colors:',
+            warning(paste('Colorscale too short. It must contain 3 colours:',
                           'high, medium and low. Settig default colorscale...'))
             colors <- default
           } else {
-            ### Else, construct a scale with 5 colors: the first, middle and
-            ### last values in colorscale and 2 intermediate colors between them
-            ### (color.low and color.high, computed with colorRampPalette).
+            ### Else, construct a scale with 5 colours: the first, middle and
+            ### last values in colorscale and 2 intermediate colours between
+            ### them (color.low and color.high, computed with colorRampPalette).
             color.middle <- colorscale[ceiling(len.colors/2)]
             color.low <- colorRampPalette(colors = c(colorscale[1], color.middle),
                                           space = "Lab")(3)[2]
@@ -56,8 +56,8 @@ get_colour_stepsn <- function(colorscale = NULL) {
             colors <- c(colorscale[1], color.low, color.middle, color.high,
                         colorscale[len.colors])
             if (len.colors > 3) {
-              warning(paste('Colorscale too long. It must contain 3 colors:',
-                            'high, medium and low. Colors chosen:',
+              warning(paste('Colorscale too long. It must contain 3 colours:',
+                            'high, medium and low. Colours chosen:',
                             paste0(colors[c(1, 3, 5)], collapse = ", ")))
             }
           }
@@ -247,29 +247,29 @@ center_scale_colour_stepsn <- function(x, colorscale, alpha = 0.7,
     final.breaks <- brk.labels <- sort(unique(c(brk.low, pseudo.center, brk.high)),
                                        decreasing = FALSE)
   }
-  # Colors.
-  # The color of the center (last break of brk.low and first break of brk.high)
-  # and the pseudo.center is the same (so these three values form a single color
-  # break).
+  # Colours.
+  # The colour of the center (last break of brk.low and first break of brk.high)
+  # and the pseudo.center is the same (so these three values form a single
+  # colour break).
   rampcol.mid <- rep(colorscale[3], times = 3)
-  # If brk.low is more than just the center, get a different color for each
+  # If brk.low is more than just the center, get a different colour for each
   # break.
   if (length(brk.low) > 1) {
     rampcol.low <- colorRampPalette(colors = colorscale[1:2],
                                     space = "Lab")(length(brk.low)-1)
   } else rampcol.low <- character(0)
   # If brk.high is more than just the center and the limits[2], get a different
-  # color for each break.
+  # coloyr for each break.
   if (length(brk.high) > 2) {
     rampcol.high <- colorRampPalette(colors = colorscale[4:5],
                                      space = "Lab")(length(brk.high)-1)
   } else rampcol.high <- character(0)
-  # Rampcolors is the vector with the final colors.
+  # Rampcolors is the vector with the final colours.
   rampcolors <- c(rampcol.low, rampcol.mid, rampcol.high)
   # Guide argument.
   guide <- ggplot2::guide_coloursteps(even.steps = FALSE, show.limits = FALSE,
                                       title = "Beyondcell")
-  # Output: ggplot2 color scale.
+  # Output: ggplot2 colour scale.
   out <- scale_colour_stepsn(colours = scales::alpha(rampcolors, alpha = alpha),
                              breaks = final.breaks, labels = brk.labels,
                              values = scales::rescale(final.breaks, to = c(0, 1)),

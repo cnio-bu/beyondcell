@@ -94,7 +94,7 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
   }))
   rownames(below.thres) <- names(gs@genelist)
   below.thres <- below.thres[, colnames(expr.matrix)]
-  # Beyondcell scores.
+  # BCS.
   bcs <- lapply(seq_along(gs@mode), function(j) {
     score <- t(sapply(1:len.gs, function(k) {
       ### Common genes between the expr.marix and each signature.
@@ -105,9 +105,9 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
       sum.expr <- colSums(sub.expr.matrix)
       ### Raw score (mean).
       raw <- colMeans(sub.expr.matrix)
-      ### Stdev (for bc score normalization).
+      ### Stdev (for BCS normalization).
       sig.stdev <- apply(sub.expr.matrix, 2, sd)
-      ### Normalized score.
+      ### Normalized BCS.
       norm.score <- raw * ((sum.expr - sig.stdev)/(raw + sig.stdev))
       ### Update the progress bar.
       step <- len.gs + (j - 1) * len.gs + k
@@ -141,7 +141,7 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
       scoring.matrix <- -1 * scoring.matrix[, , drop = FALSE]
     }
   }
-  # If genesets were obtained in a TREATED vs CONTROL comparison, invert bcscore
+  # If genesets were obtained in a TREATED vs CONTROL comparison, invert BCS
   # sign (exclude pathways).
   if (gs@comparison == "treated_vs_control") {
     not.paths <- which(!(rownames(scoring.matrix) %in% names(pathways)))
@@ -223,34 +223,34 @@ SwitchPoint <- function(bc) {
   sigs <- rownames(bc@normalized)
   # Cells in bc.
   cells <- colnames(bc@normalized)
-  # If bc@mode == "up", all normalized bcscores will be positive and all
-  # switch points will be 0.
+  # If bc@mode == "up", all normalized BCS will be positive and all switch
+  # points will be 0.
   if (all(bc@mode == "up")) {
     switch.point <- rep(0, times = length(sigs))
-  # If bc@mode == "down", all normalized bcscores will be negative and all
-  # switch points will be 1.
+  # If bc@mode == "down", all normalized BCS will be negative and all switch
+  # points will be 1.
   } else if (all(bc@mode == "down")) {
     switch.point <- rep(1, times = length(sigs))
   # If bc@mode == c("up", "down")...
   } else if(length(bc@mode) == 2) {
     ### Create a list with an entry for each signature. If the entry has
     ### length == 1, it is the final switch point. If it has length == 2, it
-    ### corresponds to the indexes of the normalized bcscores closest to 0.
+    ### corresponds to the indexes of the normalized BCS closest to 0.
     indexes <- lapply(sigs, FUN = function(x) {
-      ### Subset the normalized bcscores in @data.
+      ### Subset the normalized BCS in @data.
       m <- bc@data[x, cells]
       ### If all values are NaN, return NaN.
       if (all(is.na(m))) return(NaN)
       ### Else, remove NaN values.
       m.nona <- na.omit(m)
-      ### If all normalized bcscores are positive, the switch point is 0.
+      ### If all normalized BCS are positive, the switch point is 0.
       if (all(m.nona >= 0)) return(0)
-      ### If all normalized bcscores are negative, the switch point is 1.
+      ### If all normalized BCS are negative, the switch point is 1.
       else if (all(m.nona <= 0)) return(1)
-      ### If there are positive and negative normalized bcscores...
+      ### If there are positive and negative normalized BCS...
       else {
         exact.0 <- m.nona == 0
-        ### If any of the normalized bcscores == 0, return its index (we repeat
+        ### If any of the normalized BCS == 0, return its index (we repeat
         ### it twice to indicate it's an index and not the final switch point).
         if (any(exact.0)) return(rep(which(m == 0)[1], times = 2))
         ### Else, get the indexes of the values closer to 0.
