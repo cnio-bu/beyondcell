@@ -17,5 +17,5 @@ A vector with 5 color values.
 \description{
 This function gets a color palette and returns a vector with 5
 color values to be used in
-\code{\link[center_scale_colour_stepsn]{center_scale_colour_stepsn}}.
+\code{\link[beyondcell]{center_scale_colour_stepsn}}.
 }

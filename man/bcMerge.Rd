@@ -17,6 +17,6 @@ A merged \code{beyondcell} object.
 \description{
 This function merges two \code{\link[beyondcell]{beyondcell}}
 objects obtained from the same single-cell matrix using the same
-\code{expr.thres} (See \code{\link[bcScore]{bcScore}} for more information).
-It binds signatures, not cells.
+\code{expr.thres} (See \code{\link[beyondcell]{bcScore}} for more
+information). It binds signatures, not cells.
 }

@@ -12,7 +12,7 @@ bcClusters(bc, idents, UMAP = "beyondcell", factor.col = TRUE, ...)
 \item{idents}{Name of the metadata column to color by.}
 
 \item{UMAP}{UMAP reduction to plot. Either "beyondcell" (computed using
-\code{\link[bcUMAP]{bcUMAP}}) or "Seurat" computed using \code{Seurat}'s
+\code{\link[beyondcell]{bcUMAP}}) or "Seurat" computed using \code{Seurat}'s
 functions.}
 
 \item{factor.col}{Logical indicating if \code{idents} column is a factor or
@@ -20,14 +20,14 @@ not. If \code{idents} is a numerical column (such as \code{percent.mt} or
 \code{nFeature_RNA}, \code{factor.col} must be \code{FALSE}).}
 
 \item{...}{Other arguments passed to \code{Seurat}'s
-\code{\link[DimPlot]{DimPlot}}.}
+\code{\link[beyondcell]{DimPlot}}.}
 }
 \value{
-A \code{\link[ggplot]{ggplot}} object with the UMAP reduction colored
-by \code{idents}.
+A \code{ggplot2} object with the UMAP reduction colored by
+\code{idents}.
 }
 \description{
-This function returns a {\link[ggplot]{ggplot}} object with the
+This function returns a {\link[ggplot2]{ggplot2}} object with the
 UMAP reduction (either \code{beyondcell}'s or \code{Seurat}'s) colored by the
 specified metadata column.
 }

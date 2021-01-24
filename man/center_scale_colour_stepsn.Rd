@@ -18,7 +18,7 @@ center_scale_colour_stepsn(
 \item{x}{A numeric vector. Can contain \code{NA}s.}
 
 \item{colorscale}{A vector with 5 colors which can be obtained using
-\code{\link[get_colour_stepsn]{get_colour_stepsn}}.}
+\code{\link[beyondcell]{get_colour_stepsn}}.}
 
 \item{alpha}{Transparency level between 0 (not transparent) and 1 (fully
 transparent).}

@@ -7,7 +7,7 @@
 FindDrugs(bc, x)
 }
 \arguments{
-\item{bc}{\code{\link[beyondcell]{beyondcell}} object.}
+\item{bc}{\code{beyondcell} object.}
 
 \item{x}{A character vector with drug names and/or sig IDs.}
 }

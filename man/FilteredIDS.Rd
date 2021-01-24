@@ -23,7 +23,7 @@ elements.
 }
 \description{
 This function is meant to be used inside
-\code{\link[GenerateGenesets]{GenerateGenesets}}. It subsets \code{infodf}
+\code{\link[beyondcell]{GenerateGenesets}}. It subsets \code{infodf}
 to select only the entries that match the specified \code{filter} and returns
 the corresponding \code{sig_ids}.
 }

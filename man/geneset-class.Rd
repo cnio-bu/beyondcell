@@ -15,10 +15,10 @@ An S4 class to represent the genesets of each drug
 with up and/or down-regulated genes.}
 
 \item{\code{n.genes}}{Argument passed to
-\code{\link[GenerateGenesets]{GenerateGenesets}}.}
+\code{\link[beyondcell]{GenerateGenesets}}.}
 
 \item{\code{mode}}{Argument passed to
-\code{\link[GenerateGenesets]{GenerateGenesets}}.}
+\code{GenerateGenesets}.}
 
 \item{\code{info}}{If \code{GenerateGenesets}' input is a pre-loaded matrix,
 \code{info} will be a \code{data.frame} with the correspondences between
@@ -27,6 +27,6 @@ matrices (LINCS, CTRP, GDSC or CCLE). If \code{GenerateGenesets}' input is a
 path to a GMT file, \code{info} will be empty.}
 
 \item{\code{comparison}}{Argument passed to
-\code{\link[GenerateGenesets]{GenerateGenesets}}.}
+\code{GenerateGenesets}.}
 }}
 

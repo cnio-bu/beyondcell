@@ -30,7 +30,7 @@ parameter, use a value above (below) 1.0 if you want to obtain a larger
 (smaller) number of communities. Can be a single number or a numeric vector.}
 
 \item{add.DSS}{Use background beyondcell scores computed with the
-\code{\link[DSS]{DSS}}) signature (\code{add.DSS = TRUE}) or just use the
+\code{DSS}) signature (\code{add.DSS = TRUE}) or just use the
 drugs included in the \code{bc} object (\code{add.DSS = FALSE}) to compute
 the UMAP projection and the therapeutic clusters. If the number of drugs in
 \code{bc} (excluding pathways) is < 20, it is recomended to set
@@ -44,7 +44,7 @@ background beyondcell scores.}
 \value{
 A \code{beyondcell} object with the UMAP reduction in
 \code{bc@reductions} slot and the therapeutic clusters for each \code{res}
-in \code{bc@meta.data}. Also, an Elbow plot (\code{\link[ggplot]{ggplot}}
+in \code{bc@meta.data}. Also, an Elbow plot (\code{\link[ggplot2]{ggplot2}}
 object) is printed (if \code{elbow.path = NULL}) or saved (if
 \code{elbow.path} is not \code{NULL}).
 }

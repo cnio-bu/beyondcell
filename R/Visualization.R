@@ -1,5 +1,5 @@
 #' @title Plots the UMAP reduction colored by metadata information
-#' @description This function returns a {\link[ggplot]{ggplot}} object with the
+#' @description This function returns a {\link[ggplot2]{ggplot2}} object with the
 #' UMAP reduction (either \code{beyondcell}'s or \code{Seurat}'s) colored by the
 #' specified metadata column.
 #' @name bcClusters
@@ -9,15 +9,15 @@
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
 #' @param idents Name of the metadata column to color by.
 #' @param UMAP UMAP reduction to plot. Either "beyondcell" (computed using
-#' \code{\link[bcUMAP]{bcUMAP}}) or "Seurat" computed using \code{Seurat}'s
+#' \code{\link[beyondcell]{bcUMAP}}) or "Seurat" computed using \code{Seurat}'s
 #' functions.
 #' @param factor.col Logical indicating if \code{idents} column is a factor or
 #' not. If \code{idents} is a numerical column (such as \code{percent.mt} or
 #' \code{nFeature_RNA}, \code{factor.col} must be \code{FALSE}).
 #' @param ... Other arguments passed to \code{Seurat}'s
-#' \code{\link[DimPlot]{DimPlot}}.
-#' @return A \code{\link[ggplot]{ggplot}} object with the UMAP reduction colored
-#' by \code{idents}.
+#' \code{\link[beyondcell]{DimPlot}}.
+#' @return A \code{ggplot2} object with the UMAP reduction colored by
+#' \code{idents}.
 #' @examples
 #' @export
 
@@ -86,7 +86,7 @@ bcClusters <- function(bc, idents, UMAP = "beyondcell", factor.col = TRUE,
 #' \code{idents = NULL}, a single histogram with all bcscores is drawn. On the
 #' other hand, if \code{idents != NULL} a histogram for each level found in
 #' \code{idents} will be drawn.
-#' @return A list of \code{\link[ggplot]{ggplot}} histograms, one for each
+#' @return A list of \code{\link[ggplot2]{ggplot2}} histograms, one for each
 #' signature of interest. In each histogram, the median, mean and sd are
 #' reported. Also, the mean is indicated with a black dashed line and the median
 #' with a red dashed line.
@@ -200,7 +200,7 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
 #' @importFrom patchwork wrap_plots
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
 #' @param UMAP UMAP reduction to plot. Either \code{"beyondcell"} (computed
-#' using \code{\link[bcUMAP]{bcUMAP}}) or \code{"Seurat"} computed using
+#' using \code{\link[beyondcell]{bcUMAP}}) or \code{"Seurat"} computed using
 #' \code{\link[Seurat]{Seurat}}'s functions.
 #' @param signatures List with parameters to color the UMAP by bcscores:
 #' \itemize{
@@ -246,7 +246,7 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
 #' the arrays in which the plots will be drawn. If you want to draw the plots
 #' individually, set \code{mfrow = c(1, 1)}.
 #' @param ... Other arguments passed to \code{Seurat}'s
-#' \code{\link[FeaturePlot]{FeaturePlot}}.
+#' \code{\link[Seurat]{FeaturePlot}}.
 #' @return A list of \code{patchwork}s (if \code{mfrow != c(1, 1)}) or
 #' \code{ggplot2}s (if \code{mfrow = c(1, 1)}) of the desired UMAP reduction
 #' colored by the beyondcell scores (for signatures) or gene expression values
@@ -549,10 +549,10 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
 #' @title Plots a violindot of the beyondcell scores grouped by the cell cycle
 #' phase
 #' @description This function drawns, for each signature of interest, a
-#' \code{\link[violindot]{violindot}} plot of the bcscores grouped by the cell
+#' \code{\link[see]{geom_violindot}} plot of the bcscores grouped by the cell
 #' cycle phase (G1, G2M or S). Note that this information must be present in
 #' \code{bc@@meta.data} and can be obtained using \code{\link[Seurat]{Seurat}}'s
-#' function \code{\link[CellCycleScoring]{CellCycleScoring}}.
+#' function \code{\link[Seurat]{CellCycleScoring}}.
 #' @name bcCellCycle
 #' @import ggplot2
 #' @importFrom see geom_violindot

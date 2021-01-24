@@ -20,8 +20,8 @@ or S phase groups.
 }
 \description{
 This function drawns, for each signature of interest, a
-\code{\link[violindot]{violindot}} plot of the bcscores grouped by the cell
+\code{\link[see]{geom_violindot}} plot of the bcscores grouped by the cell
 cycle phase (G1, G2M or S). Note that this information must be present in
 \code{bc@meta.data} and can be obtained using \code{\link[Seurat]{Seurat}}'s
-function \code{\link[CellCycleScoring]{CellCycleScoring}}.
+function \code{\link[Seurat]{CellCycleScoring}}.
 }

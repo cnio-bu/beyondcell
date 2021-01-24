@@ -319,7 +319,7 @@ bcRegressOut <- function(bc, vars.to.regress) {
 #' @description This function recomputes a beyondcell object using the matrix
 #' stored in the slot \code{@@data} (original scores) or \code{@@normalized}
 #' (which can contain subsetted and/or regressed bcscores). Columns added with
-#' \code{\link[bcAddMetadata]{bcAddMetadata}} are preserved, except if they
+#' \code{\link[beyondcell]{bcAddMetadata}} are preserved, except if they
 #' define therapeutic clusters. Important: \code{bc@reductions} and
 #' \code{bc@background} remain the same, while \code{bc@ranks} and
 #' \code{bc@reductions} are removed.
@@ -409,8 +409,8 @@ bcAddMetatada<- function(bc, metadata) {
 #' @title Merges two beyondcell objects
 #' @description This function merges two \code{\link[beyondcell]{beyondcell}}
 #' objects obtained from the same single-cell matrix using the same
-#' \code{expr.thres} (See \code{\link[bcScore]{bcScore}} for more information).
-#' It binds signatures, not cells.
+#' \code{expr.thres} (See \code{\link[beyondcell]{bcScore}} for more
+#' information). It binds signatures, not cells.
 #' @name bcMerge
 #' @importFrom plyr join
 #' @param bc1 First \code{beyondcell} object to merge.

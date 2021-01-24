@@ -9,7 +9,7 @@ bcScore(sc, gs, expr.thres = 0.1)
 \arguments{
 \item{sc}{\code{\link[Seurat]{Seurat}} object or expression matrix.}
 
-\item{gs}{\code{\link[geneset]{geneset}} object.}
+\item{gs}{\code{\link[beyondcell]{geneset}} object.}
 
 \item{expr.thres}{Minimum fraction of signature genes that must be
 expressed in a cell to compute its beyondcell score. Cells with a number of

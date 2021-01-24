@@ -82,7 +82,7 @@ Mean.Med.SD <- function(x) {
 
 #' @title Computes bcRanks' statistics and ranks
 #' @description This function computes the bcscores' statistics and ranks
-#' returned by \code{\link[bcRnaks]{bcRanks}}.
+#' returned by \code{\link[beyondcell]{bcRanks}}.
 #' @name GetStatistics
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
 #' @param signatures Vector with the names of the signatures of interest.

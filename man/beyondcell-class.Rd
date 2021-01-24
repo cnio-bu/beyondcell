@@ -25,7 +25,7 @@ signature).}
 \item{\code{ranks}}{List of dataframes with the statistics (switch point,
 mean, median, sd, variance, min, max, proportion of \code{NaN}, residuals'
 mean and ranks of each signature in the beyondcell object. This slot is
-filled using the function \code{\link[bcRanks]{bcRanks}}.}
+filled using the function \code{\link[beyondcell]{bcRanks}}.}
 
 \item{\code{expr.matrix}}{Expression matrix used to compute the beyondcell scores.}
 
@@ -42,12 +42,11 @@ therapeutic clusters when the number of drug signatures is low.}
 performed on the beyondcell object and the variables used for regression.}
 
 \item{\code{n.genes}}{Argument passed to
-\code{\link[GenerateGenesets]{GenerateGenesets}}.}
+\code{\link[beyondcell]{GenerateGenesets}}.}
 
-\item{\code{mode}}{Argument passed to
-\code{\link[GenerateGenesets]{GenerateGenesets}}.}
+\item{\code{mode}}{Argument passed to \code{GenerateGenesets}.}
 
 \item{\code{thres}}{Argument \code{expr.thres} passed to
-\code{\link[bcScore]{bcScore}}.}
+\code{\link[beyondcell]{bcScore}}.}
 }}
 
