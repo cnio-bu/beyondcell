@@ -26,14 +26,14 @@ minus <- function(x, na.rm = FALSE) {
   return(out)
 }
 
-#' @title Substracts to the first row of a rectangular object the rest of rows
-#' @description This function substracts to the first row of a numerical
-#' rectangular object (\code{x[1, ]}) the rest of rows of the same rectangular
-#' object (\code{x[2:length(x), ]}).
+#' @title Computes the column substraction
+#' @description This function substracts to the first element of each column of
+#' a rectangular object (\code{x[1, ]}) the rest of elements of the same column
+#' (\code{x[2:length(x), ]}).
 #' @name colMinus
-#' @param x A matrix or a data frame.
+#' @param x A matrix or a dataframe.
 #' @param na.rm (From \code{base}) Logical. Should missing values (including
-#' \code{NaN}) from rows 2:length(x) be omitted from the calculations?
+#' \code{NaN}) from rows \code{2:length(x)} be omitted from the calculations?
 #' @return A numeric rectangular object with the result of the substraction.
 #' @examples
 #' @export
