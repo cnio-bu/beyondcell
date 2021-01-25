@@ -4,10 +4,9 @@
 \name{beyondcell-class}
 \alias{beyondcell-class}
 \alias{beyondcell}
-\title{An S4 class to represent the beyondcell scores (BCS) for each cell and
-signature.}
+\title{Beyondcell class}
 \description{
-An S4 class to represent the beyondcell scores (BCS) for each cell and
+An object to represent the beyondcell scores (BCS) for each cell and
 signature.
 }
 \section{Slots}{
@@ -22,15 +21,14 @@ signature.
 \item{\code{switch.point}}{(Subsetted and/or regressed) scaled BCS for which the
 normalized score in \code{@data} is 0 (one switch point per signature).}
 
-\item{\code{ranks}}{List of dataframes with the statistics (switch point,
-mean, median, sd, variance, min, max, proportion of \code{NaN}, residuals'
-mean and ranks of each signature in the beyondcell object. This slot is
-filled using the function \code{\link[beyondcell]{bcRanks}}.}
+\item{\code{ranks}}{List of dataframes with the BCS' statistics and ranks returned
+by \code{\link[beyondcell]{bcRanks}}.}
 
-\item{\code{expr.matrix}}{Expression matrix used to compute the BCS.}
+\item{\code{expr.matrix}}{Single-cell expression matrix used to compute the BCS.}
 
-\item{\code{meta.data}}{Contains information about each cell (including the
-therapeutic clusters and \code{Seurat}'s \code{@metadata}).}
+\item{\code{meta.data}}{Dataframe that contains information about each cell
+(including the therapeutic clusters and \code{\link[Seurat]{Seurat}}'s
+\code{@metadata}).}
 
 \item{\code{background}}{(Subsetted and/or regressed) normalized BCS obtained using
 DSS signatures. Useful to compute the UMAP reduction and the therapeutic

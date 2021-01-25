@@ -20,21 +20,20 @@ geneset <- setClass("geneset", slots = list(genelist = "list",
                                             info = "data.frame",
                                             comparison = "character"))
 
-#' An S4 class to represent the beyondcell scores (BCS) for each cell and
+#' @title Beyondcell class
+#' @description An object to represent the beyondcell scores (BCS) for each cell and
 #' signature.
-#'
 #' @slot scaled (Subsetted and/or regressed) scaled BCS.
 #' @slot normalized (Subsetted and/or regressed) normalized BCS.
 #' @slot data Original normalized BCS, without subsetting or regression.
 #' @slot switch.point (Subsetted and/or regressed) scaled BCS for which the
 #' normalized score in \code{@@data} is 0 (one switch point per signature).
-#' @slot ranks List of dataframes with the statistics (switch point,
-#' mean, median, sd, variance, min, max, proportion of \code{NaN}, residuals'
-#' mean and ranks of each signature in the beyondcell object. This slot is
-#' filled using the function \code{\link[beyondcell]{bcRanks}}.
-#' @slot expr.matrix Expression matrix used to compute the BCS.
-#' @slot meta.data Contains information about each cell (including the
-#' therapeutic clusters and \code{Seurat}'s \code{@@metadata}).
+#' @slot ranks List of dataframes with the BCS' statistics and ranks returned
+#' by \code{\link[beyondcell]{bcRanks}}.
+#' @slot expr.matrix Single-cell expression matrix used to compute the BCS.
+#' @slot meta.data Dataframe that contains information about each cell
+#' (including the therapeutic clusters and \code{\link[Seurat]{Seurat}}'s
+#' \code{@@metadata}).
 #' @SeuratInfo List with information about the input \code{Seurat} object,
 #' including the \code{@@reductions}.
 #' @slot background (Subsetted and/or regressed) normalized BCS obtained using
