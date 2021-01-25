@@ -507,8 +507,8 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
       }
       ### Colours (depending on wether y is a signature or a gene).
       if (all(ids %in% sigs)) {
-        ### Binned colorscale centered around the switch point or the
-        ### specified center.
+        ### Binned colorscale centred around the switch point or the specified
+        ### center.
         colors <- center_scale_colour_stepsn(full.matrix[y, ],
                                              colorscale = signatures[["colorscale"]],
                                              alpha = signatures[["alpha"]],

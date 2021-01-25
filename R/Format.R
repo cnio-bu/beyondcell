@@ -212,7 +212,7 @@ center_scale_colour_stepsn <- function(x, colorscale, alpha = 0.7,
     } else {
       brk.high <- center
     }
-    ### Pseudocenter: the new center + breaks/2.
+    ### pseudo.center: the new center + breaks/2.
     pseudo.center <- tail(brk.low, n = 1) + breaks/2
     ### Final breaks.
     final.breaks <- brk.labels <- sort(unique(c(brk.low, pseudo.center, brk.high)),
@@ -231,7 +231,7 @@ center_scale_colour_stepsn <- function(x, colorscale, alpha = 0.7,
   } else {
     ### Add limits to breaks.
     breaks <- sort(unique(c(limits, breaks)), decreasing = FALSE)
-    ### The pseudocenter = original center.
+    ### The pseudo.center = center.
     pseudo.center <- center
     ### Check which breaks element is the minimum value that is >= center.
     idx.bigger.than.center <- which(cumsum(breaks >= center) == 1)
@@ -259,7 +259,7 @@ center_scale_colour_stepsn <- function(x, colorscale, alpha = 0.7,
                                     space = "Lab")(length(brk.low)-1)
   } else rampcol.low <- character(0)
   # If brk.high is more than just the center and the limits[2], get a different
-  # coloyr for each break.
+  # colour for each break.
   if (length(brk.high) > 2) {
     rampcol.high <- colorRampPalette(colors = colorscale[4:5],
                                      space = "Lab")(length(brk.high)-1)
