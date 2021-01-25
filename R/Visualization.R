@@ -619,7 +619,7 @@ bcCellCycle <- function(bc, signatures) {
   return(p)
 }
 
-#' @title Plots a 4 squares plot
+#' @title Drawns a 4 squares plot
 #' @description This function drawns a 4 square plot of the drug signatures
 #' present in a \code{\link[beyondcell]{beyondcell}} object. A 4 squares plot
 #' consists in a scatter plot of the BCS' residuals (x axis) vs the switch
@@ -635,16 +635,16 @@ bcCellCycle <- function(bc, signatures) {
 #' @importFrom cowplot theme_cowplot
 #' @param bc \code{beyondcell} object.
 #' @param idents Name of the metadata column of interest.
-#' @param lvl Character vector with the \code{idents}' level of interest. If
+#' @param lvl Character vector with the \code{idents}' level(s) of interest. If
 #' \code{lvl = NULL}, all levels will be plotted.
-#' @param top Number of top drugs per group to be labelled.
+#' @param top Number of top drugs per quadrant to be labelled.
 #' @param topnames Character vector with additional interesting drugs to be
-#' labelled (either their names and/or sig IDs).
-#' @param force (From \code{ggrepel}) Force of repulsion between overlapping
-#' text labels. Defaults to 1.
+#' labelled (either their names or sig IDs).
+#' @param force (From \code{\link[ggrepel]{ggrepel}}) Force of repulsion between
+#' overlapping text labels. Defaults to 1.
 #' @param alpha Transparency level between 1 (not transparent) and 0 (fully
 #' transparent).
-#' @pt.size Point size.
+#' @param pt.size Point size.
 #' @details This function returns a list of \code{\link[ggplot2]{ggplot2}}
 #' objects, one per each \code{lvl}. Note that residuals are different for each
 #' level while swicth points are signature-specific. So, x axis will vary and y
