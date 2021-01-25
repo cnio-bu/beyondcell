@@ -15,7 +15,7 @@ Authors@R: c(person("Coral", "Fustero-Torre", email = "cfustero@cnio.es",
 Description: Beyondcell computes a score summarizing the cell-based drug 
   sensitivity for each cell in your experiment and a subset of drugs of 
   interest. It also includes functions to prioritize drugs based on these scores 
-  and visualize the results.
+  and visualise the results.
 URL:
   https://gitlab.com/bu_cnio/beyondcell,
   https://beyondcell.bioinformatics.cnio.es

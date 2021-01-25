@@ -1,14 +1,15 @@
-#' @title Returns a vector of colors to use in \code{center_scale_colour_stepsn}
-#' @description This function gets a color palette and returns a vector with 5
-#' color values to be used in
+#' @title Returns a vector of colours to use in
+#' \code{center_scale_colour_stepsn}
+#' @description This function gets a colour palette and returns a vector with 5
+#' colour values to be used in
 #' \code{\link[beyondcell]{center_scale_colour_stepsn}}.
 #' @name get_colour_stepsn
 #' @importFrom viridis viridis
 #' @importrom RColorBrewer brewer.pal
 #' @param colorscale Either a \code{viridis}, \code{RColorBrewer} or a custom
-#' palette of 3 colors (low, medium and high). If \code{colorscale = NULL}
+#' palette of 3 colours (low, medium and high). If \code{colorscale = NULL}
 #' (default), the function returns \code{beyondcell}'s own palette.
-#' @return A vector with 5 color values.
+#' @return A vector with 5 colour values.
 #' @examples
 #' @export
 
@@ -79,28 +80,28 @@ get_colour_stepsn <- function(colorscale = NULL) {
   return(colors)
 }
 
-#' @title Creates a centered diverging binned colour gradient
+#' @title Creates a centred diverging binned colour gradient
 #' @description This function creates a diverging binned colour gradient
-#' (low-mid-high) centered around \code{center}.
+#' (low-mid-high) centred around \code{center}.
 #' @name center_scale_colour_stepsn
 #' @import ggplot2
 #' @import scales
 #' @param x A numeric vector. Can contain \code{NA}s.
-#' @param colorscale A vector with 5 colors which can be obtained using
+#' @param colorscale A vector with 5 colours which can be obtained using
 #' \code{\link[beyondcell]{get_colour_stepsn}}.
 #' @param alpha Transparency level between 0 (not transparent) and 1 (fully
 #' transparent).
-#' @param na.value Color to use for missing values.
+#' @param na.value Colour to use for missing values.
 #' @param limits Vector with the desired limits.
-#' @param center A single number indicating the center of the \code{colorscale}.
-#' If \code{center = NULL} (default), the center is set to the middle point of
+#' @param center A single number indicating the centre of the \code{colorscale}.
+#' If \code{center = NULL} (default), the centre is set to the middle point of
 #' \code{x}.
 #' @param breaks A single number indicating the break size of the
 #' \code{colorscale}. Alternatively, it can be a vector with the desired breaks
 #' (which don't have to be symmetric or equally distributed). If \code{center}
 #' is a vector of two numbers, \code{breaks} are computed using the difference
 #' between them.
-#' @return A centered diverging binned colour gradient that can be use to color
+#' @return A centred diverging binned colour gradient that can be use to colour
 #' \code{\link[ggplot2]{ggplot2}} objects.
 #' @examples
 #' @export

@@ -1,13 +1,13 @@
-#' @title Plots the UMAP reduction colored by metadata information
-#' @description This function returns a {\link[ggplot2]{ggplot2}} object with the
-#' UMAP reduction (either \code{beyondcell}'s or \code{Seurat}'s) colored by the
-#' specified metadata column.
+#' @title Plots the UMAP reduction coloured by metadata information
+#' @description This function returns a {\link[ggplot2]{ggplot2}} object with
+#' the UMAP reduction (either \code{beyondcell}'s or \code{Seurat}'s) coloured
+#' by the specified metadata column.
 #' @name bcClusters
 #' @import Seurat
 #' @import ggplot2
 #' @import scales
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
-#' @param idents Name of the metadata column to color by.
+#' @param idents Name of the metadata column to colour by.
 #' @param UMAP UMAP reduction to plot. Either "beyondcell" (computed using
 #' \code{\link[beyondcell]{bcUMAP}}) or "Seurat" computed using \code{Seurat}'s
 #' functions.
@@ -16,7 +16,7 @@
 #' \code{nFeature_RNA}, \code{factor.col} must be \code{FALSE}).
 #' @param ... Other arguments passed to \code{Seurat}'s
 #' \code{\link[beyondcell]{DimPlot}}.
-#' @return A \code{ggplot2} object with the UMAP reduction colored by
+#' @return A \code{ggplot2} object with the UMAP reduction coloured by
 #' \code{idents}.
 #' @examples
 #' @export
@@ -189,11 +189,12 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
   return(p)
 }
 
-#' @title Plots the UMAP reduction colored by bcscores or gene expression values
+#' @title Plots the UMAP reduction coloured by bcscores or gene expression
+#' values
 #' @description This function returns a list of
 #' \code{\link[patchwork]{patchwork}}s or \code{\link[ggplot2]{ggplot2}}s with
 #' the desired UMAP reduction (either \code{beyondcell}'s or \code{Seurat}'s)
-#' colored by bcscores or gene expression values.
+#' coloured by bcscores or gene expression values.
 #' @name bcSignatures
 #' @import Seurat
 #' @import ggplot2
@@ -202,26 +203,26 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
 #' @param UMAP UMAP reduction to plot. Either \code{"beyondcell"} (computed
 #' using \code{\link[beyondcell]{bcUMAP}}) or \code{"Seurat"} computed using
 #' \code{\link[Seurat]{Seurat}}'s functions.
-#' @param signatures List with parameters to color the UMAP by bcscores:
+#' @param signatures List with parameters to colour the UMAP by bcscores:
 #' \itemize{
 #' \item{\code{values}:} {Vector with the names of the signatures of interest.
 #' If \code{signatures[["values"]] = "all"}, all signatures are selected.}
 #' \item{\code{colorscale}:} {Either a \code{viridis}, \code{RColorBrewer} or a
-#' custom palette of 3 colors (low, medium and high) to color all signatures'
-#' plots. If \code{colorscale = NULL} (default), the plots are colored using
+#' custom palette of 3 colours (low, medium and high) to colour all signatures'
+#' plots. If \code{colorscale = NULL} (default), the plots are coloured using
 #' \code{beyondcell}'s own palette.}
 #' \item{\code{alpha}:} {Transparency level between 0 (not transparent) and 1
 #' (fully transparent).}
-#' \item{\code{na.value}:} {Color to use for missing values (\code{NA}s).}
+#' \item{\code{na.value}:} {Colour to use for missing values (\code{NA}s).}
 #' \item{\code{limits}:} {Vector with the desired limits for all signatures'
 #' plots.}
-#' \item{\code{center}:} {A single number indicating the center of the
+#' \item{\code{center}:} {A single number indicating the centre of the
 #' \code{colorscale} for all signatures' plots. If \code{center = NULL}
 #' (default), the \code{center} for each signature is its switch point.}
 #' \item{\code{breaks}:} {A single number indicating the break size of the
 #' \code{colorscale}. Alternatively, it can be a vector with the desired breaks
 #' (which don't have to be symmetric or equally distributed).}}
-#' @param genes List with parameters to color the UMAP by gene expression
+#' @param genes List with parameters to colour the UMAP by gene expression
 #' values:
 #' \itemize{
 #' \item{\code{values}:} {Vector with the names of the genes of interest. If
@@ -240,7 +241,7 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
 #' hand, if \code{merged = "indirect"}, the signatures are assumed to have an
 #' indirect relationship and their bcscores will be substracted (-).
 #' @param blend (From \code{Seurat}) Scale and blend expression values to
-#' visualize coexpression of two genes.
+#' visualise coexpression of two genes.
 #' @param mfrow Numeric vector of the form \code{c(nr, nc)}. \code{nr}
 #' corresponds to the number of rows and \code{nc} to the number of columns of
 #' the arrays in which the plots will be drawn. If you want to draw the plots
@@ -249,7 +250,7 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
 #' \code{\link[Seurat]{FeaturePlot}}.
 #' @return A list of \code{patchwork}s (if \code{mfrow != c(1, 1)}) or
 #' \code{ggplot2}s (if \code{mfrow = c(1, 1)}) of the desired UMAP reduction
-#' colored by the beyondcell scores (for signatures) or gene expression values
+#' coloured by the beyondcell scores (for signatures) or gene expression values
 #' (for genes).
 #' @examples
 #' @export
