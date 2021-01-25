@@ -2,7 +2,7 @@
 % Please edit documentation in R/Visualization.R
 \name{bcSignatures}
 \alias{bcSignatures}
-\title{Plots the UMAP reduction coloured by BCS or gene expression values}
+\title{Plots a UMAP reduction coloured by BCS or gene expression values}
 \usage{
 bcSignatures(
   bc,
@@ -19,11 +19,11 @@ bcSignatures(
 \arguments{
 \item{bc}{\code{\link[beyondcell]{beyondcell}} object.}
 
-\item{UMAP}{UMAP reduction to plot. Either \code{"beyondcell"} (computed
-using \code{\link[beyondcell]{bcUMAP}}) or \code{"Seurat"} computed using
-\code{\link[Seurat]{Seurat}}'s functions.}
+\item{UMAP}{UMAP reduction to plot. Either \code{"beyondcell"}, computed
+using \code{\link[beyondcell]{bcUMAP}}, or \code{"Seurat"}, obtained using
+\code{Seurat}'s functions.}
 
-\item{signatures}{List with parameters to colour the UMAP by BCS:
+\item{signatures}{List with plot parameters to colour the UMAP by BCS:
 \itemize{
 \item{\code{values}:} {Vector with the names of the signatures of interest.
 If \code{signatures[["values"]] = "all"}, all signatures are selected.}
@@ -43,7 +43,7 @@ plots.}
 \code{colorscale}. Alternatively, it can be a vector with the desired breaks
 (which don't have to be symmetric or equally distributed).}}}
 
-\item{genes}{List with parameters to colour the UMAP by gene expression
+\item{genes}{List with plot parameters to colour the UMAP by gene expression
 values:
 \itemize{
 \item{\code{values}:} {Vector with the names of the genes of interest. If
@@ -59,30 +59,29 @@ all genes' plots will have the same \code{limits}. If
 
 \item{merged}{If \code{merged != NULL}, two signatures will be superposed in
 the same plot. If \code{merged = "direct"}, the signatures are assumed to
-have a direct relationship and the BCS will be added (+). On the other hand,
-if \code{merged = "indirect"}, the signatures are assumed to have an indirect
-relationship and their BCS will be substracted (-).}
+have a direct relationship and the beyondcell scores will be added. On the
+other hand, if \code{merged = "indirect"}, the signatures are assumed to have
+an indirect relationship and their BCS will be substracted.}
 
-\item{blend}{(From \code{Seurat}) Scale and blend expression values to
-visualise coexpression of two genes.}
+\item{blend}{(From \link[Seurat]{FeaturePlot}) Scale and blend expression
+values to visualise coexpression of two genes.}
 
 \item{mfrow}{Numeric vector of the form \code{c(nr, nc)}. \code{nr}
 corresponds to the number of rows and \code{nc} to the number of columns of
-the arrays in which the plots will be drawn. If you want to draw the plots
+the grids in which the plots will be drawn. If you want to draw the plots
 individually, set \code{mfrow = c(1, 1)}.}
 
-\item{...}{Other arguments passed to \code{Seurat}'s
-\code{\link[Seurat]{FeaturePlot}}.}
+\item{...}{Other arguments passed to \code{FeaturePlot}.}
 }
 \value{
-A list of \code{patchwork}s (if \code{mfrow != c(1, 1)}) or
-\code{ggplot2}s (if \code{mfrow = c(1, 1)}) of the desired UMAP reduction
-coloured by the BCS (for signatures) or gene expression values
-(for genes).
+A list of \code{patchwork} (if \code{mfrow != c(1, 1)}) or
+\code{ggplot2} objects (if \code{mfrow = c(1, 1)}) of the desired UMAP
+reduction coloured by the BCS (for signatures) or gene expression values (for
+genes).
 }
 \description{
 This function returns a list of
-\code{\link[patchwork]{patchwork}}s or \code{\link[ggplot2]{ggplot2}}s with
-the desired UMAP reduction (either \code{beyondcell}'s or \code{Seurat}'s)
-coloured by beyondcell scores (BCS) or gene expression values.
+\code{\link[patchwork]{patchwork}} or \code{\link[ggplot2]{ggplot2}} objects
+with the desired UMAP reduction coloured by beyondcell scores (BCS) or gene
+expression values.
 }

@@ -186,20 +186,20 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
   return(p)
 }
 
-#' @title Plots the UMAP reduction coloured by BCS or gene expression values
+#' @title Plots a UMAP reduction coloured by BCS or gene expression values
 #' @description This function returns a list of
-#' \code{\link[patchwork]{patchwork}}s or \code{\link[ggplot2]{ggplot2}}s with
-#' the desired UMAP reduction (either \code{beyondcell}'s or \code{Seurat}'s)
-#' coloured by beyondcell scores (BCS) or gene expression values.
+#' \code{\link[patchwork]{patchwork}} or \code{\link[ggplot2]{ggplot2}} objects
+#' with the desired UMAP reduction coloured by beyondcell scores (BCS) or gene
+#' expression values.
 #' @name bcSignatures
 #' @import Seurat
 #' @import ggplot2
 #' @importFrom patchwork wrap_plots
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
-#' @param UMAP UMAP reduction to plot. Either \code{"beyondcell"} (computed
-#' using \code{\link[beyondcell]{bcUMAP}}) or \code{"Seurat"} computed using
-#' \code{\link[Seurat]{Seurat}}'s functions.
-#' @param signatures List with parameters to colour the UMAP by BCS:
+#' @param UMAP UMAP reduction to plot. Either \code{"beyondcell"}, computed
+#' using \code{\link[beyondcell]{bcUMAP}}, or \code{"Seurat"}, obtained using
+#' \code{Seurat}'s functions.
+#' @param signatures List with plot parameters to colour the UMAP by BCS:
 #' \itemize{
 #' \item{\code{values}:} {Vector with the names of the signatures of interest.
 #' If \code{signatures[["values"]] = "all"}, all signatures are selected.}
@@ -218,7 +218,7 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
 #' \item{\code{breaks}:} {A single number indicating the break size of the
 #' \code{colorscale}. Alternatively, it can be a vector with the desired breaks
 #' (which don't have to be symmetric or equally distributed).}}
-#' @param genes List with parameters to colour the UMAP by gene expression
+#' @param genes List with plot parameters to colour the UMAP by gene expression
 #' values:
 #' \itemize{
 #' \item{\code{values}:} {Vector with the names of the genes of interest. If
@@ -233,21 +233,20 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
 #' \code{share.limits = TRUE}.}}
 #' @param merged If \code{merged != NULL}, two signatures will be superposed in
 #' the same plot. If \code{merged = "direct"}, the signatures are assumed to
-#' have a direct relationship and the BCS will be added (+). On the other hand,
-#' if \code{merged = "indirect"}, the signatures are assumed to have an indirect
-#' relationship and their BCS will be substracted (-).
-#' @param blend (From \code{Seurat}) Scale and blend expression values to
-#' visualise coexpression of two genes.
+#' have a direct relationship and the beyondcell scores will be added. On the
+#' other hand, if \code{merged = "indirect"}, the signatures are assumed to have
+#' an indirect relationship and their BCS will be substracted.
+#' @param blend (From \link[Seurat]{FeaturePlot}) Scale and blend expression
+#' values to visualise coexpression of two genes.
 #' @param mfrow Numeric vector of the form \code{c(nr, nc)}. \code{nr}
 #' corresponds to the number of rows and \code{nc} to the number of columns of
-#' the arrays in which the plots will be drawn. If you want to draw the plots
+#' the grids in which the plots will be drawn. If you want to draw the plots
 #' individually, set \code{mfrow = c(1, 1)}.
-#' @param ... Other arguments passed to \code{Seurat}'s
-#' \code{\link[Seurat]{FeaturePlot}}.
-#' @return A list of \code{patchwork}s (if \code{mfrow != c(1, 1)}) or
-#' \code{ggplot2}s (if \code{mfrow = c(1, 1)}) of the desired UMAP reduction
-#' coloured by the BCS (for signatures) or gene expression values
-#' (for genes).
+#' @param ... Other arguments passed to \code{FeaturePlot}.
+#' @return A list of \code{patchwork} (if \code{mfrow != c(1, 1)}) or
+#' \code{ggplot2} objects (if \code{mfrow = c(1, 1)}) of the desired UMAP
+#' reduction coloured by the BCS (for signatures) or gene expression values (for
+#' genes).
 #' @examples
 #' @export
 
