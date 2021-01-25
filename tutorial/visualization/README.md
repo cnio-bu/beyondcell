@@ -69,7 +69,7 @@ bcSignatures(bc, UMAP = "beyondcell", genes = list(values = "PSMA5"), pt.size = 
 <img src=".img/psma5_expr.png" width="500">
 
 ## Ranking visualization
-We can summarize the ranking results using the `bc4Squares` function. This function summarizes the top hits obtained for each of the specified condition levels. The residuals are represented in the x axis, the switch point is represented in the y axis. The top-left and bottom-right corners contain the drugs to which all selected cells are most/least sensistive, respectively. The centre quadrants show the drugs with an heterogeneous response. In this case, we can clearly see how the tool predicts an heterogeneous response to bortezomib. 
+We can summarize the ranking results using the `bc4Squares` function. This function summarizes the top hits obtained for each of the specified condition levels. The residuals are represented in the x axis, the switch point is represented in the y axis. The top-left and bottom-right corners contain the drugs to which all selected cells are least/most sensitive, respectively. The centre quadrants show the drugs with an heterogeneous response. In this case, we can clearly see how the tool predicts an heterogeneous response to bortezomib. 
 
 ```r
 bc4Squares(bc, idents = "condition", lvl = "t0", top = 5)
