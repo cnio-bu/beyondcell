@@ -224,7 +224,7 @@ GetStatistics <- function(bc, signatures, cells, pb, total, i, n.rows,
     stats <- data.frame(switch.point = switch.p, mean = mean.bc,
                         row.names = signatures)
   }
-  # Regression residuals.
+  # Residuals' mean.
   resid <- apply(normalized, 1, function(z) {
     res <- round(mean(z[-1], na.rm = TRUE), digits = 2)
     ### Update the progress bar.
@@ -235,6 +235,6 @@ GetStatistics <- function(bc, signatures, cells, pb, total, i, n.rows,
     return(res)
   })
   # Update dataframe.
-  stats <- cbind(stats, data.frame(residuals = resid, row.names = signatures))
+  stats <- cbind(stats, data.frame(residuals.mean = resid, row.names = signatures))
   return(stats)
 }

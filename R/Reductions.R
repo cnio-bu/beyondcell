@@ -63,7 +63,8 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
     stop('k.neighbors must be a positive integer.')
   }
   # Check res.
-  if (any(sapply(res, !is.numeric)) | any(sapply(res, function(x) x < 0))) {
+  if (any(sapply(res, function(x) !is.numeric(x))) |
+      any(sapply(res, function(y) y < 0))) {
     stop('res must be a vector of numbers >= 0.')
   }
   # Check add.DSS.
