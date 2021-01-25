@@ -2,7 +2,7 @@
 % Please edit documentation in R/Manipulation.R
 \name{bcRegressOut}
 \alias{bcRegressOut}
-\title{Regress out unwanted effects from BCS}
+\title{Regresses out unwanted effects from BCS}
 \usage{
 bcRegressOut(bc, vars.to.regress)
 }

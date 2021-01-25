@@ -169,7 +169,7 @@ bcSubset <- function(bc, signatures = NULL, bg.signatures = NULL, cells = NULL,
   return(bc)
 }
 
-#' @title Regress out unwanted effects from BCS
+#' @title Regresses out unwanted effects from BCS
 #' @description This function regresses out unwanted effects from normalized
 #' beyondcell scores (BCS).
 #' @name bcRegressOut
