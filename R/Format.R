@@ -86,7 +86,7 @@ get_colour_stepsn <- function(colorscale = NULL) {
 #' @name center_scale_colour_stepsn
 #' @import ggplot2
 #' @import scales
-#' @param x A numeric vector. Can contain \code{NA}s.
+#' @param x A numeric vector. It can contain \code{NA}s.
 #' @param colorscale A vector with 5 colours which can be obtained using
 #' \code{\link[beyondcell]{get_colour_stepsn}}.
 #' @param alpha Transparency level between 1 (not transparent) and 0 (fully
@@ -98,10 +98,8 @@ get_colour_stepsn <- function(colorscale = NULL) {
 #' \code{x}.
 #' @param breaks A single number indicating the break size of the
 #' \code{colorscale}. Alternatively, it can be a vector with the desired breaks
-#' (which don't have to be symmetric or equally distributed). If \code{center}
-#' is a vector of two numbers, \code{breaks} are computed using the difference
-#' between them.
-#' @return A centred diverging binned colour gradient that can be use to colour
+#' (which don't have to be symmetric or equally distributed).
+#' @return A centred diverging binned colour gradient that can be used to colour
 #' \code{\link[ggplot2]{ggplot2}} objects.
 #' @examples
 #' @export

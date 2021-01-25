@@ -15,7 +15,7 @@ center_scale_colour_stepsn(
 )
 }
 \arguments{
-\item{x}{A numeric vector. Can contain \code{NA}s.}
+\item{x}{A numeric vector. It can contain \code{NA}s.}
 
 \item{colorscale}{A vector with 5 colours which can be obtained using
 \code{\link[beyondcell]{get_colour_stepsn}}.}
@@ -33,12 +33,10 @@ If \code{center = NULL} (default), the centre is set to the middle point of
 
 \item{breaks}{A single number indicating the break size of the
 \code{colorscale}. Alternatively, it can be a vector with the desired breaks
-(which don't have to be symmetric or equally distributed). If \code{center}
-is a vector of two numbers, \code{breaks} are computed using the difference
-between them.}
+(which don't have to be symmetric or equally distributed).}
 }
 \value{
-A centred diverging binned colour gradient that can be use to colour
+A centred diverging binned colour gradient that can be used to colour
 \code{\link[ggplot2]{ggplot2}} objects.
 }
 \description{
