@@ -8,12 +8,12 @@
 #' \code{idents != NULL}, the signatures' ranks are computed for each level in
 #' \code{idents}.
 #' @param extended If \code{extended = TRUE}, this function returns the switch
-#' point, mean, median, sd, variance, min, max, proportion of \code{NaN} and
-#' residuals' mean per signature. If \code{extended = FALSE}, this function
-#' returns only the switch point, mean and residuals' mean.
-#' @return A \code{beyondcell object} with the results in a new entry of
-#' \code{bc@@ranks} (\code{bc@@ranks$general} if \code{idents = NULL} or
-#' \code{bc@@ranks$idents} if \code{idents != NULL}).
+#' point, mean, median, standard deviation, variance, min, max, proportion of
+#' \code{NaN} and residuals' mean per signature. If \code{extended = FALSE},
+#' this function returns only the switch point, mean and residuals' mean.
+#' @return A \code{beyondcell} object with the results in a new entry of
+#' \code{bc@@ranks} (\code{bc@@ranks[["general"]]} if \code{idents = NULL} or
+#' \code{bc@@ranks[[idents]]} if \code{idents != NULL}).
 #' @examples
 #' @export
 
