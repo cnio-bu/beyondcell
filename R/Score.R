@@ -1,5 +1,5 @@
-#' @title Computes the beyondcell score
-#' @description This function computes the beyondcell score and returns an
+#' @title Computes the BCS
+#' @description This function computes the beyondcell score (BCS) and returns an
 #' object of class \code{\link[beyondcell]{beyondcell}}.
 #' @name bcScore
 #' @import Seurat
@@ -7,9 +7,8 @@
 #' @param sc \code{\link[Seurat]{Seurat}} object or expression matrix.
 #' @param gs \code{\link[beyondcell]{geneset}} object.
 #' @param expr.thres Minimum fraction of signature genes that must be
-#' expressed in a cell to compute its beyondcell score. Cells with a number of
-#' expressed genes below this fraction will have a \code{NaN} beyondcell
-#' score.
+#' expressed in a cell to compute its BCS. Cells with a number of expressed
+#' genes below this fraction will have a \code{NaN} BCS.
 #' @return A \code{beyondcell} object.
 #' @examples
 #' @export
@@ -199,10 +198,10 @@ GeneCase <- function(x) {
 #' @title Computes the switch point
 #' @description This function computes the switch point of the signatures of a
 #' given \code{\link[beyondcell]{beyondcell}} object. The switch point is the
-#' (subsetted and/or regressed) scaled bcscore that corresponds to the point in
-#' which the normalized bcscores in \code{beyondcell@@data} switch from
-#' negative (insensitive) to positive (sensitive) values. The closer to 0, the
-#' more sensitive are the cells to a given drug.
+#' (subsetted and/or regressed) scaled BCS that corresponds to the point in
+#' which the normalized BCS in \code{beyondcell@@data} switchs from negative
+#' (insensitive) to positive (sensitive) values. The closer to 0, the more
+#' sensitive are the cells to a given drug.
 #' @name SwitchPoint
 #' @param bc \code{beyondcell} object.
 #' @return A named vector with the swich points of the signatures in \code{bc}.

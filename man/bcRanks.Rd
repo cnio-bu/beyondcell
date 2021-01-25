@@ -25,6 +25,6 @@ A \code{beyondcell object} with the results in a new entry of
 \code{bc@ranks$idents} if \code{idents != NULL}).
 }
 \description{
-This function computes the bcscores statistics of each
-signature and ranks them according to the switch point and mean.
+This function computes the beyondcell score (BCS) statistics
+of each signature and ranks them according to the switch point and mean.
 }

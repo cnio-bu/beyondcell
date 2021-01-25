@@ -72,10 +72,9 @@ bcClusters <- function(bc, idents, UMAP = "beyondcell", factor.col = TRUE,
   return(p)
 }
 
-#' @title Plots a histogram with the beyondcell scores of the signature of
-#' interest
-#' @description This function drawns a histogram plot of bcscores for each
-#' signature of interest. The plot can be a single histogram (if
+#' @title Plots a histogram with the BCS of the signature of interest
+#' @description This function drawns a histogram plot of beyondcell scores (BCS)
+#' for each signature of interest. The plot can be a single histogram (if
 #' \code{idents = NULL}) or a histogram for each level found in \code{idents}.
 #' @name bcHistogram
 #' @import ggplot2
@@ -83,8 +82,8 @@ bcClusters <- function(bc, idents, UMAP = "beyondcell", factor.col = TRUE,
 #' @param signatures Vector with the names of the signatures of interest. If
 #' \code{signatures == "all"}, all signatures are selected.
 #' @param idents Name of the metadata column of interest. If
-#' \code{idents = NULL}, a single histogram with all bcscores is drawn. On the
-#' other hand, if \code{idents != NULL} a histogram for each level found in
+#' \code{idents = NULL}, a single histogram with all BCS is drawn. On the other
+#' hand, if \code{idents != NULL} a histogram for each level found in
 #' \code{idents} will be drawn.
 #' @return A list of \code{\link[ggplot2]{ggplot2}} histograms, one for each
 #' signature of interest. In each histogram, the median, mean and sd are
@@ -189,12 +188,11 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
   return(p)
 }
 
-#' @title Plots the UMAP reduction coloured by bcscores or gene expression
-#' values
+#' @title Plots the UMAP reduction coloured by BCS or gene expression values
 #' @description This function returns a list of
 #' \code{\link[patchwork]{patchwork}}s or \code{\link[ggplot2]{ggplot2}}s with
 #' the desired UMAP reduction (either \code{beyondcell}'s or \code{Seurat}'s)
-#' coloured by bcscores or gene expression values.
+#' coloured by beyondcell scores (BCS) or gene expression values.
 #' @name bcSignatures
 #' @import Seurat
 #' @import ggplot2
@@ -203,7 +201,7 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
 #' @param UMAP UMAP reduction to plot. Either \code{"beyondcell"} (computed
 #' using \code{\link[beyondcell]{bcUMAP}}) or \code{"Seurat"} computed using
 #' \code{\link[Seurat]{Seurat}}'s functions.
-#' @param signatures List with parameters to colour the UMAP by bcscores:
+#' @param signatures List with parameters to colour the UMAP by BCS:
 #' \itemize{
 #' \item{\code{values}:} {Vector with the names of the signatures of interest.
 #' If \code{signatures[["values"]] = "all"}, all signatures are selected.}
@@ -237,9 +235,9 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
 #' \code{share.limits = TRUE}.}}
 #' @param merged If \code{merged != NULL}, two signatures will be superposed in
 #' the same plot. If \code{merged = "direct"}, the signatures are assumed to
-#' have a direct relationship and the bcscores will be added (+). On the other
-#' hand, if \code{merged = "indirect"}, the signatures are assumed to have an
-#' indirect relationship and their bcscores will be substracted (-).
+#' have a direct relationship and the BCS will be added (+). On the other hand,
+#' if \code{merged = "indirect"}, the signatures are assumed to have an indirect
+#' relationship and their BCS will be substracted (-).
 #' @param blend (From \code{Seurat}) Scale and blend expression values to
 #' visualise coexpression of two genes.
 #' @param mfrow Numeric vector of the form \code{c(nr, nc)}. \code{nr}
@@ -250,7 +248,7 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
 #' \code{\link[Seurat]{FeaturePlot}}.
 #' @return A list of \code{patchwork}s (if \code{mfrow != c(1, 1)}) or
 #' \code{ggplot2}s (if \code{mfrow = c(1, 1)}) of the desired UMAP reduction
-#' coloured by the beyondcell scores (for signatures) or gene expression values
+#' coloured by the BCS (for signatures) or gene expression values
 #' (for genes).
 #' @examples
 #' @export
@@ -547,12 +545,12 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
   return(final.p)
 }
 
-#' @title Plots a violindot of the beyondcell scores grouped by the cell cycle
-#' phase
+#' @title Plots a violindot of the BCS grouped by the cell cycle phase
 #' @description This function drawns, for each signature of interest, a
-#' \code{\link[see]{geom_violindot}} plot of the bcscores grouped by the cell
-#' cycle phase (G1, G2M or S). Note that this information must be present in
-#' \code{bc@@meta.data} and can be obtained using \code{\link[Seurat]{Seurat}}'s
+#' \code{\link[see]{geom_violindot}} plot of the beyondcell scores (BCS) grouped
+#' by the cell cycle phase (G1, G2M or S). Note that this information must be
+#' present in \code{bc@@meta.data} and can be obtained using
+#' \code{\link[Seurat]{Seurat}}'s
 #' function \code{\link[Seurat]{CellCycleScoring}}.
 #' @name bcCellCycle
 #' @import ggplot2
@@ -561,8 +559,8 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
 #' @param signatures Vector with the names of the signatures of interest. If
 #' \code{signatures == "all"}, all signatures are selected.
 #' @return A list of \code{\link[ggplot2]{ggplot2}} violindots, one for each
-#' signature of interest. In each violindot, the bcscores are grouped in G1, G2M
-#' or S phase groups.
+#' signature of interest. In each violindot, the BCS are grouped in G1, G2M or
+#' S phase groups.
 #' @examples
 #' @export
 
@@ -624,7 +622,7 @@ bcCellCycle <- function(bc, signatures) {
 #' @title Plots a 4 squares plot
 #' @description This function drawns a 4 square plot of the drug signatures
 #' present in a \code{\link[beyondcell]{beyondcell}} object. A 4 squares plot
-#' consists in a scatter plot of the bcscores' residuals (x axis) vs the switch
+#' consists in a scatter plot of the BCS' residuals (x axis) vs the switch
 #' points (y axis). 4 quadrants are highlighted: the top-left and bottom-right
 #' corners contain the drugs to which all selected cells are least/most
 #' sensistive, respectively. The centre quadrants show the drugs to which half

@@ -15,8 +15,8 @@ A named vector with the swich points of the signatures in \code{bc}.
 \description{
 This function computes the switch point of the signatures of a
 given \code{\link[beyondcell]{beyondcell}} object. The switch point is the
-(subsetted and/or regressed) scaled bcscore that corresponds to the point in
-which the normalized bcscores in \code{beyondcell@data} switch from
-negative (insensitive) to positive (sensitive) values. The closer to 0, the
-more sensitive are the cells to a given drug.
+(subsetted and/or regressed) scaled BCS that corresponds to the point in
+which the normalized BCS in \code{beyondcell@data} switchs from negative
+(insensitive) to positive (sensitive) values. The closer to 0, the more
+sensitive are the cells to a given drug.
 }

@@ -2,8 +2,7 @@
 % Please edit documentation in R/Visualization.R
 \name{bcSignatures}
 \alias{bcSignatures}
-\title{Plots the UMAP reduction coloured by bcscores or gene expression
-values}
+\title{Plots the UMAP reduction coloured by BCS or gene expression values}
 \usage{
 bcSignatures(
   bc,
@@ -24,7 +23,7 @@ bcSignatures(
 using \code{\link[beyondcell]{bcUMAP}}) or \code{"Seurat"} computed using
 \code{\link[Seurat]{Seurat}}'s functions.}
 
-\item{signatures}{List with parameters to colour the UMAP by bcscores:
+\item{signatures}{List with parameters to colour the UMAP by BCS:
 \itemize{
 \item{\code{values}:} {Vector with the names of the signatures of interest.
 If \code{signatures[["values"]] = "all"}, all signatures are selected.}
@@ -60,9 +59,9 @@ all genes' plots will have the same \code{limits}. If
 
 \item{merged}{If \code{merged != NULL}, two signatures will be superposed in
 the same plot. If \code{merged = "direct"}, the signatures are assumed to
-have a direct relationship and the bcscores will be added (+). On the other
-hand, if \code{merged = "indirect"}, the signatures are assumed to have an
-indirect relationship and their bcscores will be substracted (-).}
+have a direct relationship and the BCS will be added (+). On the other hand,
+if \code{merged = "indirect"}, the signatures are assumed to have an indirect
+relationship and their BCS will be substracted (-).}
 
 \item{blend}{(From \code{Seurat}) Scale and blend expression values to
 visualise coexpression of two genes.}
@@ -78,12 +77,12 @@ individually, set \code{mfrow = c(1, 1)}.}
 \value{
 A list of \code{patchwork}s (if \code{mfrow != c(1, 1)}) or
 \code{ggplot2}s (if \code{mfrow = c(1, 1)}) of the desired UMAP reduction
-coloured by the beyondcell scores (for signatures) or gene expression values
+coloured by the BCS (for signatures) or gene expression values
 (for genes).
 }
 \description{
 This function returns a list of
 \code{\link[patchwork]{patchwork}}s or \code{\link[ggplot2]{ggplot2}}s with
 the desired UMAP reduction (either \code{beyondcell}'s or \code{Seurat}'s)
-coloured by bcscores or gene expression values.
+coloured by beyondcell scores (BCS) or gene expression values.
 }

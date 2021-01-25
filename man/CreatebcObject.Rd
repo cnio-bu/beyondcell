@@ -18,7 +18,7 @@ object.
 }
 \details{
 This function creates a new \code{beyondcell} object by using the
-\code{@normalized} scores as the original \code{@data}. Switch points are
+\code{@normalized} BCS as the original \code{@data}. Switch points are
 recomputed and \code{@regression} is restarted. The expression and
 metadata matrices are subsetted to keep only those cells present in the new
 \code{@data} slot.

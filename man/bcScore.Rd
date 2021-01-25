@@ -2,7 +2,7 @@
 % Please edit documentation in R/Score.R
 \name{bcScore}
 \alias{bcScore}
-\title{Computes the beyondcell score}
+\title{Computes the BCS}
 \usage{
 bcScore(sc, gs, expr.thres = 0.1)
 }
@@ -12,14 +12,13 @@ bcScore(sc, gs, expr.thres = 0.1)
 \item{gs}{\code{\link[beyondcell]{geneset}} object.}
 
 \item{expr.thres}{Minimum fraction of signature genes that must be
-expressed in a cell to compute its beyondcell score. Cells with a number of
-expressed genes below this fraction will have a \code{NaN} beyondcell
-score.}
+expressed in a cell to compute its BCS. Cells with a number of expressed
+genes below this fraction will have a \code{NaN} BCS.}
 }
 \value{
 A \code{beyondcell} object.
 }
 \description{
-This function computes the beyondcell score and returns an
+This function computes the beyondcell score (BCS) and returns an
 object of class \code{\link[beyondcell]{beyondcell}}.
 }

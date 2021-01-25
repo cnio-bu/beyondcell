@@ -169,16 +169,15 @@ bcSubset <- function(bc, signatures = NULL, bg.signatures = NULL, cells = NULL,
   return(bc)
 }
 
-#' @title Regress out unwanted effects from beyondcell scores
+#' @title Regress out unwanted effects from BCS
 #' @description This function regresses out unwanted effects from normalized
-#' beyondcell scores.
+#' beyondcell scores (BCS).
 #' @name bcRegressOut
 #' @importFrom bnstruct knn.impute
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
-#' @param vars.to.regress Vector of metadata columns to regress out the
-#' beyondcell scores.
-#' @return Returns a \code{beyondcell} object with regressed normalized scores,
-#' regressed scaled scores and regressed switch points.
+#' @param vars.to.regress Vector of metadata columns to regress out the BCS.
+#' @return Returns a \code{beyondcell} object with regressed normalized BCS,
+#' regressed scaled BCS and regressed switch points.
 #' @examples
 #' @export
 
@@ -318,7 +317,7 @@ bcRegressOut <- function(bc, vars.to.regress) {
 #' @title Recomputes a beyondcell object
 #' @description This function recomputes a beyondcell object using the matrix
 #' stored in the slot \code{@@data} (original scores) or \code{@@normalized}
-#' (which can contain subsetted and/or regressed bcscores). Columns added with
+#' (which can contain subsetted and/or regressed BCS). Columns added with
 #' \code{\link[beyondcell]{bcAddMetadata}} are preserved, except if they
 #' define therapeutic clusters. Important: \code{bc@reductions} and
 #' \code{bc@background} remain the same, while \code{bc@ranks} and
@@ -490,7 +489,7 @@ bcMerge <- function(bc1, bc2) {
 #' @import scales
 #' @param bc \code{beyondcell} object.
 #' @details This function creates a new \code{beyondcell} object by using the
-#' \code{@@normalized} scores as the original \code{@@data}. Switch points are
+#' \code{@@normalized} BCS as the original \code{@@data}. Switch points are
 #' recomputed and \code{@@regression} is restarted. The expression and
 #' metadata matrices are subsetted to keep only those cells present in the new
 #' \code{@@data} slot.
