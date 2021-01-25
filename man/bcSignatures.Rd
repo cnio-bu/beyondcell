@@ -31,7 +31,7 @@ If \code{signatures[["values"]] = "all"}, all signatures are selected.}
 custom palette of 3 colours (low, medium and high) to colour all signatures'
 plots. If \code{colorscale = NULL} (default), the plots are coloured using
 \code{beyondcell}'s own palette.}
-\item{\code{alpha}:} {Transparency level between 0 (not transparent) and 1
+\item{\code{alpha}:} {Transparency level between 1 (not transparent) and 0
 (fully transparent).}
 \item{\code{na.value}:} {Colour to use for missing values (\code{NA}s).}
 \item{\code{limits}:} {Vector with the desired limits for all signatures'
