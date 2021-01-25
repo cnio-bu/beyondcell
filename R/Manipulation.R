@@ -408,7 +408,7 @@ bcAddMetatada<- function(bc, metadata) {
 #' @title Merges two beyondcell objects
 #' @description This function merges two \code{\link[beyondcell]{beyondcell}}
 #' objects obtained from the same single-cell matrix using the same
-#' \code{expr.thres} (See \code{\link[beyondcell]{bcScore}} for more
+#' \code{expr.thres} (see \code{\link[beyondcell]{bcScore}} for more
 #' information). It binds signatures, not cells.
 #' @name bcMerge
 #' @importFrom plyr join
