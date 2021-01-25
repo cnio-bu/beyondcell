@@ -2,7 +2,7 @@
 % Please edit documentation in R/Manipulation.R
 \name{bcAddMetatada}
 \alias{bcAddMetatada}
-\title{Add new metadata columns to an existing beyondcell object}
+\title{Add new metadata to an existing beyondcell object}
 \usage{
 bcAddMetatada(bc, metadata)
 }
@@ -11,12 +11,12 @@ bcAddMetatada(bc, metadata)
 
 \item{metadata}{Matrix or dataframe with metadata to add. Rownames should be
 cell names and colnames should not be already present in
-\code{beyondcell@meta.data}.}
+\code{bc@meta.data}.}
 }
 \value{
-Returns a \code{beyondcell} object with new added metadata columns.
+Returns a \code{beyondcell} object with updated metadata.
 }
 \description{
-This function adds new metadata columns to an existing
+This function adds new metadata to an existing
 \code{\link[beyondcell]{beyondcell}} object.
 }

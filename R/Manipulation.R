@@ -369,15 +369,15 @@ bcRecompute <- function(bc, slot = "data") {
   return(bc)
 }
 
-#' @title Add new metadata columns to an existing beyondcell object
-#' @description This function adds new metadata columns to an existing
+#' @title Add new metadata to an existing beyondcell object
+#' @description This function adds new metadata to an existing
 #' \code{\link[beyondcell]{beyondcell}} object.
 #' @name bcAddMetatada
 #' @param bc \code{beyondcell} object.
 #' @param metadata Matrix or dataframe with metadata to add. Rownames should be
 #' cell names and colnames should not be already present in
-#' \code{beyondcell@@meta.data}.
-#' @return Returns a \code{beyondcell} object with new added metadata columns.
+#' \code{bc@@meta.data}.
+#' @return Returns a \code{beyondcell} object with updated metadata.
 #' @examples
 #' @export
 
