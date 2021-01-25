@@ -1,21 +1,19 @@
-#' @title Plots the UMAP reduction coloured by metadata information
+#' @title Plots a UMAP reduction coloured by metadata information
 #' @description This function returns a {\link[ggplot2]{ggplot2}} object with
-#' the UMAP reduction (either \code{beyondcell}'s or \code{Seurat}'s) coloured
-#' by the specified metadata column.
+#' a UMAP reduction coloured by the specified metadata column.
 #' @name bcClusters
 #' @import Seurat
 #' @import ggplot2
 #' @import scales
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
 #' @param idents Name of the metadata column to colour by.
-#' @param UMAP UMAP reduction to plot. Either "beyondcell" (computed using
-#' \code{\link[beyondcell]{bcUMAP}}) or "Seurat" computed using \code{Seurat}'s
-#' functions.
+#' @param UMAP UMAP reduction to plot. Either \code{"beyondcell"}, computed
+#' using \code{\link[beyondcell]{bcUMAP}}, or \code{"Seurat"}, obtained using
+#' \code{Seurat}'s functions.
 #' @param factor.col Logical indicating if \code{idents} column is a factor or
-#' not. If \code{idents} is a numerical column (such as \code{percent.mt} or
-#' \code{nFeature_RNA}, \code{factor.col} must be \code{FALSE}).
-#' @param ... Other arguments passed to \code{Seurat}'s
-#' \code{\link[beyondcell]{DimPlot}}.
+#' not. Set \code{factor.col = FALSE} if \code{idents} is a numerical column
+#' (such as \code{percent.mt} or \code{nFeature_RNA}).
+#' @param ... Other arguments passed to \code{\link[Seurat]{DimPlot}}.
 #' @return A \code{ggplot2} object with the UMAP reduction coloured by
 #' \code{idents}.
 #' @examples
