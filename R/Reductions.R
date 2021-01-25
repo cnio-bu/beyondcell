@@ -114,7 +114,7 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
         bcScore(bc@expr.matrix, gs = gs.background, expr.thres = bc@thres))
       ### Add metadata.
       background@meta.data <- background@meta.data[, -c(1:ncol(background@meta.data))]
-      background <- bcAddMetatada(background, metadata = bc@meta.data)
+      background <- bcAddMetadata(background, metadata = bc@meta.data)
       ### Subset and regress (if needed).
       if (bc@regression$order[1] == "subset") {
         background <- bcSubset(background, cells = cells)
