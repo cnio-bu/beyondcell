@@ -9,53 +9,56 @@ We have validated Beyondcell in a population of MCF7-AA cells exposed to 500nM o
 ## Using Beyondcell
 For a correct analysis with **Beyondcell**, users should follow these steps: 
 
- 1. Read single cell expression matrix
- 2. Compute Beyondcell scores
- 3. Compute Therapeutic clusters
+ 1. Read a single-cell expression object
+ 2. Compute the Beyondcell scores (BCS)
+ 3. Compute the Therapeutic Clusters (TCs)
     * Check clustering and look for unwanted sources of variation
     * Regress out unwanted sources of variation
-    * Recompute UMAP
+    * Recompute UMAP rduction
  4. Compute ranks
  5. [**Visualize**](https://gitlab.com/bu_cnio/Beyondcell/-/tree/master/tutorial/visualization) the results
 
 
-### 1. Read single cell expression object
-In order to correctly compute the scores, the transcriptomic data needs to be pres-processed. This means that proper cell-based quality control filters, as well as normalization, scaling and clustering of the data, should be applied prior to the analysis with **Beyondcell**. 
+### 1. Read a single-cell expression object
+Beyondcell can accept both a single-cell matrix or a Seurat object. In order to correctly compute the scores, the transcriptomics data needs to be pre-processed. This means that proper cell-based quality control filters, as well as normalization and scaling of the data, should be applied prior to the analysis with Beyondcell.
+
+> Note: We recommend using a Seurat object.
 
 ```r
-library("Beyondcell")
+library("beyondcell")
 library("Seurat")
 # Read single cell experiment
 sc = readRDS(path_to_sc)
 ```
 
-### 2. Compute BCS
-The `bcCompute` function allows you to input either a pre-processed seurat object or a single cell matrix. Have in mind, that when a seurat object is used as an input, the `DefaultAssay` must be specified, both `SCT` and `RNA` assays are accepted.
+Note that if you are using a Seurat object, the `DefaultAssay` must be specified. Both `SCT` and `RNA` assays are accepted.
 
 ```r
 # Set Assay
 DefaultAssay(sc) <- "RNA"
 ```
-**Generate Signatures**\
-In order to compute the BCS, we also need a **gene signatures object** containing the drug or functional signatures we are interested in evaluating. To create this object, the `GenerateGenesets` function needs to be called. **Beyondcell** includes two drug signature collections that are ready to use:
 
- * The drug Perturbation Signatures collection (PSc): captures the transcriptional changes induced by a drug.
- * The drug Sensitivity  Signatures collection (SSc): captures the drug sensitivity to a given drug.
+### 2. Compute the BCS
+We need to perform two steps:
 
-A small collection of functional pathways will be included by default in your gene signatures object. These pathways are related to the regulation of the epithelial-mesenchymal transition (EMT), cell cycle, proliferation, senescence and apoptosis.  
+#### Get a geneset object with signatures of interest
+In order to compute the BCS, we also need a `geneset` object containing the drug or functional signatures we are interested in evaluating. To create this object, the `GenerateGenesets` function needs to be called. Beyondcell includes two drug signature collections that are ready to use:
+
+ * **Drug Perturbation Signatures collection (PSc):** Captures the transcriptional changes induced by a drug.
+ * **Drug Sensitivity Signatures collection (SSc):** Captures the drug sensitivity to a given drug.
+
+A small collection of functional pathways will be included by default in your gene signatures object. These pathways are related to the regulation of the epithelial-mesenchymal transition (EMT), cell cycle, proliferation, senescence and apoptosis.
 
 ```r
-# Generate gene signatures object with one of the ready to use signature collections
-gs <- GenerateGenesets(PSc, include.pathways = TRUE)
+# Generate geneset object with one of the ready to use signature collections
+gset <- GenerateGenesets(PSc)
 # You can deactivate the functional pathways option if you are not interested in evaluating them
-gs <- GenerateGenesets(PSc, include.pathways = FALSE)
+nopath <- GenerateGenesets(PSc, include.pathways = FALSE)
 ```
 
-Furthermore, **Beyondcell** allows the user to input a .GMT file containing the functional pathways/signatures of interest, or a numeric matrix (containing a ranking criteria such as the t-statistic or logFoldChange).
+PSc and SSc signatures can also be filtered according to several values. Moreover, Beyondcell allows the user to input a GMT file containing the functional pathways/signatures of interest, or a numeric matrix (containing a ranking criteria such as the t-statistic or logFoldChange). For further information please check [GenerateGenesets](https://gitlab.com/bu_cnio/Beyondcell/-/tree/master/tutorial/GenerateGenesets) tutorial.
 
-You can check out the structure of the obtained gene set object, information on the drug signatures, mode of action and target genes can be found at `gs@info` or by using the `FindDrugs` function. 
-
-**Compute BCS**
+#### Compute the BCS
 ```r
 # Compute score for the PSc. This might take a few minutes depending on the size of your dataset.
 bc <- bcScore(sc, gs, expr.thres = 0.1) 
@@ -85,13 +88,13 @@ It is important to check whether any unwanted source of variation is guiding the
 
 ```r
 # Visualize whether cells are clustered based on the number of genes detecter per each cell
-bcClusters(bc, UMAP = "Beyondcell", idents = "nFeature_RNA", factor.col = FALSE)
+bcClusters(bc, UMAP = "beyondcell", idents = "nFeature_RNA", factor.col = FALSE)
 ```
 <img src=".img/nFeature_variation.png" width="500">
 
 ```r
 # Visualize whether cells are clustered based on their cell cycle status
-bcClusters(bc, UMAP = "Beyondcell", idents = "Phase", factor.col = TRUE)
+bcClusters(bc, UMAP = "beyondcell", idents = "Phase", factor.col = TRUE)
 ```
 <img src=".img/Phase_variation.png" width="500">
 
@@ -112,9 +115,9 @@ Once corrected, you will need to recompute the dimensionality reduction and clus
 # Recompute UMAP
 bc <- bcUMAP(bc, pc = 5, res = 0.2, add.DSS = FALSE, k.neighbors = 20) 
 # Visualize UMAP
-bcClusters(bc, UMAP = "Beyondcell", idents = "nFeature_RNA", factor.col = FALSE, pt.size = 1)
+bcClusters(bc, UMAP = "beyondcell", idents = "nFeature_RNA", factor.col = FALSE, pt.size = 1)
 # Visualize Therapeutic clusters
-bcClusters(bc, UMAP = "Beyondcell", idents = "bc_clusters_res.0.2", pt.size = 1)
+bcClusters(bc, UMAP = "beyondcell", idents = "bc_clusters_res.0.2", pt.size = 1)
 ```
 
 <p float="left">
