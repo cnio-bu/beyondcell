@@ -315,18 +315,17 @@ bcRegressOut <- function(bc, vars.to.regress) {
 }
 
 #' @title Recomputes a beyondcell object
-#' @description This function recomputes a beyondcell object using the matrix
-#' stored in the slot \code{@@data} (original scores) or \code{@@normalized}
-#' (which can contain subsetted and/or regressed BCS). Columns added with
-#' \code{\link[beyondcell]{bcAddMetadata}} are preserved, except if they
-#' define therapeutic clusters. Important: \code{bc@reductions} and
-#' \code{bc@background} remain the same, while \code{bc@ranks} and
-#' \code{bc@reductions} are removed.
+#' @description This function recomputes a \code{\link[beyondcell]{beyondcell}}
+#' object using the matrix stored in the slot \code{@@data} (original scores) or
+#' \code{@@normalized} (which can contain subsetted and/or regressed BCS).
+#' Columns added with \code{\link[beyondcell]{bcAddMetadata}} are preserved, except if they
+#' define therapeutic clusters. Important: \code{bc@background} remains the
+#' same, while \code{bc@ranks} and \code{bc@reductions} are removed.
 #' @name bcRecompute
 #' @import scales
-#' @param bc \code{\link[beyondcell]{beyondcell}} object.
-#' @param slot Matrix to recompute the beyondcell object. Either \code{"data"}
-#' or \code{"normalized"}.
+#' @param bc \code{beyondcell} object.
+#' @param slot Matrix to recompute the \code{beyondcell} object. Either
+#' \code{"data"} or \code{"normalized"}.
 #' @return A recomputed \code{beyondcell} object.
 #' @examples
 #' @export
