@@ -215,31 +215,31 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
       ### Filters.
       if("drugs" %in% selected_filters) {
         assign("drugs", gdata::trim(filters$drugs))
-        out <- GetIDS(df = info, filter = "Name", values = drugs)
+        out <- GetIDS(values = drugs, filter = "Name", df = info)
         ids <- c(ids, out[[1]])
         warn <- c(warn, out[[2]])
       }
       if("IDs" %in% selected_filters) {
         assign("IDs", gdata::trim(filters$IDs))
-        out <- GetIDS(df = info, filter = "sig_id", values = IDs)
+        out <- GetIDS(values = IDs, filter = "sig_id", df = info)
         ids <- c(ids, out[[1]])
         warn <- c(warn, out[[2]])
       }
       if ("MoA" %in% selected_filters) {
         assign("MoA", gdata::trim(filters$MoA))
-        out <- GetIDS(df = info, filter = "MoA", values = MoA)
+        out <- GetIDS(values = MoA, filter = "MoA", df = info)
         ids <- c(ids, out[[1]])
         warn <- c(warn, out[[2]])
       }
       if ("targets" %in% selected_filters) {
         assign("targets", gdata::trim(filters$targets))
-        out <- GetIDS(df = info, filter = "Target", values = targets)
+        out <- GetIDS(values = targets, filter = "Target", df = info)
         ids <- c(ids, out[[1]])
         warn <- c(warn, out[[2]])
       }
       if ("source" %in% selected_filters) {
         assign("sources", gdata::trim(filters$source))
-        out <- GetIDS(df = info, filter = "Source", values = sources)
+        out <- GetIDS(values = sources, filter = "Source", df = info)
         ids <- c(ids, out[[1]])
         warn <- c(warn, out[[2]])
       }
@@ -343,22 +343,19 @@ ListFilters <- function(entry) {
 #' to select only the entries that match the specified \code{values} and returns
 #' the corresponding \code{sig_ids}.
 #' @name GetIDS
-#' @param df \code{data.frame} with all drug information.
-#' @param filter Column name to subset by. You can also spcify the colum
 #' @param values User-supplied filtering vector for either drugs, MoA, target
 #' genes or source database.
+#' @param filter Column name to subset by. You can also spcify the colum
+#' @param df \code{data.frame} with all drug information.
 #' @return A vector with the \code{sig_ids} that match the \code{filter}'s
 #' elements.
 #' @export
 
-GetIDS <- function(df, filter, values) {
+GetIDS <- function(values, filter, df) {
   # --- Checks ---
-  # Check df.
-  if (class(df) != "data.frame") {
-    stop('df must be a data.frame')
-  }
-  if (!("sig_id" %in% colnames(df))) {
-    stop('df must contain a "sig_id" column.')
+  # Check values.
+  if (length(values) < 1 | !is.character(values)) {
+    stop('values must be a character vector.')
   }
   # Check filter.
   if (length(filter) != 1) {
@@ -370,9 +367,12 @@ GetIDS <- function(df, filter, values) {
   if (is.numeric(filter) & (filter < 1 | filter > ncol(df))) {
     stop(paste('filter = ', filter, 'is out of range.'))
   }
-  # Check values.
-  if (length(values) < 1 | !is.character(values)) {
-    stop('values must be a character vector.')
+  # Check df.
+  if (class(df) != "data.frame") {
+    stop('df must be a data.frame')
+  }
+  if (!("sig_id" %in% colnames(df))) {
+    stop('df must contain a "sig_id" column.')
   }
   # --- Code ---
   upper.values <- toupper(values)

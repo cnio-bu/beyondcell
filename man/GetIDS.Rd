@@ -4,15 +4,15 @@
 \alias{GetIDS}
 \title{Returns the \code{sig_ids} that match the specified values}
 \usage{
-GetIDS(df, filter, values)
+GetIDS(values, filter, df)
 }
 \arguments{
-\item{df}{\code{data.frame} with all drug information.}
+\item{values}{User-supplied filtering vector for either drugs, MoA, target
+genes or source database.}
 
 \item{filter}{Column name to subset by. You can also spcify the colum}
 
-\item{values}{User-supplied filtering vector for either drugs, MoA, target
-genes or source database.}
+\item{df}{\code{data.frame} with all drug information.}
 }
 \value{
 A vector with the \code{sig_ids} that match the \code{filter}'s
