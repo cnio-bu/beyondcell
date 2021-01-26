@@ -454,7 +454,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
                                     na.rm = TRUE)
       }
       bc@data <- matrix(merged.bcscores, nrow = 1, dimnames = list(merged.sigs, cells))
-      bc <- bcRecompute(bc, slot = "data")
+      bc <- suppressMessages(bcRecompute(bc, slot = "data"))
       features <- merged.sigs
     }
     ### Join scaled BCS and gene expression values for selected features.
