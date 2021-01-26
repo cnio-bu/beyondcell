@@ -214,34 +214,32 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
       warn <- c() # Warnings
       ### Filters.
       if("drugs" %in% selected_filters) {
-        out <- GetIDS(infodf = info, col = "Name",
-                           filter = gdata::trim(filters$drugs), filtername = "drugs")
+        assign("drugs", gdata::trim(filters$drugs))
+        out <- GetIDS(infodf = info, col = "Name", filter = drugs)
         ids <- c(ids, out[[1]])
         warn <- c(warn, out[[2]])
       }
       if("IDs" %in% selected_filters) {
-        out <- GetIDS(infodf = info, col = "sig_id",
-                           filter = gdata::trim(filters$IDs), filtername = "IDs")
+        assign("IDs", gdata::trim(filters$IDs))
+        out <- GetIDS(infodf = info, col = "sig_id", filter = IDs)
         ids <- c(ids, out[[1]])
         warn <- c(warn, out[[2]])
       }
       if ("MoA" %in% selected_filters) {
-        out <- GetIDS(infodf = info, col = "MoA",
-                           filter = gdata::trim(filters$MoA), filtername = "MoAs")
+        assign("MoA", gdata::trim(filters$MoA))
+        out <- GetIDS(infodf = info, col = "MoA", filter = MoA)
         ids <- c(ids, out[[1]])
         warn <- c(warn, out[[2]])
       }
       if ("targets" %in% selected_filters) {
-        out <- GetIDS(infodf = info, col = "Target",
-                           filter = gdata::trim(filters$targets),
-                           filtername = "target genes")
+        assign("targets", gdata::trim(filters$targets))
+        out <- GetIDS(infodf = info, col = "Target", filter = targets)
         ids <- c(ids, out[[1]])
         warn <- c(warn, out[[2]])
       }
       if ("source" %in% selected_filters) {
-        out <- GetIDS(infodf = info, col = "Source",
-                           filter = gdata::trim(filters$source),
-                           filtername = "source databases")
+        assign("sources", gdata::trim(filters$source))
+        out <- GetIDS(infodf = info, col = "Source", filter = sources)
         ids <- c(ids, out[[1]])
         warn <- c(warn, out[[2]])
       }
@@ -349,13 +347,11 @@ ListFilters <- function(entry) {
 #' @param col Column name to subset by. You can also spcify the colum
 #' @param filter User-supplied filtering vector for either drugs, MoA, target
 #' genes or source database.
-#' @param filtername String to be printed with the warning (in case some of the
-#' \code{filter} elements are not found in \code{infodf}).
 #' @return A vector with the \code{sig_ids} that match the \code{filter}
 #' elements.
 #' @export
 
-GetIDS <- function(infodf, col, filter, filtername) {
+GetIDS <- function(infodf, col, filter) {
   # --- Checks ---
   # Check infodf.
   if (class(infodf) != "data.frame") {
@@ -378,10 +374,6 @@ GetIDS <- function(infodf, col, filter, filtername) {
   if (length(filter) < 1 | !is.character(filter)) {
     stop('filter must be a character vector.')
   }
-  # Check filtername.
-  if (length(filtername) != 1 | !is.character(filtername)) {
-    stop('filtername must be a string.')
-  }
   # --- Code ---
   upper.filter <- toupper(filter)
   selected <- subset(infodf, subset = toupper(infodf[[col]]) %in% upper.filter)
@@ -393,6 +385,8 @@ GetIDS <- function(infodf, col, filter, filtername) {
   ids <- unique(selected$sig_id)
   not_found <- filter[!(upper.filter %in% toupper(infodf[[col]]))]
   if (length(not_found) > 0) {
+    filtername <- gsub(pattern = '"', replacement = '',
+                       x = deparse(substitute(filter)))
     w <- paste(length(not_found), 'out of', length(filter),
                filtername, 'were not found in the signature:',
                paste0(not_found, collapse = ", "))

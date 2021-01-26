@@ -4,7 +4,7 @@
 \alias{GetIDS}
 \title{Returns the \code{sig_ids} that match the specified filters}
 \usage{
-GetIDS(infodf, col, filter, filtername)
+GetIDS(infodf, col, filter)
 }
 \arguments{
 \item{infodf}{\code{data.frame} with all drug information.}
@@ -13,9 +13,6 @@ GetIDS(infodf, col, filter, filtername)
 
 \item{filter}{User-supplied filtering vector for either drugs, MoA, target
 genes or source database.}
-
-\item{filtername}{String to be printed with the warning (in case some of the
-\code{filter} elements are not found in \code{infodf}).}
 }
 \value{
 A vector with the \code{sig_ids} that match the \code{filter}
