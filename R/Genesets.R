@@ -211,44 +211,33 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
       ids <- unique(info$sig_id)
     } else {
       ids <- c()
-      warn <- c() # Warnings
       ### Filters.
       if("drugs" %in% selected_filters) {
         assign("drugs", gdata::trim(filters$drugs))
-        out <- GetIDS(values = drugs, filter = "Name", df = info)
-        ids <- c(ids, out[[1]])
-        warn <- c(warn, out[[2]])
+        ids <- c(ids, GetIDS(values = drugs, filter = "Name", df = info))
       }
       if("IDs" %in% selected_filters) {
         assign("IDs", gdata::trim(filters$IDs))
-        out <- GetIDS(values = IDs, filter = "sig_id", df = info)
-        ids <- c(ids, out[[1]])
-        warn <- c(warn, out[[2]])
+        ids <- c(ids, GetIDS(values = IDs, filter = "sig_id", df = info))
       }
       if ("MoA" %in% selected_filters) {
         assign("MoA", gdata::trim(filters$MoA))
-        out <- GetIDS(values = MoA, filter = "MoA", df = info)
-        ids <- c(ids, out[[1]])
-        warn <- c(warn, out[[2]])
+        ids <- c(ids, GetIDS(values = MoA, filter = "MoA", df = info))
       }
       if ("targets" %in% selected_filters) {
         assign("targets", gdata::trim(filters$targets))
-        out <- GetIDS(values = targets, filter = "Target", df = info)
-        ids <- c(ids, out[[1]])
-        warn <- c(warn, out[[2]])
+        ids <- c(ids, GetIDS(values = targets, filter = "Target", df = info))
       }
       if ("source" %in% selected_filters) {
         assign("sources", gdata::trim(filters$source))
-        out <- GetIDS(values = sources, filter = "Source", df = info)
-        ids <- c(ids, out[[1]])
-        warn <- c(warn, out[[2]])
+        ids <- c(ids, GetIDS(values = sources, filter = "Source", df = info))
       }
       ids <- unique(ids)
       if (length(ids) == 0) {
         stop('Couldn\'t find drugs that matched any of the filters.')
-      } else {
-        if (any(!is.null(warn))) sapply(warn[!is.null(warn)], function(w) warning(w))
-      }
+      } #else {
+        #if (any(!is.null(warn))) sapply(warn[!is.null(warn)], function(w) warning(w))
+      #}
     }
     genes <- lapply(ids, function(sig) {
       l <- list(up = x[["up"]][1:n.genes, sig], down = x[["down"]][1:n.genes, sig])
@@ -387,9 +376,9 @@ GetIDS <- function(values, filter, df) {
   if (length(not_found) > 0) {
     filtername <- gsub(pattern = '"', replacement = '',
                        x = deparse(substitute(values)))
-    w <- paste(length(not_found), 'out of', length(values),
-               filtername, 'were not found in the signature:',
-               paste0(not_found, collapse = ", "))
-  } else w <- NULL
-  return(list(ids, w))
+    warning(paste(length(not_found), 'out of', length(values),
+                  filtername, 'were not found in the signature:',
+                  paste0(not_found, collapse = ", ")))
+  }
+  return(ids)
 }
