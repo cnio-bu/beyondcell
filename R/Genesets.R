@@ -215,31 +215,31 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
       ### Filters.
       if("drugs" %in% selected_filters) {
         assign("drugs", gdata::trim(filters$drugs))
-        out <- GetIDS(infodf = info, col = "Name", filter = drugs)
+        out <- GetIDS(df = info, filter = "Name", values = drugs)
         ids <- c(ids, out[[1]])
         warn <- c(warn, out[[2]])
       }
       if("IDs" %in% selected_filters) {
         assign("IDs", gdata::trim(filters$IDs))
-        out <- GetIDS(infodf = info, col = "sig_id", filter = IDs)
+        out <- GetIDS(df = info, filter = "sig_id", values = IDs)
         ids <- c(ids, out[[1]])
         warn <- c(warn, out[[2]])
       }
       if ("MoA" %in% selected_filters) {
         assign("MoA", gdata::trim(filters$MoA))
-        out <- GetIDS(infodf = info, col = "MoA", filter = MoA)
+        out <- GetIDS(df = info, filter = "MoA", values = MoA)
         ids <- c(ids, out[[1]])
         warn <- c(warn, out[[2]])
       }
       if ("targets" %in% selected_filters) {
         assign("targets", gdata::trim(filters$targets))
-        out <- GetIDS(infodf = info, col = "Target", filter = targets)
+        out <- GetIDS(df = info, filter = "Target", values = targets)
         ids <- c(ids, out[[1]])
         warn <- c(warn, out[[2]])
       }
       if ("source" %in% selected_filters) {
         assign("sources", gdata::trim(filters$source))
-        out <- GetIDS(infodf = info, col = "Source", filter = sources)
+        out <- GetIDS(df = info, filter = "Source", values = sources)
         ids <- c(ids, out[[1]])
         warn <- c(warn, out[[2]])
       }
@@ -337,57 +337,57 @@ ListFilters <- function(entry) {
   return(out)
 }
 
-#' @title Returns the \code{sig_ids} that match the specified filters
+#' @title Returns the \code{sig_ids} that match the specified values
 #' @description This function is meant to be used inside
-#' \code{\link[GenerateGenesets]{GenerateGenesets}}. It subsets \code{infodf}
-#' to select only the entries that match the specified \code{filter} and returns
+#' \code{\link[GenerateGenesets]{GenerateGenesets}}. It subsets \code{df}
+#' to select only the entries that match the specified \code{values} and returns
 #' the corresponding \code{sig_ids}.
 #' @name GetIDS
-#' @param infodf \code{data.frame} with all drug information.
-#' @param col Column name to subset by. You can also spcify the colum
-#' @param filter User-supplied filtering vector for either drugs, MoA, target
+#' @param df \code{data.frame} with all drug information.
+#' @param filter Column name to subset by. You can also spcify the colum
+#' @param values User-supplied filtering vector for either drugs, MoA, target
 #' genes or source database.
-#' @return A vector with the \code{sig_ids} that match the \code{filter}
+#' @return A vector with the \code{sig_ids} that match the \code{filter}'s
 #' elements.
 #' @export
 
-GetIDS <- function(infodf, col, filter) {
+GetIDS <- function(df, filter, values) {
   # --- Checks ---
-  # Check infodf.
-  if (class(infodf) != "data.frame") {
-    stop('infodf must be a data.frame')
+  # Check df.
+  if (class(df) != "data.frame") {
+    stop('df must be a data.frame')
   }
-  if (!("sig_id" %in% colnames(infodf))) {
-    stop('infodf must contain a "sig_id" column.')
-  }
-  # Check col.
-  if (length(col) != 1) {
-    stop('You must specify a single col.')
-  }
-  if (is.character(col) & !(col %in% colnames(infodf))) {
-    stop(paste('col =', col, 'is not a column of infodf.'))
-  }
-  if (is.numeric(col) & (col < 1 | col > ncol(infodf))) {
-    stop(paste('col = ', col, 'is out of range.'))
+  if (!("sig_id" %in% colnames(df))) {
+    stop('df must contain a "sig_id" column.')
   }
   # Check filter.
-  if (length(filter) < 1 | !is.character(filter)) {
-    stop('filter must be a character vector.')
+  if (length(filter) != 1) {
+    stop('You must specify a single filter.')
+  }
+  if (is.character(filter) & !(filter %in% colnames(df))) {
+    stop(paste('filter =', filter, 'is not a column of df.'))
+  }
+  if (is.numeric(filter) & (filter < 1 | filter > ncol(df))) {
+    stop(paste('filter = ', filter, 'is out of range.'))
+  }
+  # Check values.
+  if (length(values) < 1 | !is.character(values)) {
+    stop('values must be a character vector.')
   }
   # --- Code ---
-  upper.filter <- toupper(filter)
-  selected <- subset(infodf, subset = toupper(infodf[[col]]) %in% upper.filter)
-  if (col == "Name") {
-    synonyms <- subset(infodf, subset = toupper(infodf[["Preferred_Name"]]) %in%
+  upper.values <- toupper(values)
+  selected <- subset(df, subset = toupper(df[[filter]]) %in% upper.values)
+  if (filter == "Name") {
+    synonyms <- subset(df, subset = toupper(df[["Preferred_Name"]]) %in%
                          unique(toupper(selected[["Preferred_Name"]])))
     selected <- unique(rbind(selected, synonyms))
   }
   ids <- unique(selected$sig_id)
-  not_found <- filter[!(upper.filter %in% toupper(infodf[[col]]))]
+  not_found <- values[!(upper.values %in% toupper(df[[filter]]))]
   if (length(not_found) > 0) {
     filtername <- gsub(pattern = '"', replacement = '',
-                       x = deparse(substitute(filter)))
-    w <- paste(length(not_found), 'out of', length(filter),
+                       x = deparse(substitute(values)))
+    w <- paste(length(not_found), 'out of', length(values),
                filtername, 'were not found in the signature:',
                paste0(not_found, collapse = ", "))
   } else w <- NULL

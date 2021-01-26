@@ -2,25 +2,25 @@
 % Please edit documentation in R/Genesets.R
 \name{GetIDS}
 \alias{GetIDS}
-\title{Returns the \code{sig_ids} that match the specified filters}
+\title{Returns the \code{sig_ids} that match the specified values}
 \usage{
-GetIDS(infodf, col, filter)
+GetIDS(df, filter, values)
 }
 \arguments{
-\item{infodf}{\code{data.frame} with all drug information.}
+\item{df}{\code{data.frame} with all drug information.}
 
-\item{col}{Column name to subset by. You can also spcify the colum}
+\item{filter}{Column name to subset by. You can also spcify the colum}
 
-\item{filter}{User-supplied filtering vector for either drugs, MoA, target
+\item{values}{User-supplied filtering vector for either drugs, MoA, target
 genes or source database.}
 }
 \value{
-A vector with the \code{sig_ids} that match the \code{filter}
+A vector with the \code{sig_ids} that match the \code{filter}'s
 elements.
 }
 \description{
 This function is meant to be used inside
-\code{\link[GenerateGenesets]{GenerateGenesets}}. It subsets \code{infodf}
-to select only the entries that match the specified \code{filter} and returns
+\code{\link[GenerateGenesets]{GenerateGenesets}}. It subsets \code{df}
+to select only the entries that match the specified \code{values} and returns
 the corresponding \code{sig_ids}.
 }
