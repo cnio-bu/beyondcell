@@ -357,7 +357,7 @@ FindDrugs <- function(bc, x) {
   indices <- lapply(x, function(y) {
     idx <- match(toupper(y), table = toupper(sigs), nomatch = 0)
     if (idx == 0) {
-      idx <- unique(match(drugInfo$sig_id[drugInfo$Name == toupper(y)],
+      idx <- unique(match(drugInfo$IDs[drugInfo$drugs == toupper(y)],
                           table = sigs))
     }
     return(idx[!is.na(idx)])
@@ -365,28 +365,28 @@ FindDrugs <- function(bc, x) {
   # Original names (x) and bc names (sigs).
   df <- data.frame(Original_Name = unlist(sapply(seq_along(x), function(i) {
     rep(x[i], times = length(indices[[i]]))
-  })), sig_id = unlist(sapply(indices, function(z) sigs[z])))
+  })), IDs = unlist(sapply(indices, function(z) sigs[z])))
   # Get the names and pathways of the selected signatures.
-  info <- subset(drugInfo, subset = sig_id %in% df$sig_id)
-  info <- aggregate(.~ sig_id, data = info, na.action = NULL, FUN = function(y) {
+  info <- subset(drugInfo, subset = IDs %in% df$IDs)
+  info <- aggregate(.~ IDs, data = info, na.action = NULL, FUN = function(y) {
     paste(na.omit(unique(y)), collapse = ", ")
   })
   # Merge df and info.
-  df <- merge(df, info[, c("sig_id", "Name", "Preferred_Name", "MoA")],
-              by = "sig_id", all.x = TRUE)
+  df <- merge(df, info[, c("IDs", "drugs", "preferred.drug.names", "MoAs")],
+              by = "IDs", all.x = TRUE)
   # Add bc_Name column and remove names that are not sig IDs from sig_id column.
-  df$bc_Name <- df$sig_id
-  df$sig_id[!startsWith(df$sig_id, prefix = "sig_")] <- NA
+  df$bc_Name <- df$IDs
+  df$IDs[!startsWith(df$IDs, prefix = "sig_")] <- NA
   # Create Preferred_and_sig column: Preferred name and sig_id.
   df$Preferred_and_sig <- sapply(1:nrow(df), function(i) {
-    name <- ifelse(test = !is.na(df$Preferred_Name[i]), yes = df$Preferred[i],
-                   no = df$bc_Name[i])
-    sig <- ifelse(test = !is.na(df$sig_id[i]),
-                  yes = paste0(" (", df$sig_id[i], ")"), no = "")
+    name <- ifelse(test = !is.na(df$preferred.drug.names[i]),
+                   yes = df$preferred.drug.names[i], no = df$bc_Name[i])
+    sig <- ifelse(test = !is.na(df$IDs[i]),
+                  yes = paste0(" (", df$IDs[i], ")"), no = "")
     return(paste0(name, sig))
   })
   # Reorder df.
-  df <- df[c("Original_Name", "bc_Name", "Preferred_Name", "Name",
-             "sig_id", "Preferred_and_sig", "MoA")]
+  df <- df[c("Original_Name", "bc_Name", "preferred.drug.names", "drugs", "IDs",
+             "Preferred_and_sig", "MoAs")]
   return(df)
 }

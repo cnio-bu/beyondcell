@@ -110,20 +110,20 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE) {
   }
   # Add Drug name and MoA to final.stats.
   cols <- colnames(final.stats)
-  info <- subset(drugInfo, subset = drugInfo$sig_id %in% rownames(final.stats))
+  info <- subset(drugInfo, subset = drugInfo$IDs %in% rownames(final.stats))
   if (dim(info)[1] > 0) {
-    info <- aggregate(.~sig_id, data = info, na.action = NULL, FUN = function(x) {
+    info <- aggregate(.~ IDs, data = info, na.action = NULL, FUN = function(x) {
       paste(na.omit(unique(x)), collapse = "; ")
     })
   }
-  rownames(info) <- info$sig_id
-  info <- info[, c("Name", "Preferred_Name", "MoA", "Target", "Source")]
+  rownames(info) <- info$IDs
+  info <- info[, c("drugs", "preferred.drug.names", "MoAs", "targets", "sources")]
   final.stats <- transform(merge(final.stats, info, by = 0, all.x = TRUE),
                            row.names = Row.names, Row.names = NULL)
   # Order by rank and reorder columns.
   final.stats <- final.stats[order(final.stats[, order.col], decreasing = FALSE),
-                             c("Name", "Preferred_Name", "MoA", "Target",
-                               "Source", cols)]
+                             c("drugs", "preferred.drug.names", "MoAs",
+                               "targets", "sources", cols)]
   # Add to beyondcell object.
   bc@ranks[[idents]] <- final.stats
   # Close the progress bar.
