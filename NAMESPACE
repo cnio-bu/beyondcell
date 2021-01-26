@@ -2,10 +2,10 @@
 
 export(BreakString)
 export(CreatebcObject)
-export(FilteredIDS)
 export(FindDrugs)
 export(GeneCase)
 export(GenerateGenesets)
+export(GetIDS)
 export(GetStatistics)
 export(ListFilters)
 export(Mean.Med.SD)

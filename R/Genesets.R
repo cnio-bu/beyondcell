@@ -214,32 +214,32 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
       warn <- c() # Warnings
       ### Filters.
       if("drugs" %in% selected_filters) {
-        out <- FilteredIDS(infodf = info, col = "Name",
+        out <- GetIDS(infodf = info, col = "Name",
                            filter = gdata::trim(filters$drugs), filtername = "drugs")
         ids <- c(ids, out[[1]])
         warn <- c(warn, out[[2]])
       }
       if("IDs" %in% selected_filters) {
-        out <- FilteredIDS(infodf = info, col = "sig_id",
+        out <- GetIDS(infodf = info, col = "sig_id",
                            filter = gdata::trim(filters$IDs), filtername = "IDs")
         ids <- c(ids, out[[1]])
         warn <- c(warn, out[[2]])
       }
       if ("MoA" %in% selected_filters) {
-        out <- FilteredIDS(infodf = info, col = "MoA",
+        out <- GetIDS(infodf = info, col = "MoA",
                            filter = gdata::trim(filters$MoA), filtername = "MoAs")
         ids <- c(ids, out[[1]])
         warn <- c(warn, out[[2]])
       }
       if ("targets" %in% selected_filters) {
-        out <- FilteredIDS(infodf = info, col = "Target",
+        out <- GetIDS(infodf = info, col = "Target",
                            filter = gdata::trim(filters$targets),
                            filtername = "target genes")
         ids <- c(ids, out[[1]])
         warn <- c(warn, out[[2]])
       }
       if ("source" %in% selected_filters) {
-        out <- FilteredIDS(infodf = info, col = "Source",
+        out <- GetIDS(infodf = info, col = "Source",
                            filter = gdata::trim(filters$source),
                            filtername = "source databases")
         ids <- c(ids, out[[1]])
@@ -344,7 +344,7 @@ ListFilters <- function(entry) {
 #' \code{\link[GenerateGenesets]{GenerateGenesets}}. It subsets \code{infodf}
 #' to select only the entries that match the specified \code{filter} and returns
 #' the corresponding \code{sig_ids}.
-#' @name FilteredIDS
+#' @name GetIDS
 #' @param infodf \code{data.frame} with all drug information.
 #' @param col Column name to subset by. You can also spcify the colum
 #' @param filter User-supplied filtering vector for either drugs, MoA, target
@@ -355,7 +355,7 @@ ListFilters <- function(entry) {
 #' elements.
 #' @export
 
-FilteredIDS <- function(infodf, col, filter, filtername) {
+GetIDS <- function(infodf, col, filter, filtername) {
   # --- Checks ---
   # Check infodf.
   if (class(infodf) != "data.frame") {
