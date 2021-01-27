@@ -285,13 +285,15 @@ GetIDs <- function(values, filter, df) {
     selected <- unique(rbind(selected, synonyms))
   }
   ids <- unique(selected$IDs)
-  not_found <- values[!(upper.values %in% toupper(df[[filter]]))]
-  if (length(not_found) > 0) {
+  not.found <- values[!(upper.values %in% toupper(df[[filter]]))]
+  if (all(values %in% not.found)) {
+    stop('No sig ID was found for any of the elements in values.')
+  } else if (length(not.found) > 0) {
     filtername <- gsub(pattern = '"', replacement = '',
-                       x = deparse(substitute(values)))
-    warning(paste(length(not_found), 'out of', length(values),
-                  filtername, 'were not found in the signature:',
-                  paste0(not_found, collapse = ", ")))
+                       x = deparse(substitute(filter)))
+    warning(paste0('sig IDs were not found for ', length(not.found), ' out of ',
+                   length(values), " ", filtername, ': ',
+                   paste0(not.found, collapse = ", "), "."))
   }
   return(ids)
 }
