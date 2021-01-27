@@ -25,13 +25,13 @@ the pre-loaded \code{\link[beyondcell]{beyondcell}} matrices and returns a
 \details{
 The output \code{data.frame} has the following columns:
 \itemize{
-\item{\code{Original_Name}}: Inputted drug name.
-\item{\code{bc_Name}}: Drug name used in \code{bc}.
+\item{\code{original.names}}: Inputted drug name.
+\item{\code{bc.names}}: Drug name used in \code{bc}.
 \item{\code{Preferred_Name}}: Drug name used in \code{beyondcell} plots.
 \item{\code{Name}}: Other drug names.
 \item{\code{sig_id}}: Signature ID.
-\item{\code{Preferred_and_sig}}: \code{Preferred_Name} (or alternatively
-\code{bc_Name}) and \code{sig_id}.
+\item{\code{preferred.and.sigs}}: \code{Preferred_Name} (or alternatively
+\code{bc.names}) and \code{sig_id}.
 \item{\code{MoA}}: Mechanism(s) of action.
 }
 }

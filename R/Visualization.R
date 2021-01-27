@@ -158,7 +158,7 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
     condition = colnames(stats.cond))
     ### Drug name and MoA
     if (x %in% info$IDs) {
-      drug.and.MoA <- info[which(info$IDs == x), c("Preferred_and_sig", "MoAs")]
+      drug.and.MoA <- info[which(info$IDs == x), c("preferred.and.sigs", "MoAs")]
       drug.and.MoA[2] <- ifelse(test = drug.and.MoA[2] == "NA", yes = "",
                                 no = drug.and.MoA[2])
     } else {
@@ -487,7 +487,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
       ### Drug name and MoA.
       if (any(ids %in% info$IDs)) {
         drug.and.MoA <- info[which(info$IDs %in% ids),
-                             c("Preferred_and_sig", "MoAs")]
+                             c("preferred.and.sigs", "MoAs")]
         ### When merged != NULL...
         if (nrow(drug.and.MoA) > 1) {
           ### Paste both drug names and MoAs. If MoAs are the same, just print
@@ -601,7 +601,7 @@ bcCellCycle <- function(bc, signatures) {
     ### Drug name and MoA.
     if (x %in% info$IDs) {
       drug.and.MoA <- info[which(info$IDs == x),
-                           c("Preferred_and_sig", "MoAs")]
+                           c("preferred.and.sigs", "MoAs")]
       drug.and.MoA[, 2] <- BreakString(drug.and.MoA[, 2]) ### Format subtitle.
     } else {
       drug.and.MoA <- c(x, "")
@@ -714,12 +714,12 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3,
   # used by beyondcell and the MoA).
   info <- FindDrugs(bc, x = rownames(bc@scaled))
   # Switch points.
-  sp <- data.frame(switch.point = bc@switch.point[info$bc_Name],
-                   row.names = info$bc_Name)
+  sp <- data.frame(switch.point = bc@switch.point[info$bc.names],
+                   row.names = info$bc.names)
   # One plot per level.
   p4s <- lapply(lvl[in.lvl], function(l) {
     ### Subset residuals' means and switch points.
-    res <- bc@ranks[[idents]][info$bc_Name,
+    res <- bc@ranks[[idents]][info$bc.names,
                               paste0("residuals.mean.", l), drop = FALSE]
     colnames(res) <- "residuals.mean"
     df <- transform(merge(res, sp, by = 0), row.names = Row.names, Row.names = NULL)
@@ -756,13 +756,13 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3,
       }
       return(rownames(sub.df)[1:min(top, nrow(sub.df))])
     }))
-    df[sel.labels, "labels"] <- info$Preferred_and_sig[match(sel.labels,
-                                                             info$bc_Name)]
+    df[sel.labels, "labels"] <- info$preferred.and.sigs[match(sel.labels,
+                                                             info$bc.names)]
     ### Topnames.
     if(length(topnames[in.topnames]) > 0) {
       topnames <- FindDrugs(bc, x = topnames[in.topnames])
-      df[match(topnames$bc_Name,
-               table = rownames(df)), "labels"] <- topnames$Preferred_and_sig
+      df[match(topnames$bc.names,
+               table = rownames(df)), "labels"] <- topnames$preferred.and.sigs
     }
     ### Colours and names.
     colors <- c("#1D61F2", "#DA0078", "orange", "#C7A2F5", "grey80", "black")
