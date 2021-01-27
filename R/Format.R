@@ -329,6 +329,8 @@ BreakString <- function(x, split = ", ", line.length = 50) {
 #' @name FindDrugs
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
 #' @param x A character vector with drug names and/or sig IDs.
+#' @param na.rm Logical. Should \code{x} entries with no available data be
+#' removed from the final output?
 #' @details The output \code{data.frame} has the following columns:
 #' \itemize{
 #' \item{\code{Original_Name}}: Inputted drug name.
@@ -344,12 +346,16 @@ BreakString <- function(x, split = ", ", line.length = 50) {
 #' @examples
 #' @export
 
-FindDrugs <- function(bc, x) {
+FindDrugs <- function(bc, x, na.rm = TRUE) {
   # --- Checks ---
   # Check that bc is a beyondcell object.
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
   # Check x.
   if (!is.character(x)) stop('x must be a character vector.')
+  # Check na.rm.
+  if (length(na.rm) != 1 | !is.logical(na.rm)) {
+    stop('na.rm must be TRUE or FALSE.')
+  }
   # --- Code ---
   # bc signatures.
   sigs <- rownames(bc@normalized)
@@ -399,5 +405,7 @@ FindDrugs <- function(bc, x) {
   cols <- c("Original_Name", "bc_Name", "preferred.drug.names", "drugs", "IDs",
             "Preferred_and_sig", "MoAs")
   df <- df[rows, cols]
+  # If na.rm = TRUE, remove rows with NAs in all fields but Original_Name.
+  if (na.rm) df <- df[rowSums(is.na(df[, -1])) != ncol(df) - 1, ]
   return(df)
 }
