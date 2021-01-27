@@ -395,7 +395,9 @@ FindDrugs <- function(bc, x) {
                   no = df$bc_Name[j]))
   })
   # Reorder df.
-  df <- df[c("Original_Name", "bc_Name", "preferred.drug.names", "drugs", "IDs",
-             "Preferred_and_sig", "MoAs")]
+  rows <- unlist(lapply(x, function(entry) which(df$Original_Name == entry)))
+  cols <- c("Original_Name", "bc_Name", "preferred.drug.names", "drugs", "IDs",
+            "Preferred_and_sig", "MoAs")
+  df <- df[rows, cols]
   return(df)
 }
