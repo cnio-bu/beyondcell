@@ -137,13 +137,9 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
   # Get maximum and minimum normalized BCS (for common x axis in all plots).
   limits <- c(min(as.vector(sub.bc), na.rm = TRUE),
               max(as.vector(sub.bc), na.rm = TRUE))
-  # Get the names and pathways of the selected signatures.
-  info <- subset(drugInfo, subset = IDs %in% signatures[in.signatures])
-  if (nrow(info) > 0) {
-    info <- aggregate(.~ IDs, data = info, na.action = NULL, FUN = function(m) {
-      paste(na.omit(unique(m)), collapse = ", ")
-    })
-  }
+  # Get info about drugs (their corresponding name in bc, the preferred name
+  # used by beyondcell and the MoA).
+  info <- FindDrugs(bc, x = signatures[in.signatures])
   # For each signature.
   p <- lapply(signatures[in.signatures], function(x) {
     ### Data frame of normalized BCS and metadata.
@@ -162,7 +158,7 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
     condition = colnames(stats.cond))
     ### Drug name and MoA
     if (x %in% info$IDs) {
-      drug.and.MoA <- info[which(info$IDs == x), c("drugs", "MoAs")]
+      drug.and.MoA <- info[which(info$IDs == x), c("Preferred_and_sig", "MoAs")]
       drug.and.MoA[2] <- ifelse(test = drug.and.MoA[2] == "NA", yes = "",
                                 no = drug.and.MoA[2])
     } else {
@@ -436,13 +432,9 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
       Seurat::FeaturePlot(sc, features = gene, blend = TRUE, combine = FALSE))
     # Else...
   } else {
-    ### Get the names and pathways of the selected signatures.
-    info <- subset(drugInfo, subset = IDs %in% sigs)
-    if (dim(info)[1] > 0) {
-      info <- aggregate(.~ IDs, data = info, na.action = NULL, FUN = function(x) {
-        paste(na.omit(unique(x)), collapse = ", ")
-      })
-    }
+    # Get info about drugs (their corresponding name in bc, the preferred name
+    # used by beyondcell and the MoA).
+    info <- FindDrugs(bc, x = sigs)
     ### If we want to merge signatures, we must recompute the bc object using
     ### the added or substracted bc@normalized BCS.
     if (!is.null(merged)) {
@@ -459,8 +451,8 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
     }
     ### Join scaled BCS and gene expression values for selected features.
     full.matrix <- rbind(bc@scaled[merged.sigs, cells, drop = FALSE],
-                         bc@expr.matrix[gene, cells, drop = FALSE])[features, ,
-                                                                    drop = FALSE]
+                         bc@expr.matrix[gene, cells,
+                                        drop = FALSE])[features, , drop = FALSE]
     ### Signature's center. If center == NULL, set center to switch.points.
     if (is.null(signatures[["center"]])) {
       center.sigs <- bc@switch.point[merged.sigs]
@@ -494,11 +486,15 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
       } else ids <- y
       ### Drug name and MoA.
       if (any(ids %in% info$IDs)) {
-        drug.and.MoA <- info[which(info$IDs %in% ids), c("drugs", "MoAs")]
-        if (nrow(drug.and.MoA) > 1) { ### When merged != NULL, convert "" to "NA".
-          drug.and.MoA[drug.and.MoA[, 2] == "", 2] <- "NA"
-          drug.and.MoA <- t(as.data.frame(apply(drug.and.MoA, 2, paste0,
-                                                collapse = merged.symbol)))
+        drug.and.MoA <- info[which(info$IDs %in% ids),
+                             c("Preferred_and_sig", "MoAs")]
+        ### When merged != NULL...
+        if (nrow(drug.and.MoA) > 1) {
+          ### Paste both drug names and MoAs. If MoAs are the same, just print
+          ### them one time
+          drug.and.MoA <- as.data.frame(t(apply(drug.and.MoA, 2, FUN = function(z) {
+            paste0(unique(z), collapse = merged.symbol)
+          })))
         }
         drug.and.MoA[, 2] <- BreakString(drug.and.MoA[, 2]) ### Format subtitle.
       } else {
@@ -593,11 +589,9 @@ bcCellCycle <- function(bc, signatures) {
   # Cells in beyondcell object.
   cells <- subset(rownames(bc@meta.data),
                   subset = rownames(bc@meta.data) %in% colnames(bc@normalized))
-  # Get the names and pathways of the selected signatures.
-  info <- subset(drugInfo, subset = IDs %in% signatures[in.signatures])
-  info <- aggregate(.~ IDs, data = info, na.action = NULL, FUN = function(y) {
-    paste(na.omit(unique(y)), collapse = ", ")
-  })
+  # Get info about drugs (their corresponding name in bc, the preferred name
+  # used by beyondcell and the MoA).
+  info <- FindDrugs(bc, x = signatures[in.signatures])
   # For each signature...
   p <- lapply(signatures[in.signatures], function(x) {
     ### Data frame of normalized BCS and phase metadata.
@@ -606,7 +600,8 @@ bcCellCycle <- function(bc, signatures) {
                                  row.names = cells))
     ### Drug name and MoA.
     if (x %in% info$IDs) {
-      drug.and.MoA <- info[which(info$IDs == x), c("drugs", "MoAs")]
+      drug.and.MoA <- info[which(info$IDs == x),
+                           c("Preferred_and_sig", "MoAs")]
       drug.and.MoA[, 2] <- BreakString(drug.and.MoA[, 2]) ### Format subtitle.
     } else {
       drug.and.MoA <- c(x, "")
@@ -717,14 +712,14 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3,
   # --- Code ---
   # Get info about drugs (their corresponding name in bc, the preferred name
   # used by beyondcell and the MoA).
-  drug <- FindDrugs(bc, x = rownames(bc@scaled))
+  info <- FindDrugs(bc, x = rownames(bc@scaled))
   # Switch points.
-  sp <- data.frame(switch.point = bc@switch.point[drug$bc_Name],
-                   row.names = drug$bc_Name)
+  sp <- data.frame(switch.point = bc@switch.point[info$bc_Name],
+                   row.names = info$bc_Name)
   # One plot per level.
   p4s <- lapply(lvl[in.lvl], function(l) {
     ### Subset residuals' means and switch points.
-    res <- bc@ranks[[idents]][drug$bc_Name,
+    res <- bc@ranks[[idents]][info$bc_Name,
                               paste0("residuals.mean.", l), drop = FALSE]
     colnames(res) <- "residuals.mean"
     df <- transform(merge(res, sp, by = 0), row.names = Row.names, Row.names = NULL)
@@ -761,8 +756,8 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3,
       }
       return(rownames(sub.df)[1:min(top, nrow(sub.df))])
     }))
-    df[sel.labels, "labels"] <- drug$Preferred_and_sig[match(sel.labels,
-                                                             drug$bc_Name)]
+    df[sel.labels, "labels"] <- info$Preferred_and_sig[match(sel.labels,
+                                                             info$bc_Name)]
     ### Topnames.
     if(length(topnames[in.topnames]) > 0) {
       topnames <- FindDrugs(bc, x = topnames[in.topnames])
