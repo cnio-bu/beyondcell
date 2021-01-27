@@ -373,8 +373,8 @@ FindDrugs <- function(bc, x) {
   # Get the names and pathways of the selected signatures.
   info <- subset(drugInfo, subset = IDs %in% df$IDs)
   if (all(dim(info) != 0)) {
-    info <- aggregate(.~ IDs, data = info, na.action = NULL, FUN = function(z) {
-      paste(na.omit(unique(z)), collapse = ", ")
+    info <- aggregate(.~ IDs, data = info, na.action = NULL, FUN = function(w) {
+      paste(na.omit(unique(w)), collapse = ", ")
     })
   }
   info.not.found <- !(df$IDs %in% drugInfo$IDs)
@@ -388,11 +388,11 @@ FindDrugs <- function(bc, x) {
   df$bc_Name <- df$IDs
   df$IDs[!startsWith(df$IDs, prefix = "sig_")] <- NA
   # Create Preferred_and_sig column: Preferred name and sig_id.
-  df$Preferred_and_sig <- sapply(1:nrow(df), function(i) {
-    return(ifelse(test = !is.na(df$preferred.drug.names[i]),
-                  yes = paste0(df$preferred.drug.names[i],
-                               paste0(" (", df$IDs[i], ")")),
-                  no = df$bc_Name[i]))
+  df$Preferred_and_sig <- sapply(1:nrow(df), function(j) {
+    return(ifelse(test = !is.na(df$preferred.drug.names[j]),
+                  yes = paste0(df$preferred.drug.names[j],
+                               paste0(" (", df$IDs[j], ")")),
+                  no = df$bc_Name[j]))
   })
   # Reorder df.
   df <- df[c("Original_Name", "bc_Name", "preferred.drug.names", "drugs", "IDs",
