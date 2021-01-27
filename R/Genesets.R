@@ -214,23 +214,23 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
       ### Filters.
       if("drugs" %in% selected_filters) {
         assign("drugs", gdata::trim(filters$drugs))
-        ids <- c(ids, GetIDS(values = drugs, filter = "drugs", df = info))
+        ids <- c(ids, GetIDs(values = drugs, filter = "drugs", df = info))
       }
       if("IDs" %in% selected_filters) {
         assign("IDs", gdata::trim(filters$IDs))
-        ids <- c(ids, GetIDS(values = IDs, filter = "IDs", df = info))
+        ids <- c(ids, GetIDs(values = IDs, filter = "IDs", df = info))
       }
       if ("MoA" %in% selected_filters) {
         assign("MoA", gdata::trim(filters$MoA))
-        ids <- c(ids, GetIDS(values = MoA, filter = "MoAs", df = info))
+        ids <- c(ids, GetIDs(values = MoA, filter = "MoAs", df = info))
       }
       if ("targets" %in% selected_filters) {
         assign("targets", gdata::trim(filters$targets))
-        ids <- c(ids, GetIDS(values = targets, filter = "targets", df = info))
+        ids <- c(ids, GetIDs(values = targets, filter = "targets", df = info))
       }
       if ("source" %in% selected_filters) {
         assign("sources", gdata::trim(filters$source))
-        ids <- c(ids, GetIDS(values = sources, filter = "sources", df = info))
+        ids <- c(ids, GetIDs(values = sources, filter = "sources", df = info))
       }
       ids <- unique(ids)
       if (length(ids) == 0) {

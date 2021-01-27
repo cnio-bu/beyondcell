@@ -244,7 +244,7 @@ GetStatistics <- function(bc, signatures, cells, pb, total, i, n.rows,
 #' \code{\link[GenerateGenesets]{GenerateGenesets}}. It subsets \code{df}
 #' to select only the entries that match the specified \code{values} and returns
 #' the corresponding \code{sig_ids}.
-#' @name GetIDS
+#' @name GetIDs
 #' @param values User-supplied filtering vector for either drugs, MoA, target
 #' genes or source database.
 #' @param filter Column name to subset by. You can also spcify the colum
@@ -253,7 +253,7 @@ GetStatistics <- function(bc, signatures, cells, pb, total, i, n.rows,
 #' elements.
 #' @export
 
-GetIDS <- function(values, filter, df) {
+GetIDs <- function(values, filter, df) {
   # --- Checks ---
   # Check values.
   if (length(values) < 1 | !is.character(values)) {
