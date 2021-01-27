@@ -4,7 +4,7 @@
 \alias{GetIDs}
 \title{Returns the \code{sig_ids} that match the specified values}
 \usage{
-GetIDs(values, filter, df)
+GetIDs(values, filter, df = drugInfo)
 }
 \arguments{
 \item{values}{User-supplied filtering vector for either drugs, MoA, target
