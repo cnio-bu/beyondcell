@@ -8,7 +8,7 @@ GenerateGenesets(
   x,
   n.genes = 250,
   mode = c("up", "down"),
-  filters = list(drugs = NULL, IDs = NULL, MoA = NULL, targets = NULL, source = NULL),
+  filters = list(drugs = NULL, IDs = NULL, MoAs = NULL, targets = NULL, sources = NULL),
   comparison = NULL,
   include.pathways = TRUE
 )
@@ -24,10 +24,10 @@ for more information.}
 
 \item{filters}{If \code{x} is a pre-loaded matrix, you can provide a list of
 filters to subset these matrices. You can specify which drug names, sig IDs,
-mechanisms of action, target genes and sources you are interested in (cap
-insensitive). You can call \code{\link[ListFilters]{ListFilters}} function to
-check all the available values for these filters. The signatures that pass
-\strong{ANY} of these filters are included in the output.}
+mechanisms of action (MoAs), target genes and sources you are interested in
+(cap insensitive). You can call \code{\link[ListFilters]{ListFilters}}
+function to check all the available values for these filters. The signatures
+that pass \strong{ANY} of these filters are included in the output.}
 
 \item{comparison}{\code{"treated_vs_control"} or
 \code{"control_vs_treated"}. See Details for more information.}

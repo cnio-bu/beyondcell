@@ -11,10 +11,10 @@
 #' for more information.
 #' @param filters If \code{x} is a pre-loaded matrix, you can provide a list of
 #' filters to subset these matrices. You can specify which drug names, sig IDs,
-#' mechanisms of action, target genes and sources you are interested in (cap
-#' insensitive). You can call \code{\link[ListFilters]{ListFilters}} function to
-#' check all the available values for these filters. The signatures that pass
-#' \strong{ANY} of these filters are included in the output.
+#' mechanisms of action (MoAs), target genes and sources you are interested in
+#' (cap insensitive). You can call \code{\link[ListFilters]{ListFilters}}
+#' function to check all the available values for these filters. The signatures
+#' that pass \strong{ANY} of these filters are included in the output.
 #' @param comparison \code{"treated_vs_control"} or
 #' \code{"control_vs_treated"}. See Details for more information.
 #' @param include.pathways \code{TRUE} (default) or \code{FALSE}. Whether or
@@ -54,8 +54,8 @@
 #' @export
 
 GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
-                             filters = list(drugs = NULL, IDs = NULL, MoA = NULL,
-                                            targets = NULL, source = NULL),
+                             filters = list(drugs = NULL, IDs = NULL, MoAs = NULL,
+                                            targets = NULL, sources = NULL),
                              comparison = NULL, include.pathways = TRUE) {
   # --- Global Checks ---
   # Check if x is a pre-loaded matrix, a ranked matrix or a path to a GMT file.
@@ -145,7 +145,7 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
     }
   }
   # Check filters and comparison.
-  filters_names <- c("drugs", "IDs", "MoA", "targets", "source")
+  filters_names <- c("drugs", "IDs", "MoAs", "targets", "sources")
   selected.filters <- names(filters)
   if (any(!(selected.filters %in% filters_names))) stop('Invalid names in filters.')
   if (type != "pre-loaded matrix") {
@@ -297,11 +297,11 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
 
 #' @title Returns all the possible values for the specified filter
 #' @description This function returns all the available values for \code{drugs},
-#' \code{sig_ids}, \code{MoAs}, \code{targets} or \code{source} filters in
+#' \code{IDs}, \code{MoAs}, \code{targets} or \code{sources} filters in
 #' \code{\link[GenerateGenesets]{GenerateGenesets}} function.
 #' @name ListFilters
-#' @param entry Either \code{"drugs"}, \code{"IDs"}, \code{"MoA"},
-#' \code{"targets"} or \code{"source"}.
+#' @param entry Either \code{"drugs"}, \code{"IDs"}, \code{"MoAs"},
+#' \code{"targets"} or \code{"sources"}.
 #' @return All the possible values for the specified \code{entry}.
 #' @export
 
@@ -311,11 +311,11 @@ ListFilters <- function(entry) {
     out <- sort(unique(drugInfo$drugs), decreasing = FALSE)
   } else if (entry == "IDs") {
     out <- sort(unique(drugInfo$IDs), decreasing = FALSE)
-  } else if (entry == "MoA") {
+  } else if (entry == "MoAs") {
     out <- sort(unique(drugInfo$MoAs), decreasing = FALSE)
   } else if (entry == "targets") {
     out <- sort(unique(drugInfo$targets), decreasing = FALSE)
-  } else if (entry == "source") {
+  } else if (entry == "sources") {
     out <- sort(unique(drugInfo$sources), decreasing = FALSE)
   } else {
     stop("Incorrect entry.")
