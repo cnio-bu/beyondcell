@@ -8,4 +8,4 @@ fi
 
 git clone https://gitlab.com/bu_cnio/beyondcell_conda_recipe
 conda mambabuild beyondcell_conda_recipe/r-beyondcell --output-folder ./
-mamba install --use-local --update-deps r-beyondcell
+mamba install --use-local --update-deps linux-64/r-beyondcell-*.tar.bz2
