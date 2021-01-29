@@ -7,7 +7,5 @@ else
 fi
 
 git clone https://gitlab.com/bu_cnio/beyondcell_conda_recipe
-conda create -y -q -n beyondcell_test 
-source activate beyondcell_test
 conda mambabuild beyondcell_conda_recipe/r-beyondcell --output-folder ./
 mamba install --use-local --update-deps r-beyondcell
