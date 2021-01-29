@@ -16,7 +16,7 @@
 #' check all the available values for these filters. The signatures that pass
 #' \strong{ANY} of these filters are included in the output.
 #' @param comparison \code{"treated_vs_control"} or
-#' \code{"sensitive_vs_resistant"}. See Details for more information.
+#' \code{"control_vs_treated"}. See Details for more information.
 #' @param include.pathways \code{TRUE} (default) or \code{FALSE}. Whether or
 #' not return \code{beyoncell}'s pre-computed genesets for functional pathways.
 #' @details \code{x} can be:
@@ -43,7 +43,7 @@
 #' \item{\code{"treated_vs_control"}:} {(\code{PSc} and \code{DSS} like) When
 #' the numeric values or the genesets in the GMT file were obtained from a
 #' comparison between drug treated and untreated cells.}
-#' \item{\code{"sensitive_vs_resistant"}:} {(\code{SSc} like) When the numeric
+#' \item{\code{"control_vs_treated"}:} {(\code{SSc} like) When the numeric
 #' values or the genesets in the GMT file were obtained from a comparison
 #' between drug sensitive and resistant cells.}
 #' }
@@ -159,11 +159,11 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
     ### Comparison.
     if (is.null(comparison)) {
       stop(paste('Comparison must be either "treated_vs_control" or',
-                 '"sensitive_vs_resistant".'))
+                 '"control_vs_treated".'))
     } else if (length(comparison) != 1 |
-               !(comparison[1] %in% c("treated_vs_control", "sensitive_vs_resistant"))) {
+               !(comparison[1] %in% c("treated_vs_control", "control_vs_treated"))) {
       stop(paste('Comparison must be either "treated_vs_control" or',
-                 '"sensitive_vs_resistant".'))
+                 '"control_vs_treated".'))
     }
   } else {
     ### Filters.
@@ -176,16 +176,16 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
     selected_filters <- selected_filters[!sapply(filters, is.null)]
     ### Comparison.
     if (is.null(comparison)) {
-      if(is.D[2]) comparison <- "sensitive_vs_resistant"
+      if(is.D[2]) comparison <- "control_vs_treated"
       else comparison <- "treated_vs_control"
     } else {
       if (length(comparison) != 1 |
-          !(comparison[1] %in% c("treated_vs_control", "sensitive_vs_resistant"))) {
+          !(comparison[1] %in% c("treated_vs_control", "control_vs_treated"))) {
         stop('Incorrect comparison.')
       }
-      if (is.D[2] & comparison != "sensitive_vs_resistant") {
-        comparison <- "sensitive_vs_resistant"
-        warning('x = SSc, comparison changed to "sensitive_vs_resistant".')
+      if (is.D[2] & comparison != "control_vs_treated") {
+        comparison <- "control_vs_treated"
+        warning('x = SSc, comparison changed to "control_vs_treated".')
       } else if (!is.D[2] & comparison != "treated_vs_control") {
         comparison <- "treated_vs_control"
         warning(paste0('x = ', c("PSc", "SSc", "DSS")[is.D], ', comparison ',
@@ -254,7 +254,7 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
       return(l)
     })
     names(genes) <- ids
-  # Else if x is a numeric matrix...
+    # Else if x is a numeric matrix...
   } else if (type == "matrix") {
     genes <- apply(x, 2, FUN = function(sig) {
       l <- list()
@@ -269,7 +269,7 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
       }
       return(l)
     })
-  # Else if x is a GMT file.
+    # Else if x is a GMT file.
   } else if (type == "gmt") {
     unique_genesets <- unique(gsub("_UP$|_DOWN$", "", names(gmt.file)))
     genes <- setNames(lapply(unique_genesets, function(sig) {

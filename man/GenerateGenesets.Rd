@@ -30,7 +30,7 @@ check all the available values for these filters. The signatures that pass
 \strong{ANY} of these filters are included in the output.}
 
 \item{comparison}{\code{"treated_vs_control"} or
-\code{"sensitive_vs_resistant"}. See Details for more information.}
+\code{"control_vs_treated"}. See Details for more information.}
 
 \item{include.pathways}{\code{TRUE} (default) or \code{FALSE}. Whether or
 not return \code{beyoncell}'s pre-computed genesets for functional pathways.}
@@ -68,7 +68,7 @@ Finally, \code{comparison} can be:
 \item{\code{"treated_vs_control"}:} {(\code{PSc} and \code{DSS} like) When
 the numeric values or the genesets in the GMT file were obtained from a
 comparison between drug treated and untreated cells.}
-\item{\code{"sensitive_vs_resistant"}:} {(\code{SSc} like) When the numeric
+\item{\code{"control_vs_treated"}:} {(\code{SSc} like) When the numeric
 values or the genesets in the GMT file were obtained from a comparison
 between drug sensitive and resistant cells.}
 }
