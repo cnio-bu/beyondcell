@@ -1,0 +1,13 @@
+
+if [ -z "$1" ]
+then
+    PYTHON_VERSION=3.6
+else
+    PYTHON_VERSION=$1
+fi
+
+git clone https://gitlab.com/bu_cnio/beyondcell_conda_recipe
+conda create -y -q -n beyondcell_test 
+source activate beyondcell_test
+conda mambabuild beyondcell_conda_recipe/r-beyondcell --output-folder ./
+mamba install --use-local --update-deps r-beyondcell
