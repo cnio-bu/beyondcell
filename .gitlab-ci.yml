@@ -11,7 +11,7 @@ before_script:
   - mamba install boa
   - cd .tests/
 
-tests:
+conda_build:
   stage: build
   script:
     - source activate beyondcell_test
