@@ -9,7 +9,7 @@ before_script:
   - conda config --add channels conda-forge
   - conda install mamba
   - mamba install boa
-  - cd .test/
+  - cd .tests/
   - bash  build_conda_package.sh ${PYTHON_VERSION}
   - cd ../
 
