@@ -10,7 +10,8 @@ before_script:
   - conda install mamba
   - mamba install boa
   - cd .tests/
-
+  - conda create -y -q -n beyondcell_test 
+  
 conda_build:
   stage: build
   script:
