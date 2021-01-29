@@ -12,7 +12,7 @@ before_script:
   - cd .tests/
 
 tests:
-  stage: conda_build
+  stage: build
   script:
     - source activate beyondcell_test
     - bash build_conda_package.sh ${PYTHON_VERSION}
