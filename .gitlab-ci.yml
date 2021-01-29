@@ -10,10 +10,9 @@ before_script:
   - conda install mamba
   - mamba install boa
   - cd .tests/
-  - bash  build_conda_package.sh ${PYTHON_VERSION}
-  - cd ../
 
 tests:
-  stage: test
+  stage: conda_build
   script:
     - source activate beyondcell_test
+    - bash build_conda_package.sh ${PYTHON_VERSION}
