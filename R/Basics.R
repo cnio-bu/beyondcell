@@ -33,7 +33,7 @@ minus <- function(x, na.rm = FALSE) {
 #' @name colMinus
 #' @param x A matrix or a data frame.
 #' @param na.rm (From \code{base}) Logical. Should missing values (including
-#' \code{NaN}) be omitted from the calculations?
+#' \code{NaN}) from rows 2:length(x) be omitted from the calculations?
 #' @return A numeric rectangular object with the result of the substraction.
 #' @examples
 #' @export
@@ -51,10 +51,8 @@ colMinus <- function(x, na.rm = FALSE) {
   # --- Code ---
   # If x has a single row, append a row of zeros so we can run the next step.
   if (dim(x)[1] == 1) x <- rbind(x, rep(0, ncol(x)))
-  # If na.rm == TRUE, remove NAs from the first.row.
-  if (na.rm) first.row <- na.omit(x[1, , drop = FALSE])
-  else first.row <- x[1, , drop = FALSE]
   # Substract to the first row of x the rest of rows.
+  first.row <- x[1, , drop = FALSE]
   out <- first.row - colSums(x[2:nrow(x), , drop = FALSE], na.rm = na.rm)
   return(out)
 }
