@@ -439,8 +439,8 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
     ### Add reductions.
     sc@reductions <- reduction
     ### Plot.
-    p <- list(suppressMessages(
-      Seurat::FeaturePlot(sc, features = gene, blend = TRUE)))
+    p <- suppressMessages(
+      Seurat::FeaturePlot(sc, features = gene, blend = TRUE, combine = FALSE))
     # Else...
   } else {
     ### Get the names and pathways of the selected signatures.
