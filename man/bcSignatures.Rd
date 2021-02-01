@@ -30,17 +30,11 @@ If \code{signatures[["values"]] = "all"}, all signatures are selected.}
 \item{\code{limits}:} {Vector with the desired limits for all signatures'
 plots.}
 \item{\code{center}:} {A single number indicating the center of the
-\code{colorscale} for all signatures' plots. Alternatively, the \code{center}
-can be a vector of two numbers. In this case, the \code{center} of the
-\code{colorscale} is the middle point between these two numbers and the
-\code{breaks} are computed using the difference between them. If
-\code{center = NULL} (default), the \code{center} of each signature is its
-switch point.}
+\code{colorscale} for all signatures' plots. If \code{center = NULL}
+(default), the \code{center} for each signature is its switch point.}
 \item{\code{breaks}:} {A single number indicating the break size of the
 \code{colorscale}. Alternatively, it can be a vector with the desired breaks
-(which don't have to be symmetric or equally distributed). If \code{center}
-is a vector of two numbers, \code{breaks} are computed using the difference
-between them.}
+(which don't have to be symmetric or equally distributed).}
 \item{\code{colorscale}:} {Either a \code{viridis}, \code{RColorBrewer} or a
 custom palette of 3 colors (low, medium and high) to color all signatures'
 plots. If \code{colorscale = NULL} (default), the plots are colored using
