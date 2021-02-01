@@ -385,11 +385,10 @@ FindDrugs <- function(bc, x, na.rm = TRUE) {
   df$IDs[!startsWith(df$IDs, prefix = "sig_")] <- NA
   # Create Preferred_and_sig column: Preferred name and sig_id.
   df$Preferred_and_sig <- sapply(1:nrow(df), function(i) {
-    name <- ifelse(test = !is.na(df$preferred.drug.names[i]),
-                   yes = df$preferred.drug.names[i], no = df$bc_Name[i])
-    sig <- ifelse(test = !is.na(df$IDs[i]),
-                  yes = paste0(" (", df$IDs[i], ")"), no = "")
-    return(paste0(name, sig))
+    return(ifelse(test = !is.na(df$preferred.drug.names[i]),
+                  yes = paste0(df$preferred.drug.names[i],
+                               paste0(" (", df$IDs[i], ")")),
+                  no = df$bc_Name[i]))
   })
   # Reorder df.
   df <- df[c("Original_Name", "bc_Name", "preferred.drug.names", "drugs", "IDs",
