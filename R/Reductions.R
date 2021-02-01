@@ -98,18 +98,18 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
   # Cells in bc.
   cells <- colnames(bc@normalized)
   if (add.DSS) {
-    ### DSS (background) beyondcell scores.
+    ### DSS (background) BCS.
     if (!identical(sort(rownames(bc@background), decreasing = FALSE),
                    sort(DSS[[1]]$sig_id, decreasing = FALSE)) |
         !identical(sort(colnames(bc@background), decreasing = FALSE),
                    sort(cells, decreasing = FALSE)) |
         !identical(bc@regression$order, bc@regression$order.background)) {
-      message('Computing background beyondcell scores using DSS signatures...')
+      message('Computing background BCS using DSS signatures...')
       ### Genesets.
       gs.background <- suppressMessages(
         GenerateGenesets(DSS, n.genes = bc@n.genes, mode = bc@mode,
                          include.pathways = FALSE))
-      ### Beyondcell score.
+      ### BCS.
       background <- suppressWarnings(
         bcScore(bc@expr.matrix, gs = gs.background, expr.thres = bc@thres))
       ### Add metadata.
@@ -119,14 +119,14 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
       if (bc@regression$order[1] == "subset") {
         background <- bcSubset(background, cells = cells)
       } else if (bc@regression$order[1] == "regression") {
-        message('Regressing background scores...')
+        message('Regressing background BCS...')
         background <- suppressMessages(
           bcRegressOut(background, vars.to.regress = bc@regression[["vars"]]))
       }
       if (bc@regression$order[2] == "subset") {
         background <- bcSubset(background, cells = cells)
       } else if (bc@regression$order[2] == "regression") {
-        message('Regressing background scores...')
+        message('Regressing background BCS...')
         background <- suppressMessages(
           bcRegressOut(background, vars.to.regress = bc@regression[["vars"]]))
       }
@@ -135,7 +135,7 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
       ### Add order.background to bc@regression.
       bc@regression[["order.background"]] <- bc@regression[["order"]]
     } else {
-      message('Background beyondcell scores already computed. Skipping this step.')
+      message('Background BCS already computed. Skipping this step.')
     }
     ### Add background to bc.
     all.rows <- unique(c(rownames(bc@normalized), rownames(bc@background)))
@@ -144,7 +144,7 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
     merged.score <- t(apply(merged.score, 1, scales::rescale, to = c(0, 1)))
     bc.merged <- beyondcell(scaled = merged.score)
   } else {
-    ### No background DSS beyondcell scores.
+    ### No background BCS.
     message(paste('DSS background not computed. UMAP will be created just with',
                   'the drugs (not pathways) in bc object.'))
     bc.merged <- bc

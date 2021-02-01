@@ -251,8 +251,8 @@ bcRegressOut <- function(bc, vars.to.regress) {
   # --- Code ---
   # Latent data.
   latent.data <- bc@meta.data[colnames(bc@normalized), vars, drop = FALSE]
-  # Impute normalized scores matrix
-  message('Imputing normalized scores...')
+  # Impute normalized BCS matrix
+  message('Imputing normalized BCS...')
   bc@normalized <- bnstruct::knn.impute(bc@normalized)
   # Limma formula.
   fmla <- as.formula(object = paste('bcscore ~', paste(vars, collapse = '+')))
@@ -285,9 +285,9 @@ bcRegressOut <- function(bc, vars.to.regress) {
   bc@regression$vars <- vars
   # Regress the background, if needed.
   if (any(dim(bc@background) != 0)) {
-    message('Imputing background scores...')
+    message('Imputing background BCS...')
     bc@background <- bnstruct::knn.impute(bc@background)
-    message('Regressing background scores...')
+    message('Regressing background BCS...')
     total.bg <- nrow(bc@background)
     pb.bg <- txtProgressBar(min = 0, max = total.bg, style = 3)
     bins.bg <- ceiling(total.bg / 100)
@@ -347,7 +347,7 @@ bcRecompute <- function(bc, slot = "data") {
   } else if (slot == "normalized") {
     bc@normalized <- round(bc@normalized, digits = 2)
   }
-  # Recompute scaled scores.
+  # Recompute scaled BCS.
   scaled <- round(t(apply(bc@normalized, 1, scales::rescale, to = c(0, 1))),
                   digits = 2)
   rownames(scaled) <- rownames(bc@normalized)
@@ -442,7 +442,7 @@ bcMerge <- function(bc1, bc2) {
     if (any(!identical.sigs)) {
       stop(paste0('Duplicated signatures: ',
                   paste0(duplicated.sigs[!identical.sigs], collapse = ", "),
-                  ' without matching beyondcell scores in slot @data.'))
+                  ' without matching BCS in slot @data.'))
     }
   }
   # Check regression steps.
@@ -462,9 +462,9 @@ bcMerge <- function(bc1, bc2) {
                    regression = bc1@regression,
                    n.genes = unique(c(bc1@n.genes, bc2@n.genes)),
                    mode = unique(c(bc1@mode, bc2@mode)), thres = bc1@thres)
-  # rbind scaled scores.
+  # rbind scaled BCS.
   bc@scaled <- unique(rbind(bc1@scaled, bc2@scaled[, cells]))[, cells]
-  # rbind normalized scores.
+  # rbind normalized BCS.
   bc@normalized <- unique(rbind(bc1@normalized, bc2@normalized[, cells]))[, cells]
   # rbind data.
   bc@data <- unique(rbind(bc1@data, bc2@data[, colnames(bc1@data)]))[, colnames(bc1@data)]

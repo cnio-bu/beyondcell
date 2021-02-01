@@ -52,7 +52,7 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE) {
   # Extended.
   if (extended) n <- 6
   else n <- 1
-  # Statistics for all normalized beyondcell scores.
+  # Statistics for all normalized BCS.
   if (is.null(idents)) {
     # Progress bar.
     total <- n.rows * n
