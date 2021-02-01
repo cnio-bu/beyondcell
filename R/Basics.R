@@ -171,7 +171,7 @@ GetStatistics <- function(bc, signatures, cells, pb, total, i, n.rows,
       }
       return(variance)
     })
-    # Min normalized bcscore per signature.
+    # Min normalized BCS per signature.
     data[, 1] <- data[, 1] + n.rows
     min.bcscore <- apply(data, 1, function(w) {
       min.bcs <- min(w[-1], na.rm = TRUE)
@@ -182,7 +182,7 @@ GetStatistics <- function(bc, signatures, cells, pb, total, i, n.rows,
       }
       return(min.bcs)
     })
-    # Max normalized bcscore per signature.
+    # Max normalized BCS per signature.
     data[, 1] <- data[, 1] + n.rows
     max.bcscore <- apply(data, 1, function(x) {
       max.bcs <- max(x[-1], na.rm = TRUE)
@@ -214,7 +214,7 @@ GetStatistics <- function(bc, signatures, cells, pb, total, i, n.rows,
                         max = max.bcscore, prop.na = prop.na,
                         row.names = signatures)
   } else {
-    # Mean bcscores per signature.
+    # Mean BCS per signature.
     mean.bc <- round(rowMeans(bc@data[signatures, cells], na.rm = TRUE),
                      digits = 2)
     # Residuals.
