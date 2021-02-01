@@ -42,7 +42,7 @@ This function drawns a 4 square plot of the drug signatures
 present in a \code{\link[beyondcell]{beyondcell}} object. A 4 squares plot
 consists in a scatter plot of the bcscores' residuals (x axis) vs the switch
 points (y axis). 4 quadrants are highlighted: the top-left and bottom-right
-corners contain the drugs to which all selected cells are most/least
+corners contain the drugs to which all selected cells are least/most
 sensistive, respectively. The centre quadrants show the drugs to which half
 of the selected cells are sensitive and the other half insensitive.
 
