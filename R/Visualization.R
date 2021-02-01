@@ -67,7 +67,7 @@ bcClusters <- function(bc, UMAP = "beyondcell", idents,
     p <- Seurat::DimPlot(sc, reduction = "umap", ...) + ggplot2::theme_minimal()
   } else {
     p <- Seurat::FeaturePlot(sc, reduction = "umap", features = idents, ...) +
-      ggplot2::theme_minimal()
+      ggplot2::theme_minimal() + ggplot2::labs(title = NULL)
   }
   return(p)
 }
