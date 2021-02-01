@@ -85,11 +85,8 @@ get_colour_stepsn <- function(colorscale = NULL) {
 #' @param x A numeric vector. Can contain \code{NA}s.
 #' @param limits Vector with the desired limits.
 #' @param center A single number indicating the center of the \code{colorscale}.
-#' Alternatively, the \code{center} can be a vector of two numbers. In this
-#' case, the \code{center} of the \code{colorscale} is the middle point between
-#' these two numbers and the \code{breaks} are computed using the difference
-#' between them. If \code{center = NULL} (default), the center is set to the
-#' middle point of \code{x}.
+#' If \code{center = NULL} (default), the center is set to the middle point of
+#' \code{x}.
 #' @param breaks A single number indicating the break size of the
 #' \code{colorscale}. Alternatively, it can be a vector with the desired breaks
 #' (which don't have to be symmetric or equally distributed). If \code{center}
@@ -133,12 +130,11 @@ center_scale_colour_stepsn <- function(x, limits = c(NA, NA), center = NULL,
     limits <- sort(limits)
   }
   # Check center.
-  len.center <- length(center)
   if (!is.null(center)) {
-    if (len.center < 1 | len.center > 2 | !is.numeric(center)) {
-      stop('Center must be a vector of 1 or 2 numbers.')
+    if (length(center)!= 1| !is.numeric(center)) {
+      stop('Center must be a single number.')
     }
-    if (center[1] < limits[1] | center[len.center] > limits[2]) {
+    if (center < limits[1] | center > limits[2]) {
       stop(paste('center =', paste0(center, collapse = ", "),
                  'outside of limits =', paste0(limits, collapse = ", ")))
     }
@@ -154,35 +150,19 @@ center_scale_colour_stepsn <- function(x, limits = c(NA, NA), center = NULL,
     }
   }
   # Check breaks.
-  # If center is a vector...
-  if (length(center) == 2) {
-    if (!is.null(breaks)) {
-      warning(paste('Center is a numeric vector of length 2. Breaks will be',
-                    'constructed according to this range (breaks is deprecated).'))
+  if (!is.numeric(breaks)) {
+    stop('breaks must be numeric.')
+  }
+  # If breaks is a single number.
+  if (length(breaks) == 1) {
+    if (breaks > abs(limits[1] - limits[2])) {
+      stop('breaks is bigger than the difference between limits.')
     }
-    breaks <- abs(center[1] - center[2])
-    center <- center[1]
-    # Else, if center is not a vector...
+    # Else, if breaks is a vector.
   } else {
-    if (!is.null(breaks)) {
-      if (!is.numeric(breaks)) {
-        stop('breaks must be numeric.')
-      }
-      ### If breaks is not a vector...
-      if (length(breaks) == 1) {
-        if (breaks > abs(limits[1] - limits[2])) {
-          stop('breaks is bigger than the difference between limits.')
-        }
-        ### Else, if breaks is a vector...
-      } else {
-        if (any(breaks < limits[1]) | any(breaks > limits[2])) {
-          warning('Removing breaks outside the specified limits.')
-          breaks <- breaks[which(breaks >= limits[1] & breaks <= limits[2])]
-        }
-      }
-      ### If breaks = NULL and center is not a vector, raise an error.
-    } else {
-      stop('Incorrect breaks.')
+    if (any(breaks < limits[1]) | any(breaks > limits[2])) {
+      warning('Removing breaks outside the specified limits.')
+      breaks <- breaks[which(breaks >= limits[1] & breaks <= limits[2])]
     }
   }
   # Check colorscale.
