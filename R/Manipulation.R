@@ -88,10 +88,7 @@ bcSubset <- function(bc, signatures = NULL, bg.signatures = NULL, cells = NULL,
     pass.cells <- unique(cells[in.cells])
   }
   # Check nan.sigs.
-  if (length(nan.sigs) != 1 | !is.numeric(nan.sigs)) {
-    stop('nan.sigs must be a single number.')
-  }
-  if (nan.sigs < 0 | nan.sigs > 1) {
+  if (length(nan.sigs) != 1 | nan.sigs[1] < 0 | nan.sigs[1] > 1) {
     stop('nan.sigs must be a positive number between 0 and 1.')
   }
   pass.nan.sigs <- rownames(bc@scaled)[apply(bc@scaled, 1, function(x) {
@@ -102,10 +99,7 @@ bcSubset <- function(bc, signatures = NULL, bg.signatures = NULL, cells = NULL,
                                                       sum(is.na(y)) < ncol(bc@background) * nan.sigs
                                                     })]
   # Check nan.cells.
-  if (length(nan.cells) != 1 | !is.numeric(nan.cells)) {
-    stop('nan.cells must be a single number.')
-  }
-  if (nan.cells < 0 | nan.cells > 1) {
+  if (length(nan.cells) != 1 | nan.cells[1] < 0 | nan.cells[1] > 1) {
     stop('nan.cells must be a positive number between 0 and 1.')
   }
   pass.nan.cells <- colnames(bc@scaled)[apply(bc@scaled, 2, function(y) {
@@ -138,7 +132,7 @@ bcSubset <- function(bc, signatures = NULL, bg.signatures = NULL, cells = NULL,
       bc@regression$order[match("", table = reg.order)] <- "subset"
       ### Else if the last step in reg.order is "subset", raise a warning.
     } else if (tail(reg.order[which(reg.order != "")], n = 1) == "subset") {
-      warning('bc is already a subsetted object.')
+      warning('bc is an already subsetted object.')
     }
   }
   # --- Code ---
@@ -229,7 +223,7 @@ bcRegressOut <- function(bc, vars.to.regress) {
       bc@regression$order[match("", reg.order)] <- "regression"
       ### Else if the last step in reg.order is "subset", raise a warning.
     } else if (tail(reg.order[which(reg.order != "")], n = 1) == "regression") {
-      warning('bc is already a regressed object.')
+      warning('bc is an already regressed object.')
       vars <- unique(c(vars, bc@regression$vars))
       sigs <- rownames(bc@scaled)
       bg.sigs <- rownames(bc@background)
@@ -393,8 +387,8 @@ bcAddMetatada<- function(bc, metadata) {
   # Check that bc is a beyondcell object.
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
   # Check metadata.
-  if (all(!(class(a) %in% c("matrix", "data.frame")))) {
-    stop('metadata must be an object of class matrix or data.frame.')
+  if(!is.matrix(metadata) & !is.data.frame(metadata)) {
+    stop('metadata must be must be a matrix or a data.frame.')
   }
   # Check that the rownames of bc@meta.data and the new metadata are the same.
   if (!identical(sort(rownames(bc@meta.data), decreasing = FALSE),
@@ -445,7 +439,7 @@ bcMerge <- function(bc1, bc2) {
     identical.sigs <- sapply(duplicated.sigs, function(x) {
       identical(bc1@data[x, ], bc2@data[x, ])
     })
-    if (!all(identical.sigs)) {
+    if (any(!identical.sigs)) {
       stop(paste0('Duplicated signatures: ',
                   paste0(duplicated.sigs[!identical.sigs], collapse = ", "),
                   ' without matching beyondcell scores in slot @data.'))

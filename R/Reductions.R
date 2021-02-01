@@ -56,16 +56,14 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
   # Check pc.
   if (!is.null(pc)) {
-    if (length(pc) != 1 | !is.numeric(pc) | pc[1] < 2) {
-      stop('pc must be an integer >= 2.')
-    }
+    if (length(pc) != 1 | pc[1] < 2) stop('pc must be an integer >= 2.')
   }
   # Check k.neighbors.
-  if (length(k.neighbors) != 1 | !is.numeric(k.neighbors) | k.neighbors < 1) {
+  if (length(k.neighbors) != 1 | k.neighbors < 1) {
     stop('k.neighbors must be a positive integer.')
   }
   # Check res.
-  if (!all(sapply(res, is.numeric)) | any(sapply(res, function(x) x < 0))) {
+  if (any(sapply(res, !is.numeric)) | any(sapply(res, function(x) x < 0))) {
     stop('res must be a vector of numbers >= 0.')
   }
   # Check add.DSS.
@@ -74,19 +72,19 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
   if (length(add.DSS) != 1 | !is.logical(add.DSS)) {
     stop('add.DSS must be TRUE or FALSE.')
   } else if (!add.DSS) {
-    if (n.drugs < 3) {
+    if (n.drugs <= 10) {
       stop(paste('Only', n.drugs, 'drug signatures (excluding pathways) are',
-                 'present in bc object, please set add.DSS = TRUE.'))
-    } else if (n.drugs < 20) {
+                 'present in the bc object, please set add.DSS = TRUE.'))
+    } else if (n.drugs <= 20) {
       warning(paste('Computing an UMAP reduction for', n.drugs,
                     'drugs. We recommend to set add.DSS = TRUE when the number',
-                    'of signatures (excluding pathways) is below 20.'))
+                    'of signatures (excluding pathways) is below or equal to 20.'))
     }
   }
   # Check elbow.path.
   if (!is.null(elbow.path)) {
     if (length(elbow.path) != 1 | !is.character(elbow.path)) {
-      stop(paste('To save the Elbow plot, you must specify a character string',
+      stop(paste('To save the elbow plot, you must specify a character string',
                  'with the desired destination.'))
     } else {
       parent.dir <- sub(pattern = "(.*\\/)([^.]+)(\\.[[:alnum:]]+$)",
@@ -159,10 +157,10 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
   # Elbow plot.
   elbowplot <- Seurat::ElbowPlot(sc, ndims = 50) + ggplot2::theme(legend.position = "bottom")
   if (is.null(elbow.path)) {
-    message('Printing Elbow plot...')
+    message('Printing elbow plot...')
     print(elbowplot)
   } else {
-    message(paste('Saving Elbow plot in', elbow.path))
+    message(paste('Saving elbow plot in', elbow.path))
     ggplot2::ggsave(elbow.path, plot = elbowplot)
   }
   if (!is.null(pc)) {

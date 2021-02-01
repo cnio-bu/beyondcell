@@ -106,7 +106,7 @@ GetStatistics <- function(bc, signatures, cells, pb, total, i, n.rows,
   # Check that bc is a beyondcell object.
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
   # Check signatures.
-  in.signatures <- signatures %in% rownames(bc@normalized)
+  in.signatures <- !is.null(signatures) & signatures %in% rownames(bc@normalized)
   if (all(!in.signatures)) {
     stop('None of the specified signatures were found.')
   } else if (any(!in.signatures)) {
@@ -114,7 +114,7 @@ GetStatistics <- function(bc, signatures, cells, pb, total, i, n.rows,
                    paste0(signatures[!in.signatures], collapse = ", "), '.'))
   }
   # Check cells.
-  in.cells <- cells %in% colnames(bc@normalized)
+  in.cells <- !is.null(cells) & cells %in% colnames(bc@normalized)
   if (all(!in.cells)) {
     stop('None of the specified cells were found.')
   } else if (any(!in.cells)) {

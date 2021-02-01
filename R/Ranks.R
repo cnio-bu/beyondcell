@@ -162,13 +162,13 @@ rankSigs <- function(bc, idents = NULL, cond = NULL, n = 10,
     if (!idents %in% colnames(bc@meta.data)) {
       stop('Idents not found.')
     }
-    if (is.null(cond)) {
+    if (is.null(cond[1])) {
       stop('Invalid cond.')
     }
     meta <- idents
   } else {
     meta <- "general"
-    if (!is.null(cond)) {
+    if (!is.null(cond[1])) {
       warning('idents not specified, cond is deprecated.')
       cond <- NULL
     }
@@ -186,20 +186,14 @@ rankSigs <- function(bc, idents = NULL, cond = NULL, n = 10,
   if (length(n) != 1 | (!is.numeric(n) & !is.character(n))) {
     stop('n must be a single number or "all".')
   }
-  if (is.numeric(n)) {
-    if (n < 1 | n%%1 != 0) {
-      stop('n must be an integer > 0.')
-    }
-  } else if (is.character(n)) {
-    if (n == "all") {
-      n <- nrow(bc@normalized)
-    } else {
-      stop('To select all signatures, please set n = "all".')
-    }
+  if (is.numeric(n) & (n < 1 | n%%1 != 0)) stop('n must be an integer > 0.')
+  else if (is.character(n)) {
+    if (n == "all") n <- nrow(bc@normalized)
+    else stop('To select all signatures, please set n = "all".')
   }
   # Check decreasing.
   if (length(decreasing) != 1 | !is.logical(decreasing)) {
-    stop('decreasimg must be a logical argument of length 1.')
+    stop('decreasimg must be TRUE or FALSE.')
   }
   # --- Code ---
   # If ranks have not been computed, compute them now.
