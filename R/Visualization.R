@@ -518,7 +518,8 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
         ### specified center.
         colors <- center_scale_colour_stepsn(full.matrix[y, ], signatures[["limits"]],
                                              center.sigs[y], signatures[["breaks"]],
-                                             signatures[["colorscale"]], signatures[["alpha"]])
+                                             signatures[["colorscale"]], signatures[["alpha"]],
+                                             signatures[["na.value"]])
       } else {
         ### Continuous colorscale with default seurat colors.
         colors <- colors.genes
