@@ -396,7 +396,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
       stop(paste('Incorrect merged value: It must be either NULL, "direct"',
                  'or "indirect".'))
     }
-    if (length(features) != 2) {
+    if (length(features) != 2 | length(signatures[["values"]]) != 2) {
       stop('When merged != NULL, the number of signatures must be exactly 2.')
     } else if (any(!(features %in% sigs))) {
       stop(paste('The merged features must be signatures. For blending genes,',
@@ -413,7 +413,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
     stop('blend must be TRUE or FALSE.')
   }
   if (blend) {
-    if (length(features) != 2) {
+    if (length(features) != 2 | length(genes[["values"]]) != 2) {
       stop('When blend = TRUE, the number of genes must be exactly 2.')
     } else if (any(!(features %in% gene))) {
       stop(paste('The blended features must be genes. For merging signatures,',
@@ -454,7 +454,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
                                     na.rm = TRUE)
       }
       bc@data <- matrix(merged.bcscores, nrow = 1, dimnames = list(merged.sigs, cells))
-      bc <- bcRecompute(bc, slot = "data")
+      bc <- suppressMessages(bcRecompute(bc, slot = "data"))
       features <- merged.sigs
     }
     ### Join scaled BCS and gene expression values for selected features.
