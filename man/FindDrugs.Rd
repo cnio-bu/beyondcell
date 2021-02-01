@@ -4,12 +4,15 @@
 \alias{FindDrugs}
 \title{Returns a dataframe with information about the input drugs}
 \usage{
-FindDrugs(bc, x)
+FindDrugs(bc, x, na.rm = TRUE)
 }
 \arguments{
 \item{bc}{\code{\link[beyondcell]{beyondcell}} object.}
 
 \item{x}{A character vector with drug names and/or sig IDs.}
+
+\item{na.rm}{Logical. Should \code{x} entries with no available data be
+removed from the final output?}
 }
 \value{
 A \code{data.frame}.
