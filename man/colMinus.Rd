@@ -10,7 +10,7 @@ colMinus(x, na.rm = FALSE)
 \item{x}{A matrix or a data frame.}
 
 \item{na.rm}{(From \code{base}) Logical. Should missing values (including
-\code{NaN}) be omitted from the calculations?}
+\code{NaN}) from rows 2:length(x) be omitted from the calculations?}
 }
 \value{
 A numeric rectangular object with the result of the substraction.
