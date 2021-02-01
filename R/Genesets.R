@@ -214,34 +214,32 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
       warn <- c() # Warnings
       ### Filters.
       if("drugs" %in% selected_filters) {
-        out <- GetIDs(infodf = info, col = "Name",
-                      filter = gdata::trim(filters$drugs), filtername = "drugs")
+        assign("drugs", gdata::trim(filters$drugs))
+        out <- GetIDs(values = drugs, filter = "Name", df = info)
         ids <- c(ids, out[[1]])
         warn <- c(warn, out[[2]])
       }
       if("IDs" %in% selected_filters) {
-        out <- GetIDs(infodf = info, col = "sig_id",
-                      filter = gdata::trim(filters$IDs), filtername = "IDs")
+        assign("IDs", gdata::trim(filters$IDs))
+        out <- GetIDs(values = IDs, filter = "sig_id", df = info)
         ids <- c(ids, out[[1]])
         warn <- c(warn, out[[2]])
       }
       if ("MoA" %in% selected_filters) {
-        out <- GetIDs(infodf = info, col = "MoA",
-                      filter = gdata::trim(filters$MoA), filtername = "MoAs")
+        assign("MoA", gdata::trim(filters$MoA))
+        out <- GetIDs(values = MoA, filter = "MoA", df = info)
         ids <- c(ids, out[[1]])
         warn <- c(warn, out[[2]])
       }
       if ("targets" %in% selected_filters) {
-        out <- GetIDs(infodf = info, col = "Target",
-                      filter = gdata::trim(filters$targets),
-                      filtername = "target genes")
+        assign("targets", gdata::trim(filters$targets))
+        out <- GetIDs(values = targets, filter = "Target", df = info)
         ids <- c(ids, out[[1]])
         warn <- c(warn, out[[2]])
       }
       if ("source" %in% selected_filters) {
-        out <- GetIDs(infodf = info, col = "Source",
-                      filter = gdata::trim(filters$source),
-                      filtername = "source databases")
+        assign("sources", gdata::trim(filters$source))
+        out <- GetIDs(values = sources, filter = "Source", df = info)
         ids <- c(ids, out[[1]])
         warn <- c(warn, out[[2]])
       }
@@ -339,61 +337,55 @@ ListFilters <- function(entry) {
   return(out)
 }
 
-#' @title Returns the \code{sig_ids} that match the specified filters
-#' @description This function is meant to be used inside
-#' \code{\link[GenerateGenesets]{GenerateGenesets}}. It subsets \code{infodf}
-#' to select only the entries that match the specified \code{filter} and returns
-#' the corresponding \code{sig_ids}.
+#' @title Returns the \code{sig_ids} that match the specified values
+#' @description This function subsets \code{df} to select only the entries that
+#' match the specified \code{values} and returns the corresponding \code{sig_ids}.
 #' @name GetIDs
-#' @param infodf \code{data.frame} with all drug information.
-#' @param col Column name to subset by.
-#' @param filter User-supplied filtering vector for either drugs, MoA, target
-#' genes or source database.
-#' @param filtername String to be printed with the warning (in case some of the
-#' \code{filter} elements are not found in \code{infodf}).
-#' @return A vector with the \code{sig_ids} that match the \code{filter}
+#' @param values User-supplied filtering vector for either drugs, MoAs, target
+#' genes or source databases.
+#' @param filter Column name to subset by. You can also spcify the colum
+#' @param df \code{data.frame} with all drug information.
+#' @return A vector with the \code{sig_ids} that match the \code{filter}'s
 #' elements.
 #' @export
 
-GetIDs <- function(infodf, col, filter, filtername) {
+GetIDs <- function(values, filter, df) {
   # --- Checks ---
-  # Check infodf.
-  if (class(infodf) != "data.frame") {
-    stop('infodf must be a data.frame')
-  }
-  if (!("sig_id" %in% colnames(infodf))) {
-    stop('infodf must contain a "sig_id" column.')
-  }
-  # Check col.
-  if (length(col) != 1) {
-    stop('You must specify a single col.')
-  }
-  if (is.character(col) & !(col %in% colnames(infodf))) {
-    stop(paste('col =', col, 'is not a column of infodf.'))
-  }
-  if (is.numeric(col) & (col < 1 | col > ncol(infodf))) {
-    stop(paste('col = ', col, 'is out of range.'))
+  # Check values.
+  if (length(values) < 1 | !is.character(values)) {
+    stop('values must be a character vector.')
   }
   # Check filter.
-  if (length(filter) < 1 | !is.character(filter)) {
-    stop('filter must be a character vector.')
+  if (length(filter) != 1) {
+    stop('You must specify a single filter.')
   }
-  # Check filtername.
-  if (length(filtername) != 1 | !is.character(filtername)) {
-    stop('filtername must be a string.')
+  if (is.character(filter) & !(filter %in% colnames(df))) {
+    stop(paste('filter =', filter, 'is not a column of df.'))
+  }
+  if (is.numeric(filter) & (filter < 1 | filter > ncol(df))) {
+    stop(paste('filter = ', filter, 'is out of range.'))
+  }
+  # Check df.
+  if (class(df) != "data.frame") {
+    stop('df must be a data.frame')
+  }
+  if (!("sig_id" %in% colnames(df))) {
+    stop('df must contain a "sig_id" column.')
   }
   # --- Code ---
-  upper.filter <- toupper(filter)
-  selected <- subset(infodf, subset = toupper(infodf[[col]]) %in% upper.filter)
-  if (col == "Name") {
-    synonyms <- subset(infodf, subset = toupper(infodf[["Preferred_Name"]]) %in%
+  upper.values <- toupper(values)
+  selected <- subset(df, subset = toupper(df[[filter]]) %in% upper.values)
+  if (filter == "Name") {
+    synonyms <- subset(df, subset = toupper(df[["Preferred_Name"]]) %in%
                          unique(toupper(selected[["Preferred_Name"]])))
     selected <- unique(rbind(selected, synonyms))
   }
   ids <- unique(selected$sig_id)
-  not_found <- filter[!(upper.filter %in% toupper(infodf[[col]]))]
+  not_found <- values[!(upper.values %in% toupper(df[[filter]]))]
   if (length(not_found) > 0) {
-    w <- paste(length(not_found), 'out of', length(filter),
+    filtername <- gsub(pattern = '"', replacement = '',
+                       x = deparse(substitute(filter)))
+    w <- paste(length(not_found), 'out of', length(values),
                filtername, 'were not found in the signature:',
                paste0(not_found, collapse = ", "))
   } else w <- NULL
