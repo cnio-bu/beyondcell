@@ -9,8 +9,8 @@ bcSubset(
   signatures = NULL,
   bg.signatures = NULL,
   cells = NULL,
-  nan.sigs = NULL,
-  nan.cells = NULL
+  nan.sigs = 1,
+  nan.cells = 1
 )
 }
 \arguments{
@@ -28,11 +28,11 @@ signatures will be kept.}
 
 \item{nan.sigs}{Maximum desired proportion of \code{NaN} values per signature
 in the output \code{beyondcell} object. All signatures with a proportion of
-\code{NaN >= nan.sig} will be removed.}
+\code{NaN > nan.sig} will be removed.}
 
 \item{nan.cells}{Maximum desired proportion of \code{NaN} values per cell
 in the output \code{beyondcell} object. All cells with a proportion of
-\code{NaN >= nan.cells} will be removed.}
+\code{NaN > nan.cells} will be removed.}
 }
 \value{
 A subsetted \code{beyondcell} object.
