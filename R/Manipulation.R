@@ -373,7 +373,7 @@ bcRecompute <- function(bc, slot = "data") {
 #' @title Add new metadata columns to an existing beyondcell object
 #' @description This function adds new metadata columns to an existing
 #' \code{\link[beyondcell]{beyondcell}} object.
-#' @name bcAddMetatada
+#' @name bcAddMetadata
 #' @param bc \code{beyondcell} object.
 #' @param metadata Matrix or dataframe with metadata to add. Rownames should be
 #' cell names and colnames should not be already present in
@@ -382,7 +382,7 @@ bcRecompute <- function(bc, slot = "data") {
 #' @examples
 #' @export
 
-bcAddMetatada<- function(bc, metadata) {
+bcAddMetadata <- function(bc, metadata) {
   # --- Checks ---
   # Check that bc is a beyondcell object.
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
