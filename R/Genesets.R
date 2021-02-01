@@ -58,7 +58,7 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
                                             targets = NULL, source = NULL),
                              comparison = NULL, include.pathways = TRUE) {
   # --- Global Checks ---
-  # Check if x is a pre-loaded matrix, a numeric matrix or a path to a GMT file.
+  # Check if x is a pre-loaded matrix, a ranked matrix or a path to a GMT file.
   is.D <- c(identical(x, PSc), identical(x, SSc), identical(x, DSS))
   if (any(is.D)) {
     type <- "pre-loaded matrix"
@@ -89,8 +89,8 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
     message('Reading gmt file...')
     gmt.file <- tryCatch(qusage::read.gmt(x), error = function(cond) {
       message(paste0('The GMT file does not seem to exist: ', x, ' .'))
-      stop(paste('x must be either a pre-loaded matrix (PSc, SSc or DSS) or',
-                 'the path to a GMT file.'))
+      stop(paste('x must be either a pre-loaded matrix (PSc, SSc or DSS), a
+                 ranked matrix or the path to a GMT file.'))
     }, warning = function(cond) {
       message(paste('Warning when reading the GMT file. Here is the',
                     'original warning message:'))
@@ -106,14 +106,11 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
     }
   }
   # Check n.genes and mode.
-  if (!all(mode %in% c("up", "down"))) stop('Incorrect mode.')
+  if (any(!(mode %in% c("up", "down")))) stop('Incorrect mode.')
   mode <- sort(unique(mode), decreasing = TRUE)
   if (type != "gmt") {
     ### Number of genes.
-    if (length(n.genes) != 1 | !is.numeric(n.genes)) {
-      stop('n.genes must be a single number.')
-    }
-    if (n.genes%%1 != 0 | n.genes < 1) {
+    if (length(n.genes) != 1 | n.genes[1]%%1 != 0 | n.genes[1] < 1) {
       stop('n.genes must be a positive integer.')
     } else if (n.genes > n.max) {
       stop(paste0('n.genes exceeds the maximum number of genes in signature (',
@@ -150,7 +147,7 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
   # Check filters and comparison.
   filters_names <- c("drugs", "IDs", "MoA", "targets", "source")
   selected_filters <- names(filters)
-  if (!all(selected_filters %in% filters_names)) stop('Invalid names in filters.')
+  if (any(!(selected_filters %in% filters_names))) stop('Invalid names in filters.')
   if (type != "pre-loaded matrix") {
     ### Filters.
     filters_class <- sapply(filters, is.null)
@@ -252,7 +249,7 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
       if (length(ids) == 0) {
         stop('Couldn\'t find drugs that matched any of the filters.')
       } else {
-        if (!all(is.null(warn))) sapply(warn[!is.null(warn)], function(w) warning(w))
+        if (any(!is.null(warn))) sapply(warn[!is.null(warn)], function(w) warning(w))
       }
     }
     genes <- lapply(ids, function(sig) {
