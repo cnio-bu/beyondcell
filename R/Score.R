@@ -29,23 +29,20 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
         stop('Default assay must include a normalized data (@data) slot.')
       }
     } else {
-      stop(paste('Seurat default assay must be either RNA or SCT.',
-                 'Integrated data is not accepted as input.'))
+      stop('Seurat default assay must be either RNA or SCT.')
     }
-  } else if ("matrix"%in% class(sc) & is.numeric(sc)) {
+  } else if ("matrix" %in% class(sc) & is.numeric(sc)) {
     input <- "expression matrix"
     warning(paste('Using count matrix as input. Please, check that this matrix',
                   'is normalized and unscaled.'))
     expr.matrix <- sc
     sc <- Seurat::CreateSeuratObject(expr.matrix)
-  } else stop('sc must be either a Seurat object or an expression matrix.')
+  } else stop(paste('sc must be either a Seurat object or a single-cell',
+                    'expression matrix.'))
   # Check if gs is a geneset object.
   if (class(gs) != "geneset") stop('gs must be a geneset object.')
   # Check expr.thres.
-  if (length(expr.thres) != 1 | !is.numeric(expr.thres)) {
-    stop('expr.thres must be a single number.')
-  }
-  if (expr.thres < 0 | expr.thres > 1) {
+  if (length(expr.thres) != 1 | expr.thres[1] < 0 | expr.thres[1] > 1) {
     stop('expr.thres must be a positive number between 0 and 1.')
   }
   # Check that gene names are in the same format.
@@ -180,7 +177,7 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
 
 GeneCase <- function(x) {
   # --- Checks ---
-  if(!is.character(x)) stop('x must be of class character.')
+  if(!is.character(x)) stop('x must be a character vector.')
   # --- Code ---
   perc <- sapply(c("upper", "lower", "capitalized"), function(case) {
     if (case == "upper" | case == "lower") {
@@ -217,7 +214,7 @@ SwitchPoint <- function(bc) {
   # Check that bc is a beyondcell object.
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
   # Check bc@mode.
-  if (!all(bc@mode %in% c("up", "down")) | all(is.null(bc@mode))) {
+  if (any(!(bc@mode %in% c("up", "down"))) | all(is.null(bc@mode))) {
     stop('Incorrect mode.')
   }
   bc@mode <- unique(bc@mode)

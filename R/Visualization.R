@@ -26,6 +26,15 @@ bcClusters <- function(bc, idents, UMAP = "beyondcell", factor.col = TRUE,
   # --- Checks ---
   # Check that bc is a beyondcell object.
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
+  # Check idents.
+  if (length(idents) != 1) {
+    stop('Idents must be a single metadata column.')
+  }
+  if (idents %in% colnames(bc@meta.data)) {
+    meta <- bc@meta.data[colnames(bc@scaled), idents, drop = FALSE]
+  } else {
+    stop('Idents not found.')
+  }
   # Check UMAP.
   if (UMAP == "beyondcell") {
     if (length(bc@reductions) == 0) {
@@ -41,15 +50,6 @@ bcClusters <- function(bc, idents, UMAP = "beyondcell", factor.col = TRUE,
     reduction <- bc@SeuratInfo$reductions
   } else {
     stop('Incorrect UMAP argument. Please use either "Seurat" or "beyondcell".')
-  }
-  # Check idents.
-  if (length(idents) != 1) {
-    stop('Idents must be a single metadata column.')
-  }
-  if (idents %in% colnames(bc@meta.data)) {
-    meta <- bc@meta.data[colnames(bc@scaled), idents, drop = FALSE]
-  } else {
-    stop('Idents not found.')
   }
   # Check factor.col.
   if (length(factor.col) != 1 | !is.logical(factor.col)) {
@@ -105,7 +105,8 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
     signatures <- rownames(bc@normalized)
     in.signatures <- rep(TRUE, times = nrow(bc@normalized))
   } else {
-    in.signatures <- signatures %in% rownames(bc@normalized)
+    in.signatures <- !is.null(signatures) &
+      signatures %in% rownames(bc@normalized)
     if (all(!in.signatures)) {
       stop('None of the specified signatures were found.')
     } else if (any(!in.signatures)) {
@@ -283,9 +284,9 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
     stop('Incorrect UMAP argument. Please use either "Seurat" or "beyondcell".')
   }
   # Check signatures' list values.
-  default.sigs <- list(values = NULL, limits = c(0, 1), center = NULL,
-                       breaks = 0.1, colorscale = NULL, alpha = 0.7,
-                       na.value = "grey")
+  default.sigs <- list(values = NULL, colorscale = NULL, alpha = 0.7,
+                       na.value = "grey", limits = c(0, 1), center = NULL,
+                       breaks = 0.1)
   selected.sigs <- names(signatures) %in% names(default.sigs)
   if (any(!selected.sigs)) {
     warning(paste0('Incorrect entries in signatures: ',
@@ -329,7 +330,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
       genes[["values"]] <- rownames(bc@expr.matrix)
       in.genes <- rep(TRUE, times = nrow(bc@expr.matrix))
     } else {
-      in.genes <- tolower(genes[["values"]]) %in% tolower(rownames(bc@expr.matrix))
+      in.genes <- toupper(genes[["values"]]) %in% toupper(rownames(bc@expr.matrix))
       if (all(!in.genes)) {
         stop('None of the specified genes were found.')
       } else if (any(!in.genes)) {
@@ -344,6 +345,9 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
   sigs <- unique(signatures[["values"]][in.signatures])
   gene <- unique(genes[["values"]][in.genes])
   features <- c(sigs, gene)
+  # Check signature's colorscale.
+  signatures[["colorscale"]] <- get_colour_stepsn(signatures[["colorscale"]])
+  # Check signatures' alpha, na.value and breaks -> inside center_scale_colour_stepsn().
   # Check signatures' limits.
   if (length(signatures[["limits"]]) != 2) {
     stop('Signatures\' limits must be a vector of length 2.')
@@ -355,6 +359,13 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
     warning(paste('Signatures\' upper limit is smaller than lower limit.',
                   'Sorting limits in increasing order.'))
     signatures[["limits"]] <- sort(signatures[["limits"]], decreasing = FALSE)
+  }
+  # Check signature's center.
+  if (!is.null(signatures[["center"]])) {
+    if (length(signatures[["center"]]) != 1 |
+        !is.numeric(signatures[["center"]])) {
+      stop('Signatures\' center must be a single number or NULL.')
+    }
   }
   # Check genes' limits.
   if (length(genes[["limits"]]) != 2) {
@@ -380,21 +391,6 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
     warning(paste('Genes\' limits were specified, setting',
                   'genes[["share.limits"]] = TRUE.'))
   }
-  # Check signature's center.
-  if (!is.null(signatures[["center"]])) {
-    if (length(signatures[["center"]]) != 1 |
-        !is.numeric(signatures[["center"]])) {
-      stop('Signatures\' center must be a single number or NULL.')
-    }
-  }
-  # Check signatures' breaks, alpha and na.value -> inside center_scale_colour_stepsn().
-  # Check signature's colorscale.
-  signatures[["colorscale"]] <- get_colour_stepsn(signatures[["colorscale"]])
-  # Check if merged and blend values are both specified.
-  if (!is.null(merged) & blend) {
-    stop(paste('You can\'t specify simultaneously a value for merged and',
-               'blend = TRUE.'))
-  }
   # Check merged.
   if (!is.null(merged)) {
     if (length(merged) != 1 | !(merged %in% c("direct", "indirect"))) {
@@ -403,7 +399,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
     }
     if (length(features) != 2) {
       stop('When merged != NULL, the number of signatures must be exactly 2.')
-    } else if (!(all(features %in% sigs))) {
+    } else if (any(!(features %in% sigs))) {
       stop(paste('The merged features must be signatures. For blending genes,',
                  'please use blend = TRUE.'))
     }
@@ -420,17 +416,14 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
   if (blend) {
     if (length(features) != 2) {
       stop('When blend = TRUE, the number of genes must be exactly 2.')
-    } else if (!(all(features %in% gene))) {
+    } else if (any(!(features %in% gene))) {
       stop(paste('The blended features must be genes. For merging signatures,',
                  'please use merged argument.'))
     }
   }
   # Check mfrow.
-  if (length(mfrow) != 2 | !is.numeric(mfrow)) {
-    stop('mfrow must be a vector of two numbers.')
-  }
-  if (any(mfrow < 0) | any(mfrow%%1 != 0)) {
-    stop('mfrow must contain two integers > 0.')
+  if (length(mfrow) != 2 | any(mfrow < 0) | any(mfrow%%1 != 0)) {
+    stop('mfrow must be a vector of two integers > 0.')
   }
   # --- Code ---
   # If blend = TRUE, plot a Seurat::FeaturePlot.
@@ -589,7 +582,7 @@ bcCellCycle <- function(bc, signatures) {
     signatures <- rownames(bc@normalized)
     in.signatures <- rep(TRUE, times = nrow(bc@normalized))
   } else {
-    in.signatures <- signatures %in% rownames(bc@normalized)
+    in.signatures <- !is.null(signatures) & signatures %in% rownames(bc@normalized)
     if (all(!in.signatures)) {
       stop('None of the specified signatures were found.')
     } else if (any(!in.signatures)) {
@@ -688,7 +681,7 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3,
     }
   }
   # Check top.
-  if (length(top) != 1 | !is.numeric(top) | top[1]%%1 != 0 | top[1] < 0) {
+  if (length(top) != 1 | top[1]%%1 != 0 | top[1] < 0) {
     stop('top must be a single integer >= 0.')
   }
   # Check topnames.
