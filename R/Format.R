@@ -372,14 +372,24 @@ FindDrugs <- function(bc, x, na.rm = TRUE) {
   df <- data.frame(Original_Name = unlist(sapply(seq_along(x), function(i) {
     rep(x[i], times = length(indices[[i]]))
   })), IDs = unlist(sapply(indices, function(z) sigs[z])))
+  df.not.found <- !(x %in% df$Original_Name)
+  empty.df <- data.frame(Original_Name = x[df.not.found],
+                         IDs = rep(NA, sum(df.not.found)))
+  df <- rbind(df, empty.df)
   # Get the names and pathways of the selected signatures.
   info <- subset(drugInfo, subset = IDs %in% df$IDs)
-  info <- aggregate(.~ IDs, data = info, na.action = NULL, FUN = function(y) {
-    paste(na.omit(unique(y)), collapse = ", ")
-  })
+  if (all(dim(info) != 0)) {
+    info <- aggregate(.~ IDs, data = info, na.action = NULL, FUN = function(z) {
+      paste(na.omit(unique(z)), collapse = ", ")
+    })
+  }
+  info.not.found <- !(df$IDs %in% drugInfo$IDs)
+  empty.info <- matrix(rep(NA, sum(info.not.found)*6), ncol = 6,
+                       dimnames = list(1:sum(info.not.found), colnames(info)))
+  info <- rbind(info, as.data.frame(empty.info))
   # Merge df and info.
-  df <- merge(df, info[, c("IDs", "drugs", "preferred.drug.names", "MoAs")],
-              by = "IDs", all.x = TRUE)
+  df <- unique(merge(df, info[, c("IDs", "drugs", "preferred.drug.names",
+                                  "MoAs")], by = "IDs", all.x = TRUE))
   # Add bc_Name column and remove names that are not sig IDs from sig_id column.
   df$bc_Name <- df$IDs
   df$IDs[!startsWith(df$IDs, prefix = "sig_")] <- NA
