@@ -5,7 +5,7 @@
 \title{Plots a violindot of the beyondcell scores grouped by the cell cycle
 phase}
 \usage{
-bcCellCycle(bc, signatures = NULL)
+bcCellCycle(bc, signatures)
 }
 \arguments{
 \item{bc}{\code{\link[beyondcell]{beyondcell}} object.}
