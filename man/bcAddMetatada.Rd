@@ -4,7 +4,7 @@
 \alias{bcAddMetatada}
 \title{Add new metadata columns to an existing beyondcell object}
 \usage{
-bcAddMetatada(bc, metadata = NULL)
+bcAddMetatada(bc, metadata)
 }
 \arguments{
 \item{bc}{\code{beyondcell} object.}
