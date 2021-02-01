@@ -7,10 +7,10 @@
 #' @import ggplot2
 #' @import scales
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
+#' @param idents Name of the metadata column to color by.
 #' @param UMAP UMAP reduction to plot. Either "beyondcell" (computed using
 #' \code{\link[bcUMAP]{bcUMAP}}) or "Seurat" computed using \code{Seurat}'s
 #' functions.
-#' @param idents Name of the metadata column to color by.
 #' @param factor.col Logical indicating if \code{idents} column is a factor or
 #' not. If \code{idents} is a numerical column (such as \code{percent.mt} or
 #' \code{nFeature_RNA}, \code{factor.col} must be \code{FALSE}).
@@ -21,8 +21,8 @@
 #' @examples
 #' @export
 
-bcClusters <- function(bc, UMAP = "beyondcell", idents,
-                       factor.col = TRUE, ...) {
+bcClusters <- function(bc, idents, UMAP = "beyondcell", factor.col = TRUE,
+                       ...) {
   # --- Checks ---
   # Check that bc is a beyondcell object.
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
@@ -206,6 +206,13 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
 #' \itemize{
 #' \item{\code{values}:} {Vector with the names of the signatures of interest.
 #' If \code{signatures[["values"]] = "all"}, all signatures are selected.}
+#' \item{\code{colorscale}:} {Either a \code{viridis}, \code{RColorBrewer} or a
+#' custom palette of 3 colors (low, medium and high) to color all signatures'
+#' plots. If \code{colorscale = NULL} (default), the plots are colored using
+#' \code{beyondcell}'s own palette.}
+#' \item{\code{alpha}:} {Transparency level between 0 (not transparent) and 1
+#' (fully transparent).}
+#' \item{\code{na.value}:} {Color to use for missing values (\code{NA}s).}
 #' \item{\code{limits}:} {Vector with the desired limits for all signatures'
 #' plots.}
 #' \item{\code{center}:} {A single number indicating the center of the
@@ -213,14 +220,7 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
 #' (default), the \code{center} for each signature is its switch point.}
 #' \item{\code{breaks}:} {A single number indicating the break size of the
 #' \code{colorscale}. Alternatively, it can be a vector with the desired breaks
-#' (which don't have to be symmetric or equally distributed).}
-#' \item{\code{colorscale}:} {Either a \code{viridis}, \code{RColorBrewer} or a
-#' custom palette of 3 colors (low, medium and high) to color all signatures'
-#' plots. If \code{colorscale = NULL} (default), the plots are colored using
-#' \code{beyondcell}'s own palette.}
-#' \item{\code{alpha}:} {Transparency level between 0 (not transparent) and 1
-#' (fully transparent).}
-#' \item{\code{na.value}:} {Color to use for missing values (\code{NA}s).}}
+#' (which don't have to be symmetric or equally distributed).}}
 #' @param genes List with parameters to color the UMAP by gene expression
 #' values:
 #' \itemize{
@@ -255,10 +255,10 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
 #' @export
 
 bcSignatures <- function(bc, UMAP = "beyondcell",
-                         signatures = list(values = NULL, limits = c(0, 1),
-                                           center = NULL, breaks = 0.1,
-                                           colorscale = NULL, alpha = 0.7,
-                                           na.value = "grey50"),
+                         signatures = list(values = NULL, colorscale = NULL,
+                                           alpha = 0.7, na.value = "grey50",
+                                           limits = c(0, 1), center = NULL,
+                                           breaks = 0.1),
                          genes = list(values = NULL, limits = c(NA, NA),
                                       share.limits = FALSE),
                          merged = NULL, blend = FALSE, mfrow = c(1, 1), ...) {
