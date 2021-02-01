@@ -569,7 +569,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
 #' @examples
 #' @export
 
-bcCellCycle <- function(bc, signatures = NULL) {
+bcCellCycle <- function(bc, signatures) {
   # --- Checks ---
   # Check that bc is a beyondcell object.
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
@@ -578,9 +578,6 @@ bcCellCycle <- function(bc, signatures = NULL) {
     stop("Cell cycle information not present in bc@meta.data.")
   }
   # Check signatures.
-  if (is.null(signatures)) {
-    stop('You must specify the signatures of interest.')
-  }
   if (!is.character(signatures)) {
     stop("Signatures must be a character vector.")
   }
