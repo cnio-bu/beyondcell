@@ -106,8 +106,8 @@ get_colour_stepsn <- function(colorscale = NULL) {
 #' @export
 
 center_scale_colour_stepsn <- function(x, limits = c(NA, NA), center = NULL,
-                                       breaks = 0.1, colorscale = NULL,
-                                       alpha = 0.7, na.value = "grey50") {
+                                       breaks = 0.1, colorscale, alpha = 0.7,
+                                       na.value = "grey50") {
   # --- Checks ---
   # Check x.
   if (!is.numeric(x)) {
@@ -186,8 +186,9 @@ center_scale_colour_stepsn <- function(x, limits = c(NA, NA), center = NULL,
     }
   }
   # Check colorscale.
-  if (is.null(colorscale)) {
-    stop('Incorrect colorscale.')
+  if (length(colorscale) != 5 |
+      !tryCatch(is.matrix(col2rgb(colorscale)), error = function(e) FALSE)) {
+    stop('colorscale must contain exactly 5 colours.')
   }
   # Check alpha.
   if (length(alpha) != 1 | !is.numeric(alpha)) {
