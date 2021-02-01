@@ -333,14 +333,15 @@ BreakString <- function(x, split = ", ", line.length = 50) {
 #' removed from the final output?
 #' @details The output \code{data.frame} has the following columns:
 #' \itemize{
-#' \item{\code{Original_Name}}: Inputted drug name.
-#' \item{\code{bc_Name}}: Drug name used in \code{bc}.
-#' \item{\code{Preferred_Name}}: Drug name used in \code{beyondcell} plots.
-#' \item{\code{Name}}: Other drug names.
+#' \item{\code{original.names}}: Inputted drug name.
+#' \item{\code{bc.names}}: Drug name used in \code{bc}.
+#' \item{\code{preferred.drug.names}}: Drug name used in \code{beyondcell}
+#' plots.
+#' \item{\code{drugs}}: Other drug names.
 #' \item{\code{sig_id}}: Signature ID.
-#' \item{\code{Preferred_and_sig}}: \code{Preferred_Name} (or alternatively
-#' \code{bc_Name}) and \code{sig_id}.
-#' \item{\code{MoA}}: Mechanism(s) of action.
+#' \item{\code{preferred.and.sigs}}: \code{preferred.drug.names} (or
+#' alternatively \code{bc.names}) and \code{IDs}.
+#' \item{\code{MoAs}}: Mechanism(s) of action.
 #' }
 #' @return A \code{data.frame}.
 #' @examples
@@ -369,11 +370,11 @@ FindDrugs <- function(bc, x, na.rm = TRUE) {
     return(idx[!is.na(idx)])
   })
   # Original names (x) and bc names (sigs).
-  df <- data.frame(Original_Name = unlist(sapply(seq_along(x), function(i) {
+  df <- data.frame(original.names = unlist(sapply(seq_along(x), function(i) {
     rep(x[i], times = length(indices[[i]]))
   })), IDs = unlist(sapply(indices, function(z) sigs[z])))
-  df.not.found <- !(x %in% df$Original_Name)
-  empty.df <- data.frame(Original_Name = x[df.not.found],
+  df.not.found <- !(x %in% df$original.names)
+  empty.df <- data.frame(original.names = x[df.not.found],
                          IDs = rep(NA, sum(df.not.found)))
   df <- rbind(df, empty.df)
   # Get the names and pathways of the selected signatures.
@@ -390,22 +391,23 @@ FindDrugs <- function(bc, x, na.rm = TRUE) {
   # Merge df and info.
   df <- unique(merge(df, info[, c("IDs", "drugs", "preferred.drug.names",
                                   "MoAs")], by = "IDs", all.x = TRUE))
-  # Add bc_Name column and remove names that are not sig IDs from sig_id column.
-  df$bc_Name <- df$IDs
+  # Add bc.names column and remove names that are not sig IDs from sig_id
+  # column.
+  df$bc.names <- df$IDs
   df$IDs[!startsWith(df$IDs, prefix = "sig_")] <- NA
-  # Create Preferred_and_sig column: Preferred name and sig_id.
-  df$Preferred_and_sig <- sapply(1:nrow(df), function(j) {
+  # Create preferred.and.sigs column: Preferred name and sig_id.
+  df$preferred.and.sigs <- sapply(1:nrow(df), function(j) {
     return(ifelse(test = !is.na(df$preferred.drug.names[j]),
                   yes = paste0(df$preferred.drug.names[j],
                                paste0(" (", df$IDs[j], ")")),
-                  no = df$bc_Name[j]))
+                  no = df$bc.names[j]))
   })
   # Reorder df.
-  rows <- unlist(lapply(x, function(entry) which(df$Original_Name == entry)))
-  cols <- c("Original_Name", "bc_Name", "preferred.drug.names", "drugs", "IDs",
-            "Preferred_and_sig", "MoAs")
+  rows <- unlist(lapply(x, function(entry) which(df$original.names == entry)))
+  cols <- c("original.names", "bc.names", "preferred.drug.names", "drugs", "IDs",
+            "preferred.and.sigs", "MoAs")
   df <- df[rows, cols]
-  # If na.rm = TRUE, remove rows with NAs in all fields but Original_Name.
+  # If na.rm = TRUE, remove rows with NAs in all fields but original.names.
   if (na.rm) df <- df[rowSums(is.na(df[, -1])) != ncol(df) - 1, ]
   return(df)
 }
