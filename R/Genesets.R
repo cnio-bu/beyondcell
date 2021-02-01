@@ -122,8 +122,10 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
     ### Number of genes.
     if (!identical(n.genes, 250)) warning('x is a GMT file, n.genes is deprecated.')
     ### Mode in GMT files.
-    n.up <- length(unique(grep("_UP$", names(gmt.file), ignore.case = TRUE)))
-    n.down <- length(unique(grep("_DOWN$", names(gmt.file), ignore.case = TRUE)))
+    n.up <- length(unique(grep(pattern = "_UP$", x = names(gmt.file),
+                               ignore.case = TRUE)))
+    n.down <- length(unique(grep(pattern = "_DOWN$", x = names(gmt.file),
+                                 ignore.case = TRUE)))
     if (n.up + n.down != length(names(gmt.file))) {
       stop('All geneset in the GMT file names must be finished in _UP or _DOWN.')
     } else {
@@ -202,11 +204,11 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
   if (type == "pre-loaded matrix") {
     ### sig IDs.
     if (is.D[1]) {
-      info <- subset(drugInfo, drugInfo$Source == "LINCS")
+      info <- subset(drugInfo, subset = drugInfo$Source == "LINCS")
     } else if (is.D[2]) {
-      info <- subset(drugInfo, drugInfo$Source != "LINCS")
+      info <- subset(drugInfo, subset = drugInfo$Source != "LINCS")
     } else if (is.D[3]) {
-      info <- subset(drugInfo, drugInfo$sig_id %in% DSS[[1]]$sig_id)
+      info <- subset(drugInfo, subset = drugInfo$sig_id %in% DSS[[1]]$sig_id)
       x <- PSc # DSS is a subset of PSc
     }
     if (length(selected_filters) == 0) {
@@ -216,29 +218,34 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
       warn <- c() # Warnings
       ### Filters.
       if("drugs" %in% selected_filters) {
-        out <- FilteredIDS(info, "Name", gdata::trim(filters$drugs), "drugs")
+        out <- FilteredIDS(infodf = info, col = "Name",
+                           filter = gdata::trim(filters$drugs), filtername = "drugs")
         ids <- c(ids, out[[1]])
         warn <- c(warn, out[[2]])
       }
       if("IDs" %in% selected_filters) {
-        out <- FilteredIDS(info, "sig_id", gdata::trim(filters$IDs), "IDs")
+        out <- FilteredIDS(infodf = info, col = "sig_id",
+                           filter = gdata::trim(filters$IDs), filtername = "IDs")
         ids <- c(ids, out[[1]])
         warn <- c(warn, out[[2]])
       }
       if ("MoA" %in% selected_filters) {
-        out <- FilteredIDS(info, "MoA", gdata::trim(filters$MoA), "MoAs")
+        out <- FilteredIDS(infodf = info, col = "MoA",
+                           filter = gdata::trim(filters$MoA), filtername = "MoAs")
         ids <- c(ids, out[[1]])
         warn <- c(warn, out[[2]])
       }
       if ("targets" %in% selected_filters) {
-        out <- FilteredIDS(info, "Target", gdata::trim(filters$targets),
-                           "target genes")
+        out <- FilteredIDS(infodf = info, col = "Target",
+                           filter = gdata::trim(filters$targets),
+                           filtername = "target genes")
         ids <- c(ids, out[[1]])
         warn <- c(warn, out[[2]])
       }
       if ("source" %in% selected_filters) {
-        out <- FilteredIDS(info, "Source", gdata::trim(filters$source),
-                           "source databases")
+        out <- FilteredIDS(infodf = info, col = "Source",
+                           filter = gdata::trim(filters$source),
+                           filtername = "source databases")
         ids <- c(ids, out[[1]])
         warn <- c(warn, out[[2]])
       }
@@ -264,26 +271,29 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
         l <- c(l, list(up = up))
       }
       if ("down" %in% mode) {
-        down <- na.omit(rownames(x)[order(sig, na.last = NA)[1:n.genes]])
+        down <- na.omit(rownames(x)[order(sig, decreasing = FALSE,
+                                          na.last = NA)[1:n.genes]])
         l <- c(l, list(down = down))
       }
       return(l)
     })
     # Else if x is a GMT file.
   } else if (type == "gmt") {
-    unique_genesets <- unique(gsub("_UP$|_DOWN$", "", names(gmt.file)))
+    unique_genesets <- unique(gsub(pattern = "_UP$|_DOWN$", replacement = "",
+                                   x = names(gmt.file)))
     genes <- setNames(lapply(unique_genesets, function(sig) {
-      entry <- gmt.file[grep(paste0("^", sig), names(gmt.file), value = TRUE)]
+      entry <- gmt.file[grep(pattern = paste0("^", sig), x = names(gmt.file),
+                             value = TRUE)]
       return(Genelist(entry, mode = mode))
     }), unique_genesets)
   }
   # Drug IDs.
   if (type == "pre-loaded matrix") {
-    info <- subset(info, info$sig_id %in% ids)
+    info <- subset(info, subset = info$sig_id %in% ids)
     info <- aggregate(.~ sig_id, data = info, na.action = NULL, FUN = function(rw) {
       paste(na.omit(unique(rw)), collapse = ", ")
     })
-    info <- info[order(info$sig_id), ]
+    info <- info[order(info$sig_id, decreasing = FALSE), ]
   } else {
     info <- data.frame()
   }
@@ -311,15 +321,15 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
 ListFilters <- function(entry) {
   # --- Checks and Code ---
   if (entry == "drugs") {
-    out <- sort(unique(drugInfo$Name))
+    out <- sort(unique(drugInfo$Name), decreasing = FALSE)
   } else if (entry == "IDs") {
-    out <- sort(unique(drugInfo$sig_id))
+    out <- sort(unique(drugInfo$sig_id), decreasing = FALSE)
   } else if (entry == "MoA") {
-    out <- sort(unique(drugInfo$MoA))
+    out <- sort(unique(drugInfo$MoA), decreasing = FALSE)
   } else if (entry == "targets") {
-    out <- sort(unique(drugInfo$Target))
+    out <- sort(unique(drugInfo$Target), decreasing = FALSE)
   } else if (entry == "source") {
-    out <- sort(unique(drugInfo$Source))
+    out <- sort(unique(drugInfo$Source), decreasing = FALSE)
   } else {
     stop("Incorrect entry.")
   }
@@ -371,9 +381,9 @@ FilteredIDS <- function(infodf, col, filter, filtername) {
   }
   # --- Code ---
   upper.filter <- toupper(filter)
-  selected <- subset(infodf, toupper(infodf[[col]]) %in% upper.filter)
+  selected <- subset(infodf, subset = toupper(infodf[[col]]) %in% upper.filter)
   if (col == "Name") {
-    synonyms <- subset(infodf, toupper(infodf[["Preferred_Name"]]) %in%
+    synonyms <- subset(infodf, subset = toupper(infodf[["Preferred_Name"]]) %in%
                          unique(toupper(selected[["Preferred_Name"]])))
     selected <- unique(rbind(selected, synonyms))
   }

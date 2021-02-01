@@ -63,7 +63,8 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE) {
     order.col <- "rank"
     # Get Statistics dataframe.
     final.stats <- GetStatistics(bc = bc, signatures = sigs, cells = cells,
-                                 pb, total, i = 1, n.rows, extended)
+                                 pb = pb, total = total, i = 1, n.rows = n.rows,
+                                 extended = extended)
     # Add rank.
     sig.order <- order(-1 * final.stats$switch.point, final.stats$mean,
                        decreasing = TRUE)
@@ -72,7 +73,7 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE) {
     final.stats <- final.stats[c("rank", colnames(final.stats)[-ncol(final.stats)])]
   } else {
     # Metadata levels.
-    lvls <- sort(unique(as.factor(meta)))
+    lvls <- sort(unique(as.factor(meta)), decreasing = FALSE)
     # Progress bar.
     total <- n.rows * n * length(lvls)
     pb <- txtProgressBar(min = 0, max = total, style = 3)
@@ -93,7 +94,8 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE) {
         bcSubset(sub.bc, cells = group.cells)))
       ### Get Statistics dataframe.
       out <- GetStatistics(bc = sub.bc, signatures = sigs, cells = group.cells,
-                           pb, total, i, n.rows, extended)
+                           pb = pb, total = total, i = i, n.rows = n.rows,
+                           extended = extended)
       ### Add rank.
       sig.order <- order(-1 * out$switch.point, out$mean, decreasing = TRUE)
       out$rank[sig.order] <- 1:nrow(out)
@@ -104,11 +106,11 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE) {
       return(out)
     })
     # Merge dataframes of all levels.
-    final.stats <- do.call(cbind.data.frame, stats)
+    final.stats <- do.call(what = cbind.data.frame, args = stats)
   }
   # Add Drug name and MoA to final.stats.
   cols <- colnames(final.stats)
-  info <- subset(drugInfo, drugInfo$sig_id %in% rownames(final.stats))
+  info <- subset(drugInfo, subset = drugInfo$sig_id %in% rownames(final.stats))
   if (dim(info)[1] > 0) {
     info <- aggregate(.~sig_id, data = info, na.action = NULL, FUN = function(x) {
       paste(na.omit(unique(x)), collapse = "; ")
@@ -119,7 +121,7 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE) {
   final.stats <- transform(merge(final.stats, info, by = 0, all.x = TRUE),
                            row.names = Row.names, Row.names = NULL)
   # Order by rank and reorder columns.
-  final.stats <- final.stats[order(final.stats[, order.col]),
+  final.stats <- final.stats[order(final.stats[, order.col], decreasing = FALSE),
                              c("Name", "Preferred_Name", "MoA", "Target",
                                "Source", cols)]
   # Add to beyondcell object.
@@ -203,7 +205,7 @@ rankSigs <- function(bc, idents = NULL, cond = NULL, n = 10,
   # If ranks have not been computed, compute them now.
   if (!meta %in% names(bc@ranks)) {
     message('Computing ranks...')
-    bc <- bcRanks(bc, idents, extended = FALSE)
+    bc <- bcRanks(bc, idents = idents, extended = FALSE)
   }
   # Get ranks for the specified idents.
   df <- bc@ranks[[meta]]
@@ -214,8 +216,9 @@ rankSigs <- function(bc, idents = NULL, cond = NULL, n = 10,
     idx <- nrow(bc@normalized):(nrow(bc@normalized) - n + 1)
   }
   # Return signatures whose rank == idx.
-  order.col <- ifelse(meta == "general", "rank", paste0("rank.", cond))
-  ordered.df <- df[order(df[, order.col]), ]
+  order.col <- ifelse(test = meta == "general", yes = "rank",
+                      no = paste0("rank.", cond))
+  ordered.df <- df[order(df[, order.col], decreasing = FALSE), ]
   sigs <- ordered.df[idx, "Name"]
   return(sigs)
 }

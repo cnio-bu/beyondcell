@@ -26,7 +26,7 @@ get_colour_stepsn <- function(colorscale = NULL) {
                              warning = function(cond) cond)
     if (inherits(guess.colors, "error") | inherits(guess.colors, "warning")) {
       ### Is colorscale an RColorBrewer palette?
-      guess.colors <- tryCatch(RColorBrewer::brewer.pal(11, colorscale),
+      guess.colors <- tryCatch(RColorBrewer::brewer.pal(11, name = colorscale),
                                error = function(cond) cond,
                                warning = function(cond) cond)
       if (inherits(guess.colors, "error") | inherits(guess.colors, "warning")) {
@@ -49,9 +49,9 @@ get_colour_stepsn <- function(colorscale = NULL) {
             ### last values in colorscale and 2 intermediate colors between them
             ### (color.low and color.high, computed with colorRampPalette).
             color.middle <- colorscale[ceiling(len.colors/2)]
-            color.low <- colorRampPalette(c(colorscale[1], color.middle),
+            color.low <- colorRampPalette(colors = c(colorscale[1], color.middle),
                                           space = "Lab")(3)[2]
-            color.high <- colorRampPalette(c(colorscale[3], color.middle),
+            color.high <- colorRampPalette(colors = c(colorscale[3], color.middle),
                                            space = "Lab")(3)[2]
             colors <- c(colorscale[1], color.low, color.middle, color.high,
                         colorscale[len.colors])
@@ -127,7 +127,7 @@ center_scale_colour_stepsn <- function(x, limits = c(NA, NA), center = NULL,
   if (limits[2] < limits[1]) {
     warning(paste('Upper limit is smaller than lower limit.',
                   'Sorting limits in increasing order.'))
-    limits <- sort(limits)
+    limits <- sort(limits, decreasing = FALSE)
   }
   # Check center.
   if (!is.null(center)) {
@@ -146,7 +146,8 @@ center_scale_colour_stepsn <- function(x, limits = c(NA, NA), center = NULL,
       center <- range.values[ceiling(len.range/2)]
       ### If len.range is pair, get the two middle points and do the mean.
     } else if (len.range%%2 == 0) {
-      center <- round(sum(range.values[(len.range/2):((len.range/2)+1)])/2, 2)
+      center <- round(sum(range.values[(len.range/2):((len.range/2)+1)])/2,
+                      digits = 2)
     }
   }
   # Check breaks.
@@ -197,22 +198,25 @@ center_scale_colour_stepsn <- function(x, limits = c(NA, NA), center = NULL,
     center <- center - (breaks/2)
     ### Compute brk.low (from the lower limit to the new center, by breaks).
     if (limits[1] < center) {
-      brk.low <- c(limits[1], seq(center, limits[1], by = -breaks))
-      brk.low <- sort(unique(brk.low[which(brk.low >= limits[1])]))
+      brk.low <- c(limits[1], seq(from = center, to = limits[1], by = -breaks))
+      brk.low <- sort(unique(brk.low[which(brk.low >= limits[1])]),
+                      decreasing = FALSE)
     } else {
       brk.low <- center
     }
     ### Compute brk.high (from the new center to the upper limit, by breaks).
     if (limits[2] > center) {
-      brk.high <- c(limits[2], seq(center, limits[2], by = breaks))
-      brk.high <- sort(unique(brk.high[which(brk.high <= limits[2])]))
+      brk.high <- c(limits[2], seq(from = center, to = limits[2], by = breaks))
+      brk.high <- sort(unique(brk.high[which(brk.high <= limits[2])]),
+                       decreasing = FALSE)
     } else {
       brk.high <- center
     }
     ### Pseudocenter: the new center + breaks/2.
-    pseudo.center <- tail(brk.low, 1) + breaks/2
+    pseudo.center <- tail(brk.low, n = 1) + breaks/2
     ### Final breaks.
-    final.breaks <- brk.labels <- sort(unique(c(brk.low, pseudo.center, brk.high)))
+    final.breaks <- brk.labels <- sort(unique(c(brk.low, pseudo.center, brk.high)),
+                                       decreasing = FALSE)
     ### Remove all labels but the limits and the pseudo.center.
     brk.labels[which(!(brk.labels %in% c(pseudo.center, limits)))] <- ""
     idx.pseudo.center <- which(brk.labels == pseudo.center)
@@ -226,7 +230,7 @@ center_scale_colour_stepsn <- function(x, limits = c(NA, NA), center = NULL,
     ### If breaks is a vector...
   } else {
     ### Add limits to breaks.
-    breaks <- sort(unique(c(limits, breaks)))
+    breaks <- sort(unique(c(limits, breaks)), decreasing = FALSE)
     ### The pseudocenter = original center.
     pseudo.center <- center
     ### Check which breaks element is the minimum value that is >= center.
@@ -240,13 +244,14 @@ center_scale_colour_stepsn <- function(x, limits = c(NA, NA), center = NULL,
     ### brk.high (from the new center + 1 to the upper limit).
     brk.high <- breaks[(which(breaks == center) + 1):length(breaks)]
     ### Final breaks and labels.
-    final.breaks <- brk.labels <- sort(unique(c(brk.low, pseudo.center, brk.high)))
+    final.breaks <- brk.labels <- sort(unique(c(brk.low, pseudo.center, brk.high)),
+                                       decreasing = FALSE)
   }
   # Colors.
   # The color of the center (last break of brk.low and first break of brk.high)
   # and the pseudo.center is the same (so these three values form a single color
   # break).
-  rampcol.mid <- rep(colorscale[3], 3)
+  rampcol.mid <- rep(colorscale[3], times = 3)
   # If brk.low is more than just the center, get a different color for each
   # break.
   if (length(brk.low) > 1) {
@@ -265,10 +270,10 @@ center_scale_colour_stepsn <- function(x, limits = c(NA, NA), center = NULL,
   guide <- ggplot2::guide_coloursteps(even.steps = FALSE, show.limits = FALSE,
                                       title = "Beyondcell")
   # Output: ggplot2 color scale.
-  out <- scale_colour_stepsn(colours = scales::alpha(rampcolors, alpha),
+  out <- scale_colour_stepsn(colours = scales::alpha(rampcolors, alpha = alpha),
                              breaks = final.breaks, labels = brk.labels,
                              values = scales::rescale(final.breaks, to = c(0, 1)),
-                             na.value = scales::alpha(na.value, alpha),
+                             na.value = scales::alpha(na.value, alpha = alpha),
                              limits = limits, guide = guide)
   return(out)
 }
@@ -314,7 +319,8 @@ BreakString <- function(x, split = ", ", line.length = 50) {
     final.x <- paste0(sapply(1:max(n.line), function(i) {
       sub.x <- paste0(names(which(n.line == i)), collapse = split)
       return(sub.x)
-    }), collapse = paste0(gsub("^\\s+|\\s+$", "", split), "\n")) # Trim
+    }), collapse = paste0(gsub(pattern = "^\\s+|\\s+$", replacement = "",
+                               x = split), "\n")) # Trim
   }
   return(final.x)
 }
@@ -352,18 +358,19 @@ FindDrugs <- function(bc, x) {
   sigs <- rownames(bc@normalized)
   # Match x with bc signatures and get the indices of matching elements.
   indices <- lapply(x, function(y) {
-    idx <- match(toupper(y), toupper(sigs), nomatch = 0)
+    idx <- match(toupper(y), table = toupper(sigs), nomatch = 0)
     if (idx == 0) {
-      idx <- unique(match(drugInfo$sig_id[drugInfo$Name == toupper(y)], sigs))
+      idx <- unique(match(drugInfo$sig_id[drugInfo$Name == toupper(y)],
+                          table = sigs))
     }
     return(idx[!is.na(idx)])
   })
   # Original names (x) and bc names (sigs).
   df <- data.frame(Original_Name = unlist(sapply(seq_along(x), function(i) {
-    rep(x[i], length(indices[[i]]))
+    rep(x[i], times = length(indices[[i]]))
   })), sig_id = unlist(sapply(indices, function(z) sigs[z])))
   # Get the names and pathways of the selected signatures.
-  info <- subset(drugInfo, sig_id %in% df$sig_id)
+  info <- subset(drugInfo, subset = sig_id %in% df$sig_id)
   info <- aggregate(.~ sig_id, data = info, na.action = NULL, FUN = function(y) {
     paste(na.omit(unique(y)), collapse = ", ")
   })
@@ -372,11 +379,13 @@ FindDrugs <- function(bc, x) {
               by = "sig_id", all.x = TRUE)
   # Add bc_Name column and remove names that are not sig IDs from sig_id column.
   df$bc_Name <- df$sig_id
-  df$sig_id[!startsWith(df$sig_id, "sig_")] <- NA
+  df$sig_id[!startsWith(df$sig_id, prefix = "sig_")] <- NA
   # Create Preferred_and_sig column: Preferred name and sig_id.
   df$Preferred_and_sig <- sapply(1:nrow(df), function(i) {
-    name <- ifelse(!is.na(df$Preferred_Name[i]), df$Preferred[i], df$bc_Name[i])
-    sig <- ifelse(!is.na(df$sig_id[i]), paste0(" (", df$sig_id[i], ")"), "")
+    name <- ifelse(test = !is.na(df$Preferred_Name[i]), yes = df$Preferred[i],
+                   no = df$bc_Name[i])
+    sig <- ifelse(test = !is.na(df$sig_id[i]),
+                  yes = paste0(" (", df$sig_id[i], ")"), no = "")
     return(paste0(name, sig))
   })
   # Reorder df.
