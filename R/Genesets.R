@@ -200,11 +200,11 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
   if (type == "pre-loaded matrix") {
     ### sig IDs.
     if (is.D[1]) {
-      info <- subset(drugInfo, subset = drugInfo$Source == "LINCS")
+      info <- subset(drugInfo, subset = drugInfo$sources == "LINCS")
     } else if (is.D[2]) {
-      info <- subset(drugInfo, subset = drugInfo$Source != "LINCS")
+      info <- subset(drugInfo, subset = drugInfo$sources != "LINCS")
     } else if (is.D[3]) {
-      info <- subset(drugInfo, subset = drugInfo$sig_id %in% DSS[[1]]$sig_id)
+      info <- subset(drugInfo, subset = drugInfo$IDs %in% DSS[[1]]$IDs)
       x <- PSc # DSS is a subset of PSc
     }
     if (length(selected_filters) == 0) {
@@ -214,23 +214,23 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
       ### Filters.
       if("drugs" %in% selected_filters) {
         assign("drugs", gdata::trim(filters$drugs))
-        ids <- c(ids, GetIDs(values = drugs, filter = "Name", df = info))
+        ids <- c(ids, GetIDS(values = drugs, filter = "drugs", df = info))
       }
       if("IDs" %in% selected_filters) {
         assign("IDs", gdata::trim(filters$IDs))
-        ids <- c(ids, GetIDs(values = IDs, filter = "sig_id", df = info))
+        ids <- c(ids, GetIDS(values = IDs, filter = "IDs", df = info))
       }
       if ("MoA" %in% selected_filters) {
         assign("MoA", gdata::trim(filters$MoA))
-        ids <- c(ids, GetIDs(values = MoA, filter = "MoA", df = info))
+        ids <- c(ids, GetIDS(values = MoA, filter = "MoAs", df = info))
       }
       if ("targets" %in% selected_filters) {
         assign("targets", gdata::trim(filters$targets))
-        ids <- c(ids, GetIDs(values = targets, filter = "Target", df = info))
+        ids <- c(ids, GetIDS(values = targets, filter = "targets", df = info))
       }
       if ("source" %in% selected_filters) {
         assign("sources", gdata::trim(filters$source))
-        ids <- c(ids, GetIDs(values = sources, filter = "Source", df = info))
+        ids <- c(ids, GetIDS(values = sources, filter = "sources", df = info))
       }
       ids <- unique(ids)
       if (length(ids) == 0) {
@@ -279,11 +279,11 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
   }
   # Drug IDs.
   if (type == "pre-loaded matrix") {
-    info <- subset(info, subset = info$sig_id %in% ids)
-    info <- aggregate(.~ sig_id, data = info, na.action = NULL, FUN = function(rw) {
+    info <- subset(info, subset = info$IDs %in% ids)
+    info <- aggregate(.~ IDs, data = info, na.action = NULL, FUN = function(rw) {
       paste(na.omit(unique(rw)), collapse = ", ")
     })
-    info <- info[order(info$sig_id, decreasing = FALSE), ]
+    info <- info[order(info$IDs, decreasing = FALSE), ]
   } else {
     info <- data.frame()
   }
@@ -311,15 +311,15 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
 ListFilters <- function(entry) {
   # --- Checks and Code ---
   if (entry == "drugs") {
-    out <- sort(unique(drugInfo$Name), decreasing = FALSE)
+    out <- sort(unique(drugInfo$drugs), decreasing = FALSE)
   } else if (entry == "IDs") {
-    out <- sort(unique(drugInfo$sig_id), decreasing = FALSE)
+    out <- sort(unique(drugInfo$IDs), decreasing = FALSE)
   } else if (entry == "MoA") {
-    out <- sort(unique(drugInfo$MoA), decreasing = FALSE)
+    out <- sort(unique(drugInfo$MoAs), decreasing = FALSE)
   } else if (entry == "targets") {
-    out <- sort(unique(drugInfo$Target), decreasing = FALSE)
+    out <- sort(unique(drugInfo$targets), decreasing = FALSE)
   } else if (entry == "source") {
-    out <- sort(unique(drugInfo$Source), decreasing = FALSE)
+    out <- sort(unique(drugInfo$sources), decreasing = FALSE)
   } else {
     stop("Incorrect entry.")
   }
@@ -358,18 +358,18 @@ GetIDs <- function(values, filter, df = drugInfo) {
   if (class(df) != "data.frame") {
     stop('df must be a data.frame')
   }
-  if (!("sig_id" %in% colnames(df))) {
-    stop('df must contain a "sig_id" column.')
+  if (!("IDs" %in% colnames(df))) {
+    stop('df must contain an "IDs" column.')
   }
   # --- Code ---
   upper.values <- toupper(values)
   selected <- subset(df, subset = toupper(df[[filter]]) %in% upper.values)
-  if (filter == "Name") {
-    synonyms <- subset(df, subset = toupper(df[["Preferred_Name"]]) %in%
-                         unique(toupper(selected[["Preferred_Name"]])))
+  if (filter == "drugs" & "preferred.drug.names" %in% colnames(df)) {
+    synonyms <- subset(df, subset = toupper(df[["preferred.drug.names"]]) %in%
+                         unique(toupper(selected[["preferred.drug.names"]])))
     selected <- unique(rbind(selected, synonyms))
   }
-  ids <- unique(selected$sig_id)
+  ids <- unique(selected$IDs)
   not.found <- values[!(upper.values %in% toupper(df[[filter]]))]
   if (all(values %in% not.found)) {
     stop('No sig ID was found for any of the elements in values.')

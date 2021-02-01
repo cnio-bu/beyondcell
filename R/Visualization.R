@@ -138,9 +138,9 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
   limits <- c(min(as.vector(sub.bc), na.rm = TRUE),
               max(as.vector(sub.bc), na.rm = TRUE))
   # Get the names and pathways of the selected signatures.
-  info <- subset(drugInfo, subset = sig_id %in% signatures[in.signatures])
+  info <- subset(drugInfo, subset = IDs %in% signatures[in.signatures])
   if (nrow(info) > 0) {
-    info <- aggregate(.~ sig_id, data = info, na.action = NULL, FUN = function(m) {
+    info <- aggregate(.~ IDs, data = info, na.action = NULL, FUN = function(m) {
       paste(na.omit(unique(m)), collapse = ", ")
     })
   }
@@ -161,8 +161,8 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
     }), mean = stats.cond["mean", ], median = stats.cond["median", ],
     condition = colnames(stats.cond))
     ### Drug name and MoA
-    if (x %in% info$sig_id) {
-      drug.and.MoA <- info[which(info$sig_id == x), c("Name", "MoA")]
+    if (x %in% info$IDs) {
+      drug.and.MoA <- info[which(info$IDs == x), c("drugs", "MoAs")]
       drug.and.MoA[2] <- ifelse(test = drug.and.MoA[2] == "NA", yes = "",
                                 no = drug.and.MoA[2])
     } else {
@@ -437,9 +437,9 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
     # Else...
   } else {
     ### Get the names and pathways of the selected signatures.
-    info <- subset(drugInfo, subset = sig_id %in% sigs)
+    info <- subset(drugInfo, subset = IDs %in% sigs)
     if (dim(info)[1] > 0) {
-      info <- aggregate(.~ sig_id, data = info, na.action = NULL, FUN = function(x) {
+      info <- aggregate(.~ IDs, data = info, na.action = NULL, FUN = function(x) {
         paste(na.omit(unique(x)), collapse = ", ")
       })
     }
@@ -493,8 +493,8 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
         ids <- unlist(strsplit(y, split = merged.symbol, fixed = TRUE))
       } else ids <- y
       ### Drug name and MoA.
-      if (any(ids %in% info$sig_id)) {
-        drug.and.MoA <- info[which(info$sig_id %in% ids), c("Name", "MoA")]
+      if (any(ids %in% info$IDs)) {
+        drug.and.MoA <- info[which(info$IDs %in% ids), c("drugs", "MoAs")]
         if (nrow(drug.and.MoA) > 1) { ### When merged != NULL, convert "" to "NA".
           drug.and.MoA[drug.and.MoA[, 2] == "", 2] <- "NA"
           drug.and.MoA <- t(as.data.frame(apply(drug.and.MoA, 2, paste0,
@@ -594,8 +594,8 @@ bcCellCycle <- function(bc, signatures) {
   cells <- subset(rownames(bc@meta.data),
                   subset = rownames(bc@meta.data) %in% colnames(bc@normalized))
   # Get the names and pathways of the selected signatures.
-  info <- subset(drugInfo, subset = sig_id %in% signatures[in.signatures])
-  info <- aggregate(.~ sig_id, data = info, na.action = NULL, FUN = function(y) {
+  info <- subset(drugInfo, subset = IDs %in% signatures[in.signatures])
+  info <- aggregate(.~ IDs, data = info, na.action = NULL, FUN = function(y) {
     paste(na.omit(unique(y)), collapse = ", ")
   })
   # For each signature...
@@ -605,8 +605,8 @@ bcCellCycle <- function(bc, signatures) {
                                  phase = bc@meta.data[cells, "Phase"],
                                  row.names = cells))
     ### Drug name and MoA.
-    if (x %in% info$sig_id) {
-      drug.and.MoA <- info[which(info$sig_id == x), c("Name", "MoA")]
+    if (x %in% info$IDs) {
+      drug.and.MoA <- info[which(info$IDs == x), c("drugs", "MoAs")]
       drug.and.MoA[, 2] <- BreakString(drug.and.MoA[, 2]) ### Format subtitle.
     } else {
       drug.and.MoA <- c(x, "")
@@ -688,7 +688,8 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3,
   if (!is.null(topnames)) {
     not.paths <- which(!(toupper(rownames(bc@normalized)) %in%
                            toupper(names(pathways))))
-    in.topnames <- toupper(topnames) %in% drugInfo$Name | tolower(topnames) %in% drugInfo$sig_id |
+    in.topnames <- toupper(topnames) %in% drugInfo$drugs |
+      tolower(topnames) %in% drugInfo$IDs |
       toupper(topnames) %in% toupper(rownames(bc@normalized)[not.paths])
     if (all(!in.topnames)) {
       warning(paste('None of the specified topname drugs were found in the',
@@ -765,7 +766,8 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3,
     ### Topnames.
     if(length(topnames[in.topnames]) > 0) {
       topnames <- FindDrugs(bc, x = topnames[in.topnames])
-      df[match(topnames$bc_Name, table = rownames(df)), "labels"] <- topnames$Preferred_and_sig
+      df[match(topnames$bc_Name,
+               table = rownames(df)), "labels"] <- topnames$Preferred_and_sig
     }
     ### Colours and names.
     colors <- c("#1D61F2", "#DA0078", "orange", "#C7A2F5", "grey80", "black")
