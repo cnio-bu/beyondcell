@@ -349,7 +349,7 @@ ListFilters <- function(entry) {
 #' elements.
 #' @export
 
-GetIDs <- function(values, filter, df) {
+GetIDs <- function(values, filter, df = drugInfo) {
   # --- Checks ---
   # Check values.
   if (length(values) < 1 | !is.character(values)) {
