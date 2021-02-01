@@ -123,7 +123,7 @@ bcSubset <- function(bc, signatures = NULL, bg.signatures = NULL, cells = NULL,
     bc <- bcRecompute(bc, slot = "data")
     bc@background <- matrix(ncol = 0, nrow = 0)
     bc@regression <- list(order = c("subset", ""), vars = NULL,
-                          order.background = rep("", 2))
+                          order.background = rep("", times = 2))
     reg.order <- rep("", 2)
   } else {
     ### If bc was previously subsetted and then regressed, raise an error.
@@ -135,7 +135,7 @@ bcSubset <- function(bc, signatures = NULL, bg.signatures = NULL, cells = NULL,
       ### "subset" to bc@regression$order.
     } else if (identical(reg.order, rep("", 2)) |
                identical(reg.order, c("regression", ""))) {
-      bc@regression$order[match("", reg.order)] <- "subset"
+      bc@regression$order[match("", table = reg.order)] <- "subset"
       ### Else if the last step in reg.order is "subset", raise a warning.
     } else if (tail(reg.order[which(reg.order != "")], n = 1) == "subset") {
       warning('bc is already a subsetted object.')
@@ -153,12 +153,16 @@ bcSubset <- function(bc, signatures = NULL, bg.signatures = NULL, cells = NULL,
   # final.sigs.bg == rownames(bc@background) and
   # final.cells == colnames(bc@scaled) == colnames(bc@background),
   # the output is equal to the input. Else, subset.
-  if (!identical(sort(final.sigs), sort(rownames(bc@normalized))) |
-      !identical(sort(final.sigs.bg), sort(rownames(bc@background))) |
-      !identical(sort(final.cells), sort(colnames(bc@normalized))) |
-      !identical(sort(final.cells), sort(colnames(bc@background)))) {
+  if (!identical(sort(final.sigs, decreasing = FALSE),
+                 sort(rownames(bc@normalized), decreasing = FALSE)) |
+      !identical(sort(final.sigs.bg, decreasing = FALSE),
+                 sort(rownames(bc@background), decreasing = FALSE)) |
+      !identical(sort(final.cells, decreasing = FALSE),
+                 sort(colnames(bc@normalized), decreasing = FALSE)) |
+      !identical(sort(final.cells, decreasing = FALSE),
+                 sort(colnames(bc@background), decreasing = FALSE))) {
     bc@normalized <- round(bc@normalized[final.sigs, final.cells,
-                                         drop = FALSE], 2)
+                                         drop = FALSE], digits = 2)
     bc <- bcRecompute(bc, slot = "normalized")
     if (any(dim(bc@background) != 0)) {
       bc@background <- bc@background[final.sigs.bg, final.cells, drop = FALSE]
@@ -239,7 +243,7 @@ bcRegressOut <- function(bc, vars.to.regress) {
           GenerateGenesets(DSS, n.genes = bc@n.genes, mode = bc@mode,
                            include.pathways = FALSE))
         background <- suppressWarnings(
-          bcScore(bc@expr.matrix, gs.background, expr.thres = bc@thres))
+          bcScore(bc@expr.matrix, gs = gs.background, expr.thres = bc@thres))
         bc@background <- background@normalized
       }
       if ("subset" %in% reg.order) {
@@ -272,12 +276,12 @@ bcRegressOut <- function(bc, vars.to.regress) {
                                           ### Update the progress bar.
                                           if (x[1]%%bins == 0 | x[1] == total) {
                                             Sys.sleep(0.1)
-                                            setTxtProgressBar(pb, x[1])
+                                            setTxtProgressBar(pb, value = x[1])
                                           }
                                           ### Return residues.
                                           return(resid)
                                         }))
-  bc@normalized <- round(normalized.regressed, 2)
+  bc@normalized <- round(normalized.regressed, digits = 2)
   # Close the progress bar.
   Sys.sleep(0.1)
   close(pb)
@@ -302,7 +306,7 @@ bcRegressOut <- function(bc, vars.to.regress) {
                                             ### Update the progress bar.
                                             if (y[1]%%bins == 0 | y[1] == total.bg) {
                                               Sys.sleep(0.1)
-                                              setTxtProgressBar(pb.bg, y[1])
+                                              setTxtProgressBar(pb.bg, value = y[1])
                                             }
                                             ### Return residues.
                                             return(resid)
@@ -347,10 +351,11 @@ bcRecompute <- function(bc, slot = "data") {
     # bc@normalized = bc@data.
     bc@normalized <- bc@data
   } else if (slot == "normalized") {
-    bc@normalized <- round(bc@normalized, 2)
+    bc@normalized <- round(bc@normalized, digits = 2)
   }
   # Recompute scaled scores.
-  scaled <- round(t(apply(bc@normalized, 1, scales::rescale, to = c(0, 1))), 2)
+  scaled <- round(t(apply(bc@normalized, 1, scales::rescale, to = c(0, 1))),
+                  digits = 2)
   rownames(scaled) <- rownames(bc@normalized)
   colnames(scaled) <- colnames(bc@normalized)
   bc@scaled <- scaled
@@ -361,7 +366,8 @@ bcRecompute <- function(bc, slot = "data") {
   if (!is.null(names(bc@reductions))) message('Removing @reductions slot...')
   bc@ranks <- bc@reductions <- vector(mode = "list", length = 0)
   # Remove therapeutic clusters from bc@meta.data.
-  therapeutic.clusters <- grep("bc_clusters_res.", colnames(bc@meta.data))
+  therapeutic.clusters <- grep(pattern = "bc_clusters_res.",
+                               x = colnames(bc@meta.data))
   if (length(therapeutic.clusters) > 0) {
     message('Removing therapeutic clusters...')
     bc@meta.data <- bc@meta.data[, -c(therapeutic.clusters), drop = FALSE]
@@ -391,7 +397,8 @@ bcAddMetatada<- function(bc, metadata) {
     stop('metadata must be an object of class matrix or data.frame.')
   }
   # Check that the rownames of bc@meta.data and the new metadata are the same.
-  if (!identical(sort(rownames(bc@meta.data)), sort(rownames(metadata)))) {
+  if (!identical(sort(rownames(bc@meta.data), decreasing = FALSE),
+                 sort(rownames(metadata), decreasing = FALSE))) {
     stop('metadata and bc@meta.data rownames are not the same.')
   }
   # Check that columns in metadata are different from the existing columns in
@@ -473,7 +480,7 @@ bcMerge <- function(bc1, bc2) {
   bc@meta.data <- suppressMessages(plyr::join(bc1@meta.data, bc2@meta.data))
   rownames(bc@meta.data) <- rownames(bc1@meta.data)
   # Remove therapeutic clusters from bc@meta.data.
-  therapeutic.clusters <- grep("bc_clusters_res.", colnames(bc@meta.data))
+  therapeutic.clusters <- grep(pattern = "bc_clusters_res.", x = colnames(bc@meta.data))
   if (length(therapeutic.clusters) > 0) {
     bc@meta.data <- bc@meta.data[, -c(therapeutic.clusters), drop = FALSE]
   }

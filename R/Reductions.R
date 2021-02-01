@@ -89,7 +89,8 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
       stop(paste('To save the Elbow plot, you must specify a character string',
                  'with the desired destination.'))
     } else {
-      parent.dir <- sub("(.*\\/)([^.]+)(\\.[[:alnum:]]+$)", "\\1", elbow.path)
+      parent.dir <- sub(pattern = "(.*\\/)([^.]+)(\\.[[:alnum:]]+$)",
+                        replacement = "\\1", x = elbow.path)
       if (!dir.exists(parent.dir)) {
         stop(paste(parent.dir, 'path not found.'))
       }
@@ -100,8 +101,10 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
   cells <- colnames(bc@normalized)
   if (add.DSS) {
     ### DSS (background) beyondcell scores.
-    if (!identical(sort(rownames(bc@background)), sort(DSS[[1]]$sig_id)) |
-        !identical(sort(colnames(bc@background)), sort(cells)) |
+    if (!identical(sort(rownames(bc@background), decreasing = FALSE),
+                   sort(DSS[[1]]$sig_id, decreasing = FALSE)) |
+        !identical(sort(colnames(bc@background), decreasing = FALSE),
+                   sort(cells, decreasing = FALSE)) |
         !identical(bc@regression$order, bc@regression$order.background)) {
       message('Computing background beyondcell scores using DSS signatures...')
       ### Genesets.
@@ -110,7 +113,7 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
                          include.pathways = FALSE))
       ### Beyondcell score.
       background <- suppressWarnings(
-        bcScore(bc@expr.matrix, gs.background, expr.thres = bc@thres))
+        bcScore(bc@expr.matrix, gs = gs.background, expr.thres = bc@thres))
       ### Add metadata.
       background@meta.data <- background@meta.data[, -c(1:ncol(background@meta.data))]
       background <- bcAddMetatada(background, metadata = bc@meta.data)

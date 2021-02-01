@@ -57,7 +57,7 @@ bcClusters <- function(bc, UMAP = "beyondcell", idents,
   }
   # --- Code ---
   # Add metadata.
-  sc <- Seurat::AddMetaData(sc, meta)
+  sc <- Seurat::AddMetaData(sc, metadata = meta)
   # Add reductions.
   sc@reductions <- reduction
   # Plot.
@@ -103,7 +103,7 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
   }
   if (length(signatures) == 1 & signatures[1] == "all") {
     signatures <- rownames(bc@normalized)
-    in.signatures <- rep(TRUE, nrow(bc@normalized))
+    in.signatures <- rep(TRUE, times = nrow(bc@normalized))
   } else {
     in.signatures <- signatures %in% rownames(bc@normalized)
     if (all(!in.signatures)) {
@@ -126,7 +126,7 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
     }
   } else {
     ### If idents = NULL, all cells have the same metadata.
-    meta <- rep("", ncol(bc@normalized))
+    meta <- rep("", times = ncol(bc@normalized))
   }
   # --- Code ---
   # Metadata levels.
@@ -138,7 +138,7 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
   limits <- c(min(as.vector(sub.bc), na.rm = TRUE),
               max(as.vector(sub.bc), na.rm = TRUE))
   # Get the names and pathways of the selected signatures.
-  info <- subset(drugInfo, sig_id %in% signatures[in.signatures])
+  info <- subset(drugInfo, subset = sig_id %in% signatures[in.signatures])
   if (nrow(info) > 0) {
     info <- aggregate(.~ sig_id, data = info, na.action = NULL, FUN = function(m) {
       paste(na.omit(unique(m)), collapse = ", ")
@@ -152,8 +152,8 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
                                  row.names = colnames(sub.bc)))
     ### Statistics by metadata (mean, median and sd).
     stats.cond <- sapply(lvls, function(y) {
-      stats <- round(Mean.Med.SD(subset(sub.df$bcscore,
-                                        sub.df$condition == y)), 2)
+      stats <- round(Mean.Med.SD(subset(sub.df$bcscore, subset = sub.df$condition == y)),
+                     digits = 2)
       return(stats)
     })
     stats.labels <- data.frame(label = apply(stats.cond, 2, function(z) {
@@ -163,7 +163,8 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
     ### Drug name and MoA
     if (x %in% info$sig_id) {
       drug.and.MoA <- info[which(info$sig_id == x), c("Name", "MoA")]
-      drug.and.MoA[2] <- ifelse(drug.and.MoA[2] == "NA", "", drug.and.MoA[2])
+      drug.and.MoA[2] <- ifelse(test = drug.and.MoA[2] == "NA", yes = "",
+                                no = drug.and.MoA[2])
     } else {
       drug.and.MoA <- c(x, "")
     }
@@ -271,7 +272,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
     }
     reduction <- bc@reductions
     cells <- subset(rownames(bc@meta.data),
-                    rownames(bc@meta.data) %in% colnames(bc@normalized))
+                    subset = rownames(bc@meta.data) %in% colnames(bc@normalized))
   } else if (UMAP == "Seurat") {
     if (length(bc@SeuratInfo$reductions) == 0) {
       stop('No UMAP projection available for your Seurat\'s object.')
@@ -308,7 +309,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
   if (!is.null(signatures[["values"]])) {
     if (length(signatures[["values"]]) == 1 & signatures[["values"]][1] == "all") {
       signatures[["values"]] <- rownames(bc@normalized)
-      in.signatures <- rep(TRUE, nrow(bc@normalized))
+      in.signatures <- rep(TRUE, times = nrow(bc@normalized))
     } else {
       in.signatures <- signatures[["values"]] %in% rownames(bc@normalized)
       if (all(!in.signatures)) {
@@ -326,7 +327,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
   if (!is.null(genes[["values"]])) {
     if (length(genes[["values"]]) == 1 & genes[["values"]][1] == "all") {
       genes[["values"]] <- rownames(bc@expr.matrix)
-      in.genes <- rep(TRUE, nrow(bc@expr.matrix))
+      in.genes <- rep(TRUE, times = nrow(bc@expr.matrix))
     } else {
       in.genes <- tolower(genes[["values"]]) %in% tolower(rownames(bc@expr.matrix))
       if (all(!in.genes)) {
@@ -353,7 +354,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
   if (signatures[["limits"]][2] < signatures[["limits"]][1]) {
     warning(paste('Signatures\' upper limit is smaller than lower limit.',
                   'Sorting limits in increasing order.'))
-    signatures[["limits"]] <- sort(signatures[["limits"]])
+    signatures[["limits"]] <- sort(signatures[["limits"]], decreasing = FALSE)
   }
   # Check genes' limits.
   if (length(genes[["limits"]]) != 2) {
@@ -368,7 +369,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
   if (all(!na.limits.genes) & genes[["limits"]][2] < genes[["limits"]][1]) {
     warning(paste('Genes\' upper limit is smaller than lower limit.',
                   'Sorting limits in increasing order.'))
-    genes[["limits"]] <- sort(genes[["limits"]])
+    genes[["limits"]] <- sort(genes[["limits"]], decreasing = FALSE)
   }
   # Check genes' share.limits.
   if (length(genes[["share.limits"]]) != 1 | !is.logical(genes[["share.limits"]])) {
@@ -406,7 +407,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
       stop(paste('The merged features must be signatures. For blending genes,',
                  'please use blend = TRUE.'))
     }
-    merged.symbol <- ifelse(merged == "direct", " + ", " - ")
+    merged.symbol <- ifelse(test = merged == "direct", yes = " + ", no = " - ")
     merged.sigs <- paste0(sigs, collapse = merged.symbol)
   } else {
     merged.symbol <- ""
@@ -444,7 +445,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
     # Else...
   } else {
     ### Get the names and pathways of the selected signatures.
-    info <- subset(drugInfo, sig_id %in% sigs)
+    info <- subset(drugInfo, subset = sig_id %in% sigs)
     if (dim(info)[1] > 0) {
       info <- aggregate(.~ sig_id, data = info, na.action = NULL, FUN = function(x) {
         paste(na.omit(unique(x)), collapse = ", ")
@@ -472,8 +473,8 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
     if (is.null(signatures[["center"]])) {
       center.sigs <- bc@switch.point[merged.sigs]
     } else {
-      center.sigs <- setNames(rep(signatures[["center"]], length(merged.sigs)),
-                              merged.sigs)
+      center.sigs <- setNames(rep(signatures[["center"]],
+                                  times = length(merged.sigs)), merged.sigs)
     }
     ### Gene's colors.
     if ((genes[["share.limits"]] | !identical(genes[["limits"]], c(NA, NA))) &
@@ -516,19 +517,22 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
       if (all(ids %in% sigs)) {
         ### Binned colorscale centered around the switch point or the
         ### specified center.
-        colors <- center_scale_colour_stepsn(full.matrix[y, ], signatures[["limits"]],
-                                             center.sigs[y], signatures[["breaks"]],
-                                             signatures[["colorscale"]], signatures[["alpha"]],
-                                             signatures[["na.value"]])
+        colors <- center_scale_colour_stepsn(full.matrix[y, ],
+                                             colorscale = signatures[["colorscale"]],
+                                             alpha = signatures[["alpha"]],
+                                             na.value = signatures[["na.value"]],
+                                             limits = signatures[["limits"]],
+                                             center = center.sigs[y],
+                                             breaks = signatures[["breaks"]])
       } else {
         ### Continuous colorscale with default seurat colors.
         colors <- colors.genes
       }
       ### Plot.
       fp <- suppressMessages(
-        Seurat::FeaturePlot(sc, features = gsub("_", "-", y),
-                            combine = FALSE, ...)[[1]] + colors +
-          ggplot2::labs(title = drug.and.MoA[1], subtitle = drug.and.MoA[2]))
+        Seurat::FeaturePlot(sc, features = gsub(pattern = "_", replacement = "-",
+                                                x = y), combine = FALSE, ...)[[1]] +
+          colors + ggplot2::labs(title = drug.and.MoA[1], subtitle = drug.and.MoA[2]))
       return(fp)
     })
   }
@@ -583,7 +587,7 @@ bcCellCycle <- function(bc, signatures) {
   }
   if (length(signatures) == 1 & signatures[1] == "all") {
     signatures <- rownames(bc@normalized)
-    in.signatures <- rep(TRUE, nrow(bc@normalized))
+    in.signatures <- rep(TRUE, times = nrow(bc@normalized))
   } else {
     in.signatures <- signatures %in% rownames(bc@normalized)
     if (all(!in.signatures)) {
@@ -596,9 +600,9 @@ bcCellCycle <- function(bc, signatures) {
   # --- Code ---
   # Cells in beyondcell object.
   cells <- subset(rownames(bc@meta.data),
-                  rownames(bc@meta.data) %in% colnames(bc@normalized))
+                  subset = rownames(bc@meta.data) %in% colnames(bc@normalized))
   # Get the names and pathways of the selected signatures.
-  info <- subset(drugInfo, sig_id %in% signatures[in.signatures])
+  info <- subset(drugInfo, subset = sig_id %in% signatures[in.signatures])
   info <- aggregate(.~ sig_id, data = info, na.action = NULL, FUN = function(y) {
     paste(na.omit(unique(y)), collapse = ", ")
   })
@@ -673,7 +677,7 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3,
   # Check lvl.
   if (is.null(lvl)) {
     lvl <- unique(bc@meta.data[, idents])
-    in.lvl <- rep(TRUE, length(lvl))
+    in.lvl <- rep(TRUE, times = length(lvl))
   } else {
     in.lvl <- lvl %in% unique(bc@meta.data[, idents])
     if (all(!in.lvl)) {
@@ -719,7 +723,7 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3,
   # --- Code ---
   # Get info about drugs (their corresponding name in bc, the preferred name
   # used by beyondcell and the MoA).
-  drug <- FindDrugs(bc, rownames(bc@scaled))
+  drug <- FindDrugs(bc, x = rownames(bc@scaled))
   # Switch points.
   sp <- data.frame(switch.point = bc@switch.point[drug$bc_Name],
                    row.names = drug$bc_Name)
@@ -730,7 +734,8 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3,
     colnames(res) <- "residuals"
     df <- transform(merge(res, sp, by = 0), row.names = Row.names, Row.names = NULL)
     ### Residual's deciles.
-    res.decil <- quantile(as.numeric(res$residuals), prob = seq(0, 1, length = 11))
+    res.decil <- quantile(as.numeric(res$residuals),
+                          prob = seq(from = 0, to = 1, length = 11))
     ### Drug annotation.
     sp_lower_01 <- as.numeric(df$switch.point) < 0.1
     sp_lower_06 <- as.numeric(df$switch.point) < 0.6
@@ -738,7 +743,7 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3,
     sp_higher_09 <- as.numeric(df$switch.point) > 0.9
     res_lower_10 <- as.numeric(df$residuals) < res.decil[["10%"]]
     res_higher_90 <- as.numeric(df$residuals) > res.decil[["90%"]]
-    df$annotation <- rep("no", nrow(df))
+    df$annotation <- rep("no", times = nrow(df))
     df$annotation[sp_lower_01 & res_higher_90] <- "TOP-HighSensitivityDrugs"
     df$annotation[sp_higher_09 & res_lower_10] <- "TOP-LowSensitivityDrugs"
     df$annotation[sp_higher_04 & sp_lower_06 &
@@ -746,17 +751,18 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3,
     df$annotation[sp_higher_04 & sp_lower_06 &
                     res_higher_90] <- "TOPDifferential-HighSensitivityDrugs"
     ### Drug labels.
-    df$labels <- rep("", nrow(df))
+    df$labels <- rep("", times = nrow(df))
     decreasing_order <- c("TOPDifferential-HighSensitivityDrugs",
                           "TOP-HighSensitivityDrugs")
     unique.annotations <- unique(df$annotation[df$annotation != "no"])
     sel.labels <- unlist(sapply(unique.annotations, function(x) {
-      sub.df <- subset(df, df$annotation == x)
+      sub.df <- subset(df, subset = df$annotation == x)
       if (x %in% decreasing_order) {
         sub.df <- sub.df[order(sub.df$residuals, sub.df$switch.point,
                                decreasing = TRUE), ]
       } else {
-        sub.df <- sub.df[order(sub.df$residuals, sub.df$switch.point), ]
+        sub.df <- sub.df[order(sub.df$residuals, sub.df$switch.point,
+                               decreasing = FALSE), ]
       }
       return(rownames(sub.df)[1:min(top, nrow(sub.df))])
     }))
@@ -764,8 +770,8 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3,
                                                              drug$bc_Name)]
     ### Topnames.
     if(length(topnames[in.topnames]) > 0) {
-      topnames <- FindDrugs(bc, topnames[in.topnames])
-      df[match(topnames$bc_Name, rownames(df)), "labels"] <- topnames$Preferred_and_sig
+      topnames <- FindDrugs(bc, x = topnames[in.topnames])
+      df[match(topnames$bc_Name, table = rownames(df)), "labels"] <- topnames$Preferred_and_sig
     }
     ### Colors and names.
     colors <- c("#1D61F2", "#DA0078", "orange", "#C7A2F5", "grey80", "black")
@@ -776,8 +782,8 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3,
     df$borders <- df$annotation
     df$borders[df$labels != ""] <- "black"
     ### Reorder df so labeled points are plotted on top.
-    df <- rbind(subset(df, df$borders != "black"),
-                subset(df, df$borders == "black"))
+    df <- rbind(subset(df, subset = df$borders != "black"),
+                subset(df, subset = df$borders == "black"))
     ### Plot.
     p <- ggplot(df, aes(x = as.numeric(residuals), y = as.numeric(switch.point),
                         color = borders, fill = annotation)) +
