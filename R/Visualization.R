@@ -626,7 +626,7 @@ bcCellCycle <- function(bc, signatures) {
 #' present in a \code{\link[beyondcell]{beyondcell}} object. A 4 squares plot
 #' consists in a scatter plot of the bcscores' residuals (x axis) vs the switch
 #' points (y axis). 4 quadrants are highlighted: the top-left and bottom-right
-#' corners contain the drugs to which all selected cells are most/least
+#' corners contain the drugs to which all selected cells are least/most
 #' sensistive, respectively. The centre quadrants show the drugs to which half
 #' of the selected cells are sensitive and the other half insensitive.
 #'
@@ -740,12 +740,12 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3,
     df$annotation[sp_lower_01 & res_higher_90] <- "TOP-HighSensitivityDrugs"
     df$annotation[sp_higher_09 & res_lower_10] <- "TOP-LowSensitivityDrugs"
     df$annotation[sp_higher_04 & sp_lower_06 &
-                    res_lower_10] <- "TOPDifferential-LowSensitivityDrugs"
+                    res_lower_10] <- "TOP-Differential-LowSensitivityDrugs"
     df$annotation[sp_higher_04 & sp_lower_06 &
-                    res_higher_90] <- "TOPDifferential-HighSensitivityDrugs"
+                    res_higher_90] <- "TOP-Differential-HighSensitivityDrugs"
     ### Drug labels.
     df$labels <- rep("", times = nrow(df))
-    decreasing_order <- c("TOPDifferential-HighSensitivityDrugs",
+    decreasing_order <- c("TOP-Differential-HighSensitivityDrugs",
                           "TOP-HighSensitivityDrugs")
     unique.annotations <- unique(df$annotation[df$annotation != "no"])
     sel.labels <- unlist(sapply(unique.annotations, function(x) {
@@ -769,8 +769,8 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3,
     ### Colors and names.
     colors <- c("#1D61F2", "#DA0078", "orange", "#C7A2F5", "grey80", "black")
     names <- c("TOP-LowSensitivityDrugs", "TOP-HighSensitivityDrugs",
-               "TOPDifferential-HighSensitivityDrugs",
-               "TOPDifferential-LowSensitivityDrugs", "no", "black")
+               "TOP-Differential-HighSensitivityDrugs",
+               "TOP-Differential-LowSensitivityDrugs", "no", "black")
     ### Circle's borders color.
     df$borders <- df$annotation
     df$borders[df$labels != ""] <- "black"
