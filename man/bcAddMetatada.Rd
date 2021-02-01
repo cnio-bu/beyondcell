@@ -9,8 +9,9 @@ bcAddMetatada(bc, metadata)
 \arguments{
 \item{bc}{\code{beyondcell} object.}
 
-\item{metadata}{Dataframe with metadata to add. Rownames should be cell names
-and colnames should not be already present in \code{beyondcell@meta.data}.}
+\item{metadata}{Matrix or dataframe with metadata to add. Rownames should be
+cell names and colnames should not be already present in
+\code{beyondcell@meta.data}.}
 }
 \value{
 Returns a \code{beyondcell} object with new added metadata columns.
