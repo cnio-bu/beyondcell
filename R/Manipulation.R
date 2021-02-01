@@ -184,20 +184,16 @@ bcSubset <- function(bc, signatures = NULL, bg.signatures = NULL, cells = NULL,
 #' @examples
 #' @export
 
-bcRegressOut <- function(bc, vars.to.regress = NULL) {
+bcRegressOut <- function(bc, vars.to.regress) {
   # --- Checks ---
   # Check that bc is a beyondcell object.
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
   # Check vars.to.regress.
-  if (!is.null(vars.to.regress)) {
-    in.vars.to.regress <- vars.to.regress %in% colnames(bc@meta.data)
-    if (!all(in.vars.to.regress)) {
-      stop(paste0('Some vars.to.regress not found: ',
-                  paste0(vars.to.regress[!in.vars.to.regress], collapse = ", "),
-                  '.'))
-    }
-  } else {
-    stop('No variables to regress out.')
+  in.vars.to.regress <- vars.to.regress %in% colnames(bc@meta.data)
+  if (!all(in.vars.to.regress)) {
+    stop(paste0('Some vars.to.regress not found: ',
+                paste0(vars.to.regress[!in.vars.to.regress], collapse = ", "),
+                '.'))
   }
   vars <- unique(vars.to.regress[in.vars.to.regress])
   # Check regression and subset order.
