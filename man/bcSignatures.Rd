@@ -8,7 +8,7 @@ bcSignatures(
   bc,
   UMAP = "beyondcell",
   signatures = list(values = NULL, limits = c(0, 1), center = NULL, breaks = 0.1,
-    share.limits = TRUE, colorscale = NULL, alpha = 0.7, na.value = "grey50"),
+    colorscale = NULL, alpha = 0.7, na.value = "grey50"),
   genes = list(values = NULL, limits = c(NA, NA), share.limits = FALSE),
   merged = NULL,
   blend = FALSE,
@@ -28,8 +28,7 @@ using \code{\link[bcUMAP]{bcUMAP}}) or \code{"Seurat"} computed using
 \item{\code{values}:} {Vector with the names of the signatures of interest.
 If \code{signatures[["values"]] = "all"}, all signatures are selected.}
 \item{\code{limits}:} {Vector with the desired limits for all signatures'
-plots. If \code{limits = c(NA, NA)} (default), the \code{limits} are computed
-for each signature independently.}
+plots.}
 \item{\code{center}:} {A single number indicating the center of the
 \code{colorscale} for all signatures' plots. Alternatively, the \code{center}
 can be a vector of two numbers. In this case, the \code{center} of the
@@ -42,11 +41,6 @@ switch point.}
 (which don't have to be symmetric or equally distributed). If \code{center}
 is a vector of two numbers, \code{breaks} are computed using the difference
 between them.}
-\item{\code{share.limits}:} {Logical argument. If \code{share.limits = TRUE}
-(default), all signatures' plots will have the same \code{limits = c(0, 1)}.
-If \code{share.limits = FALSE}, each signature plot will have its own
-\code{limits}. Note that if \code{limits != c(NA, NA)},
-\code{share.limits = TRUE}.}
 \item{\code{colorscale}:} {Either a \code{viridis}, \code{RColorBrewer} or a
 custom palette of 3 colors (low, medium and high) to color all signatures'
 plots. If \code{colorscale = NULL} (default), the plots are colored using
