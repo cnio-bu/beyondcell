@@ -623,11 +623,12 @@ bcCellCycle <- function(bc, signatures) {
 #' @title Plots a 4 squares plot
 #' @description This function drawns a 4 square plot of the drug signatures
 #' present in a \code{\link[beyondcell]{beyondcell}} object. A 4 squares plot
-#' consists in a scatter plot of the bcscores' residuals (x axis) vs the switch
-#' points (y axis). 4 quadrants are highlighted: the top-left and bottom-right
-#' corners contain the drugs to which all selected cells are least/most
-#' sensistive, respectively. The centre quadrants show the drugs to which half
-#' of the selected cells are sensitive and the other half insensitive.
+#' consists in a scatter plot of the residuals' means of BCS (x axis) vs the
+#' switch points (y axis). 4 quadrants are highlighted: the top-left and
+#' bottom-right corners contain the drugs to which all selected cells are
+#' least/most sensistive, respectively. The centre quadrants show the drugs to
+#' which half of the selected cells are sensitive and the other half
+#' insensitive.
 #'
 #' x cut-offs: first and last deciles; y cut-offs: 0.1, 0.4, 0.6 and 0.9.
 #' @name bc4Squares
@@ -647,9 +648,9 @@ bcCellCycle <- function(bc, signatures) {
 #' transparent).
 #' @pt.size Point size.
 #' @details This function returns a list of \code{\link[ggplot2]{ggplot2}}
-#' objects, one per each \code{lvl}. Note that residuals are different for each
-#' level while swicth points are signature-specific. So, x axis will vary and y
-#' axis will remain constant accross all plots.
+#' objects, one per each \code{lvl}. Note that residuals' means are different
+#' for each level while swicth points are signature-specific. So, x axis will
+#' vary and y axis will remain constant accross all plots.
 #' @return A list of \code{ggplot2} objects, one per \code{lvl}.
 #' @examples
 #' @export
@@ -721,20 +722,21 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3,
                    row.names = drug$bc_Name)
   # One plot per level.
   p4s <- lapply(lvl[in.lvl], function(l) {
-    ### Subset residuals and switch points.
-    res <- bc@ranks[[idents]][drug$bc_Name, paste0("residuals.", l), drop = FALSE]
-    colnames(res) <- "residuals"
+    ### Subset residuals' means and switch points.
+    res <- bc@ranks[[idents]][drug$bc_Name,
+                              paste0("residuals.mean.", l), drop = FALSE]
+    colnames(res) <- "residuals.mean"
     df <- transform(merge(res, sp, by = 0), row.names = Row.names, Row.names = NULL)
     ### Residual's deciles.
-    res.decil <- quantile(as.numeric(res$residuals),
+    res.decil <- quantile(as.numeric(res$residuals.mean),
                           prob = seq(from = 0, to = 1, length = 11))
     ### Drug annotation.
     sp_lower_01 <- as.numeric(df$switch.point) < 0.1
     sp_lower_06 <- as.numeric(df$switch.point) < 0.6
     sp_higher_04 <- as.numeric(df$switch.point) > 0.4
     sp_higher_09 <- as.numeric(df$switch.point) > 0.9
-    res_lower_10 <- as.numeric(df$residuals) < res.decil[["10%"]]
-    res_higher_90 <- as.numeric(df$residuals) > res.decil[["90%"]]
+    res_lower_10 <- as.numeric(df$residuals.mean) < res.decil[["10%"]]
+    res_higher_90 <- as.numeric(df$residuals.mean) > res.decil[["90%"]]
     df$annotation <- rep("no", times = nrow(df))
     df$annotation[sp_lower_01 & res_higher_90] <- "TOP-HighSensitivityDrugs"
     df$annotation[sp_higher_09 & res_lower_10] <- "TOP-LowSensitivityDrugs"
@@ -750,10 +752,10 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3,
     sel.labels <- unlist(sapply(unique.annotations, function(x) {
       sub.df <- subset(df, subset = df$annotation == x)
       if (x %in% decreasing_order) {
-        sub.df <- sub.df[order(sub.df$residuals, sub.df$switch.point,
+        sub.df <- sub.df[order(sub.df$residuals.mean, sub.df$switch.point,
                                decreasing = TRUE), ]
       } else {
-        sub.df <- sub.df[order(sub.df$residuals, sub.df$switch.point,
+        sub.df <- sub.df[order(sub.df$residuals.mean, sub.df$switch.point,
                                decreasing = FALSE), ]
       }
       return(rownames(sub.df)[1:min(top, nrow(sub.df))])
@@ -777,8 +779,9 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3,
     df <- rbind(subset(df, subset = df$borders != "black"),
                 subset(df, subset = df$borders == "black"))
     ### Plot.
-    p <- ggplot(df, aes(x = as.numeric(residuals), y = as.numeric(switch.point),
-                        color = borders, fill = annotation)) +
+    p <- ggplot(df, aes(x = as.numeric(residuals.mean),
+                        y = as.numeric(switch.point), color = borders,
+                        fill = annotation)) +
       geom_point(shape = 21, alpha = alpha, size = pt.size) +
       scale_color_manual(values = setNames(colors, names)) +
       scale_fill_manual(values = setNames(colors, names), breaks = names[1:4],
@@ -791,7 +794,7 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3,
       geom_hline(yintercept = 0.6, linetype = "dotted") + ylim(0, 1) +
       labs(title = paste(idents, "=", lvl),
            caption = paste0("x cut-offs: first and last deciles; y cut-offs:",
-                            " 0.1, 0.4, 0.6 and 0.9")) + xlab("Residuals") +
+                            " 0.1, 0.4, 0.6 and 0.9")) + xlab("Residuals' Mean") +
       ylab("Switch Point") +
       ggrepel::geom_text_repel(label = df$labels, force = force) +
       guides(fill = guide_legend(title = "Drug Annotation"), color = FALSE) +
