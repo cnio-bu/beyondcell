@@ -21,7 +21,7 @@
 #' @examples
 #' @export
 
-bcClusters <- function(bc, UMAP = "beyondcell", idents = NULL,
+bcClusters <- function(bc, UMAP = "beyondcell", idents,
                        factor.col = TRUE, ...) {
   # --- Checks ---
   # Check that bc is a beyondcell object.
