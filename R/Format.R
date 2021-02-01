@@ -401,8 +401,10 @@ FindDrugs <- function(bc, x, na.rm = TRUE) {
                   no = df$bc_Name[j]))
   })
   # Reorder df.
-  df <- df[c("Original_Name", "bc_Name", "preferred.drug.names", "drugs", "IDs",
-             "Preferred_and_sig", "MoAs")]
+  rows <- unlist(lapply(x, function(entry) which(df$Original_Name == entry)))
+  cols <- c("Original_Name", "bc_Name", "preferred.drug.names", "drugs", "IDs",
+            "Preferred_and_sig", "MoAs")
+  df <- df[rows, cols]
   # If na.rm = TRUE, remove rows with NAs in all fields but Original_Name.
   if (na.rm) df <- df[rowSums(is.na(df[, -1])) != ncol(df) - 1, ]
   return(df)
