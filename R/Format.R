@@ -373,10 +373,11 @@ FindDrugs <- function(bc, x, na.rm = TRUE) {
   df <- data.frame(original.names = unlist(sapply(seq_along(x), function(i) {
     rep(x[i], times = length(indices[[i]]))
   })), IDs = unlist(sapply(indices, function(z) sigs[z])))
-  df.not.found <- !(x %in% df$original.names)
-  empty.df <- data.frame(original.names = x[df.not.found],
-                         IDs = rep(NA, sum(df.not.found)))
-  df <- rbind(df, empty.df)
+  if (any (df.not.found)) {
+    empty.df <- data.frame(original.names = x[df.not.found],
+                           IDs = rep(NA, sum(df.not.found)))
+    df <- rbind(df, empty.df)
+  }
   # Get the names and pathways of the selected signatures.
   info <- subset(drugInfo, subset = IDs %in% df$IDs)
   if (all(dim(info) != 0)) {
@@ -385,9 +386,12 @@ FindDrugs <- function(bc, x, na.rm = TRUE) {
     })
   }
   info.not.found <- !(df$IDs %in% drugInfo$IDs)
-  empty.info <- matrix(rep(NA, sum(info.not.found)*6), ncol = 6,
-                       dimnames = list(1:sum(info.not.found), colnames(info)))
-  info <- rbind(info, as.data.frame(empty.info))
+  if (any(info.not.found)) {
+    empty.info <- matrix(rep(NA, times = sum(info.not.found)*6), ncol = 6,
+                         dimnames = list(1:sum(info.not.found),
+                                         colnames(drugInfo)))
+    info <- rbind(info, as.data.frame(empty.info))
+  }
   # Merge df and info.
   df <- unique(merge(df, info[, c("IDs", "drugs", "preferred.drug.names",
                                   "MoAs")], by = "IDs", all.x = TRUE))
