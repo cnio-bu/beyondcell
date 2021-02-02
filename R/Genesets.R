@@ -204,11 +204,11 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
     } else if (is.D[2]) {
       info <- subset(drugInfo, subset = drugInfo$sources != "LINCS")
     } else if (is.D[3]) {
-      info <- subset(drugInfo, subset = drugInfo$IDs %in% DSS[[1]]$IDs)
+      info <- subset(drugInfo, subset = drugInfo$IDs %in% DSS[[1]]$sig_id)
       x <- PSc # DSS is a subset of PSc
     }
     if (length(selected.filters) == 0) {
-      ids <- unique(info$sig_id)
+      ids <- unique(info$IDs)
     } else {
       ids <- unique(unlist(lapply(selected.filters, function(y) {
         tryCatch(suppressWarnings(GetIDs(values = filters[[y]], filter = y,
