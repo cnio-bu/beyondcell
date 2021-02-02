@@ -1,8 +1,8 @@
 #' @title Computes the UMAP projection and the therapeutic clusters using the
-#' beyondcell scores
-#' @description This function uses the beyondcell scores to compute an UMAP
-#' projection of the data and clusterizes cells according to their sensitivity
-#' to the tested drugs (therapeutic clusters).
+#' BCS
+#' @description This function uses the beyondcell scores (BCS) to compute an
+#' UMAP projection of the data and clusterizes cells according to their
+#' sensitivity to the tested drugs (therapeutic clusters).
 #' @name bcUMAP
 #' @import scales
 #' @import Seurat
@@ -17,19 +17,18 @@
 #' @param res (\code{Seurat}'s \code{resolution}) Value of the resolution
 #' parameter, use a value above (below) 1.0 if you want to obtain a larger
 #' (smaller) number of communities. Can be a single number or a numeric vector.
-#' @param add.DSS Use background beyondcell scores computed with the
-#' \code{DSS} signature (\code{add.DSS = TRUE}) or just use the drugs included
-#' in the \code{bc} object (\code{add.DSS = FALSE}) to compute the UMAP
-#' projection and the therapeutic clusters. If the number of drugs in \code{bc}
-#' (excluding pathways) is < 20, it is recomended to set \code{add.DSS = TRUE}.
-#' Note that if \code{add.DSS = TRUE}, the regression and subset steps that have
-#' been applied to \code{bc} will also be applied to the background beyondcell
-#' scores.
+#' @param add.DSS Use background BCS computed with the \code{DSS} signature
+#' (\code{add.DSS = TRUE}) or just use the drugs included in the \code{bc}
+#' object (\code{add.DSS = FALSE}) to compute the UMAP projection and the
+#' therapeutic clusters. If the number of drugs in \code{bc} (excluding
+#' pathways) is < 20, it is recomended to set \code{add.DSS = TRUE}. Note that
+#' if \code{add.DSS = TRUE}, the regression and subset steps that have been
+#' applied to \code{bc} will also be applied to the background BCS.
 #' @param elbow.path Path to save the Elbow plot. If \code{elbow.path = NULL}
 #' (default), the plot will be printed.
 #' @details This function performs all the steps required to obtain an UMAP
-#' reduction of the data and clusterize the cells according to the beyondcell
-#' scores. You will normally require to run the function twice:
+#' reduction of the data and clusterize the cells according to the BCS. You will
+#' normally require to run the function twice:
 #' \enumerate{
 #' \item Using \code{pc = NULL} to obtain the Elbow plot.
 #' \item Specifying a value for the \code{pc} parameter according to this plot.
@@ -39,8 +38,8 @@
 #'
 #' Note that \code{add.DSS} must be the same in both runs, so the Elbow plot
 #' obtained in 1 is still valid in 2. If \code{add.DSS = TRUE}, the background
-#' beyondcell scores will be stored in the \code{bc} object and the function
-#' will skip this step the second time.
+#' BCS will be stored in the \code{bc} object and the function will skip this
+#' step the second time.
 #' @return A \code{beyondcell} object with the UMAP reduction in
 #' \code{bc@@reductions} slot and the therapeutic clusters for each \code{res}
 #' in \code{bc@@meta.data}. Also, an Elbow plot (\code{\link[ggplot2]{ggplot2}}

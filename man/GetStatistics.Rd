@@ -30,6 +30,6 @@ returns only the switch point, mean and residuals' mean.}
 A \code{data.frame} with the statistics and ranks per signature.
 }
 \description{
-This function computes the bcscores' statistics and ranks
-returned by \code{\link[beyondcell]{bcRanks}}.
+This function computes the beyondcell scores' (BCS) statistics
+and ranks returned by \code{\link[beyondcell]{bcRanks}}.
 }

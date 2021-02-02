@@ -2,8 +2,7 @@
 % Please edit documentation in R/Visualization.R
 \name{bcHistogram}
 \alias{bcHistogram}
-\title{Plots a histogram with the beyondcell scores of the signature of
-interest}
+\title{Plots a histogram with the BCS of the signature of interest}
 \usage{
 bcHistogram(bc, signatures, idents = NULL)
 }
@@ -14,8 +13,8 @@ bcHistogram(bc, signatures, idents = NULL)
 \code{signatures == "all"}, all signatures are selected.}
 
 \item{idents}{Name of the metadata column of interest. If
-\code{idents = NULL}, a single histogram with all bcscores is drawn. On the
-other hand, if \code{idents != NULL} a histogram for each level found in
+\code{idents = NULL}, a single histogram with all BCS is drawn. On the other
+hand, if \code{idents != NULL} a histogram for each level found in
 \code{idents} will be drawn.}
 }
 \value{
@@ -25,7 +24,7 @@ reported. Also, the mean is indicated with a black dashed line and the median
 with a red dashed line.
 }
 \description{
-This function drawns a histogram plot of bcscores for each
-signature of interest. The plot can be a single histogram (if
+This function drawns a histogram plot of beyondcell scores (BCS)
+for each signature of interest. The plot can be a single histogram (if
 \code{idents = NULL}) or a histogram for each level found in \code{idents}.
 }

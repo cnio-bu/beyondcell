@@ -1,6 +1,6 @@
 #' @title Ranks the signatures from most sensitive to least sensitive
-#' @description  This function computes the bcscores statistics of each
-#' signature and ranks them according to the switch point and mean.
+#' @description  This function computes the beyondcell scores' (BCS) statistics
+#' of each signature and ranks them according to the switch point and mean.
 #' @name bcRanks
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
 #' @param idents Name of the metadata column of interest. If
@@ -134,7 +134,7 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE) {
 
 #' @title Returns the first/last n ranked signatures
 #' @description  This function returns the top/bottom \code{n} signatures ranked
-#' according to the bcscores of cells that satisfy
+#' according to the beyondcell score (BCS) of cells that satisfy
 #' \code{bc@@meta.data$idents == cond}.
 #' @name rankSigs
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.

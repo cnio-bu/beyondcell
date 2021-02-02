@@ -25,6 +25,6 @@ An ordered vector with the signature's names.
 }
 \description{
 This function returns the top/bottom \code{n} signatures ranked
-according to the bcscores of cells that satisfy
+according to the beyondcell score (BCS) of cells that satisfy
 \code{bc@meta.data$idents == cond}.
 }

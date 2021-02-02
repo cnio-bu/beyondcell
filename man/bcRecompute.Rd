@@ -17,8 +17,8 @@ A recomputed \code{beyondcell} object.
 }
 \description{
 This function recomputes a beyondcell object using the matrix
-stored in the slot \code{@data} (original scores) or \code{@normalized}
-(which can contain subsetted and/or regressed bcscores). Columns added with
+stored in the slot \code{@data} (original BCS) or \code{@normalized}
+(which can contain subsetted and/or regressed BCS). Columns added with
 \code{\link[beyondcell]{bcAddMetadata}} are preserved, except if they
 define therapeutic clusters. Important: \code{bc@reductions} and
 \code{bc@background} remain the same, while \code{bc@ranks} and
