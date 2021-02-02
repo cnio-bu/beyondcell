@@ -434,7 +434,8 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
   } else {
     # Get info about drugs (their corresponding name in bc, the preferred name
     # used by beyondcell and the MoA).
-    info <- FindDrugs(bc, x = sigs)
+    info <- tryCatch(suppressWarnings(FindDrugs(bc, x = sigs)),
+                     error = function(cond) data.frame())
     ### If we want to merge signatures, we must recompute the bc object using
     ### the added or substracted bc@normalized BCS.
     if (!is.null(merged)) {
