@@ -2,20 +2,21 @@
 % Please edit documentation in R/Format.R
 \name{get_colour_stepsn}
 \alias{get_colour_stepsn}
-\title{Returns a vector of colors to use in \code{center_scale_colour_stepsn}}
+\title{Returns a vector of colours to use in
+\code{center_scale_colour_stepsn}}
 \usage{
 get_colour_stepsn(colorscale = NULL)
 }
 \arguments{
 \item{colorscale}{Either a \code{viridis}, \code{RColorBrewer} or a custom
-palette of 3 colors (low, medium and high). If \code{colorscale = NULL}
+palette of 3 colours (low, medium and high). If \code{colorscale = NULL}
 (default), the function returns \code{beyondcell}'s own palette.}
 }
 \value{
-A vector with 5 color values.
+A vector with 5 colour values.
 }
 \description{
-This function gets a color palette and returns a vector with 5
-color values to be used in
+This function gets a colour palette and returns a vector with 5
+colour values to be used in
 \code{\link[beyondcell]{center_scale_colour_stepsn}}.
 }

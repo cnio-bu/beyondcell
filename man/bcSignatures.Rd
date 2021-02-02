@@ -2,7 +2,8 @@
 % Please edit documentation in R/Visualization.R
 \name{bcSignatures}
 \alias{bcSignatures}
-\title{Plots the UMAP reduction colored by bcscores or gene expression values}
+\title{Plots the UMAP reduction coloured by bcscores or gene expression
+values}
 \usage{
 bcSignatures(
   bc,
@@ -23,27 +24,27 @@ bcSignatures(
 using \code{\link[beyondcell]{bcUMAP}}) or \code{"Seurat"} computed using
 \code{\link[Seurat]{Seurat}}'s functions.}
 
-\item{signatures}{List with parameters to color the UMAP by bcscores:
+\item{signatures}{List with parameters to colour the UMAP by bcscores:
 \itemize{
 \item{\code{values}:} {Vector with the names of the signatures of interest.
 If \code{signatures[["values"]] = "all"}, all signatures are selected.}
 \item{\code{colorscale}:} {Either a \code{viridis}, \code{RColorBrewer} or a
-custom palette of 3 colors (low, medium and high) to color all signatures'
-plots. If \code{colorscale = NULL} (default), the plots are colored using
+custom palette of 3 colours (low, medium and high) to colour all signatures'
+plots. If \code{colorscale = NULL} (default), the plots are coloured using
 \code{beyondcell}'s own palette.}
 \item{\code{alpha}:} {Transparency level between 0 (not transparent) and 1
 (fully transparent).}
-\item{\code{na.value}:} {Color to use for missing values (\code{NA}s).}
+\item{\code{na.value}:} {Colour to use for missing values (\code{NA}s).}
 \item{\code{limits}:} {Vector with the desired limits for all signatures'
 plots.}
-\item{\code{center}:} {A single number indicating the center of the
+\item{\code{center}:} {A single number indicating the centre of the
 \code{colorscale} for all signatures' plots. If \code{center = NULL}
 (default), the \code{center} for each signature is its switch point.}
 \item{\code{breaks}:} {A single number indicating the break size of the
 \code{colorscale}. Alternatively, it can be a vector with the desired breaks
 (which don't have to be symmetric or equally distributed).}}}
 
-\item{genes}{List with parameters to color the UMAP by gene expression
+\item{genes}{List with parameters to colour the UMAP by gene expression
 values:
 \itemize{
 \item{\code{values}:} {Vector with the names of the genes of interest. If
@@ -77,12 +78,12 @@ individually, set \code{mfrow = c(1, 1)}.}
 \value{
 A list of \code{patchwork}s (if \code{mfrow != c(1, 1)}) or
 \code{ggplot2}s (if \code{mfrow = c(1, 1)}) of the desired UMAP reduction
-colored by the beyondcell scores (for signatures) or gene expression values
+coloured by the beyondcell scores (for signatures) or gene expression values
 (for genes).
 }
 \description{
 This function returns a list of
 \code{\link[patchwork]{patchwork}}s or \code{\link[ggplot2]{ggplot2}}s with
 the desired UMAP reduction (either \code{beyondcell}'s or \code{Seurat}'s)
-colored by bcscores or gene expression values.
+coloured by bcscores or gene expression values.
 }
