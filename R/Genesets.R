@@ -146,8 +146,8 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
   }
   # Check filters and comparison.
   filters_names <- c("drugs", "IDs", "MoA", "targets", "source")
-  selected_filters <- names(filters)
-  if (any(!(selected_filters %in% filters_names))) stop('Invalid names in filters.')
+  selected.filters <- names(filters)
+  if (any(!(selected.filters %in% filters_names))) stop('Invalid names in filters.')
   if (type != "pre-loaded matrix") {
     ### Filters.
     filters_class <- sapply(filters, is.null)
@@ -168,10 +168,10 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
     filters_class <- sapply(filters, is.null) | sapply(filters, is.character)
     if (any(!filters_class)) {
       stop(paste0('Incorrect value for filter\'s entry: "',
-                  paste0(selected_filters[!filters_class], collapse = ", "),
+                  paste0(selected.filters[!filters_class], collapse = ", "),
                   '". You must provide a character vector.'))
     }
-    selected_filters <- selected_filters[!sapply(filters, is.null)]
+    selected.filters <- selected.filters[!sapply(filters, is.null)]
     ### Comparison.
     if (is.null(comparison)) {
       if(is.D[2]) comparison <- "control_vs_treated"
@@ -207,37 +207,34 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
       info <- subset(drugInfo, subset = drugInfo$IDs %in% DSS[[1]]$IDs)
       x <- PSc # DSS is a subset of PSc
     }
-    if (length(selected_filters) == 0) {
+    if (length(selected.filters) == 0) {
       ids <- unique(info$sig_id)
     } else {
-      ids <- c()
-      ### Filters.
-      if("drugs" %in% selected_filters) {
-        assign("drugs", gdata::trim(filters$drugs))
-        ids <- c(ids, GetIDS(values = drugs, filter = "drugs", df = info))
-      }
-      if("IDs" %in% selected_filters) {
-        assign("IDs", gdata::trim(filters$IDs))
-        ids <- c(ids, GetIDS(values = IDs, filter = "IDs", df = info))
-      }
-      if ("MoA" %in% selected_filters) {
-        assign("MoA", gdata::trim(filters$MoA))
-        ids <- c(ids, GetIDS(values = MoA, filter = "MoAs", df = info))
-      }
-      if ("targets" %in% selected_filters) {
-        assign("targets", gdata::trim(filters$targets))
-        ids <- c(ids, GetIDS(values = targets, filter = "targets", df = info))
-      }
-      if ("source" %in% selected_filters) {
-        assign("sources", gdata::trim(filters$source))
-        ids <- c(ids, GetIDS(values = sources, filter = "sources", df = info))
-      }
-      ids <- unique(ids)
+      ids <- unique(unlist(lapply(selected.filters, function(y) {
+        tryCatch(suppressWarnings(GetIDs(values = filters[[y]], filter = y,
+                                         df = info)),
+                 error = function(cond) character())
+      })))
+      warnings <- unlist(lapply(selected.filters, function(z) {
+        tryCatch(GetIDs(values = filters[[z]], filter = z, df = info),
+                 error = function(cond) {
+                   err <- paste0(z, ": ", paste0(filters[[z]],
+                                                 collapse = ", "), ".\n")
+                   return(err)
+                 }, warning = function(cond) {
+                   warn <- as.character(cond)
+                   warn.values <- strsplit(sapply(strsplit(warn, split = ": "),
+                                                  `[[`, 3), split = ", ")
+                   return(paste0(z, ": ", warn.values))
+                 })
+      }))
+      warnings <- warnings[!startsWith(warnings, prefix = "sig_")]
       if (length(ids) == 0) {
-        stop('Couldn\'t find drugs that matched any of the filters.')
-      } #else {
-        #if (any(!is.null(warn))) sapply(warn[!is.null(warn)], function(w) warning(w))
-      #}
+        stop('Couldn\'t find signatures that matched any of the filters.')
+      } else if (length(warnings) > 0) {
+        warning(paste('The following filters\' values yielded no results:\n',
+                      paste0("   - ", warnings, " ", collapse = "")))
+      }
     }
     genes <- lapply(ids, function(sig) {
       l <- list(up = x[["up"]][1:n.genes, sig], down = x[["down"]][1:n.genes, sig])
