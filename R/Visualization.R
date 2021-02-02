@@ -687,12 +687,10 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3,
       tolower(topnames) %in% drugInfo$IDs |
       toupper(topnames) %in% toupper(rownames(bc@normalized)[not.paths])
     if (all(!in.topnames)) {
-      warning(paste('None of the specified topname drugs were found in the',
-                    'beyondcell object.'))
+      warning('None of the specified topname drugs were found in bc.')
     } else if (any(!in.topnames)) {
-      warning(paste0('The following topname drugs were not found in the' ,
-                     'beyondcell object: ', paste0(topnames[!in.topnames],
-                                                   collapse = ", "), '.'))
+      warning(paste0('The following topname drugs were not found in bc: ' ,
+                     paste0(topnames[!in.topnames], collapse = ", "), '.'))
     }
   } else {
     in.topnames <- NULL
