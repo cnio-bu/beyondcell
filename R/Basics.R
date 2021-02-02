@@ -347,6 +347,7 @@ FindDrugs <- function(bc, x, na.rm = TRUE) {
   df <- data.frame(original.names = unlist(sapply(seq_along(x), function(i) {
     rep(x[i], times = length(indices[[i]]))
   })), IDs = unlist(sapply(indices, function(z) sigs[z])))
+  df.not.found <- !(x %in% df$original.names)
   if (any (df.not.found)) {
     empty.df <- data.frame(original.names = x[df.not.found],
                            IDs = rep(NA, sum(df.not.found)))
