@@ -2,17 +2,14 @@
 #'
 #' @slot genelist A list of drug and functional signatures (\code{pathways})
 #' with up and/or down-regulated genes.
-#' @slot n.genes Argument passed to
-#' \code{\link[GenerateGenesets]{GenerateGenesets}}.
-#' @slot mode Argument passed to
-#' \code{\link[GenerateGenesets]{GenerateGenesets}}.
+#' @slot n.genes Argument passed to \code{\link[beyondcell]{GenerateGenesets}}.
+#' @slot mode Argument passed to \code{GenerateGenesets}.
 #' @slot info If \code{GenerateGenesets}' input is a pre-loaded matrix,
 #' \code{info} will be a \code{data.frame} with the correspondences between
 #' \code{sig_ids} and drug names, as well as the source of the pre-loaded
 #' matrices (LINCS, CTRP, GDSC or CCLE). If \code{GenerateGenesets}' input is a
 #' path to a GMT file, \code{info} will be empty.
-#' @slot comparison Argument passed to
-#' \code{\link[GenerateGenesets]{GenerateGenesets}}.
+#' @slot comparison Argument passed to \code{GenerateGenesets}.
 
 geneset <- setClass("geneset", slots = list(genelist = "list",
                                             n.genes = "numeric",
@@ -32,7 +29,7 @@ geneset <- setClass("geneset", slots = list(genelist = "list",
 #' @slot ranks List of dataframes with the statistics (switch point,
 #' mean, median, sd, variance, min, max, proportion of \code{NaN}, residuals'
 #' mean and ranks of each signature in the beyondcell object. This slot is
-#' filled using the function \code{\link[bcRanks]{bcRanks}}.
+#' filled using the function \code{\link[beyondcell]{bcRanks}}.
 #' @slot expr.matrix Expression matrix used to compute the beyondcell scores.
 #' @slot meta.data Contains information about each cell (including the
 #' therapeutic clusters and \code{Seurat}'s \code{@@metadata}).
@@ -44,12 +41,10 @@ geneset <- setClass("geneset", slots = list(genelist = "list",
 #' @slot reductions A list of dimensional reductions for this object.
 #' @slot regression A list with the order of subset and regression steps
 #' performed on the beyondcell object and the variables used for regression.
-#' @slot n.genes Argument passed to
-#' \code{\link[GenerateGenesets]{GenerateGenesets}}.
-#' @slot mode Argument passed to
-#' \code{\link[GenerateGenesets]{GenerateGenesets}}.
+#' @slot n.genes Argument passed to \code{\link[beyondcell]{GenerateGenesets}}.
+#' @slot mode Argument passed to \code{GenerateGenesets}.
 #' @slot thres Argument \code{expr.thres} passed to
-#' \code{\link[bcScore]{bcScore}}.
+#' \code{\link[beyondcell]{bcScore}}.
 
 beyondcell <- setClass("beyondcell",
                        slots = list(scaled = "matrix", normalized = "matrix",

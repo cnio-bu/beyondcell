@@ -18,13 +18,13 @@
 #' parameter, use a value above (below) 1.0 if you want to obtain a larger
 #' (smaller) number of communities. Can be a single number or a numeric vector.
 #' @param add.DSS Use background beyondcell scores computed with the
-#' \code{\link[DSS]{DSS}}) signature (\code{add.DSS = TRUE}) or just use the
-#' drugs included in the \code{bc} object (\code{add.DSS = FALSE}) to compute
-#' the UMAP projection and the therapeutic clusters. If the number of drugs in
-#' \code{bc} (excluding pathways) is < 20, it is recomended to set
-#' \code{add.DSS = TRUE}. Note that if \code{add.DSS = TRUE}, the regression and
-#' subset steps that have been applied to \code{bc} will also be applied to the
-#' background beyondcell scores.
+#' \code{DSS} signature (\code{add.DSS = TRUE}) or just use the drugs included
+#' in the \code{bc} object (\code{add.DSS = FALSE}) to compute the UMAP
+#' projection and the therapeutic clusters. If the number of drugs in \code{bc}
+#' (excluding pathways) is < 20, it is recomended to set \code{add.DSS = TRUE}.
+#' Note that if \code{add.DSS = TRUE}, the regression and subset steps that have
+#' been applied to \code{bc} will also be applied to the background beyondcell
+#' scores.
 #' @param elbow.path Path to save the Elbow plot. If \code{elbow.path = NULL}
 #' (default), the plot will be printed.
 #' @details This function performs all the steps required to obtain an UMAP
@@ -43,7 +43,7 @@
 #' will skip this step the second time.
 #' @return A \code{beyondcell} object with the UMAP reduction in
 #' \code{bc@@reductions} slot and the therapeutic clusters for each \code{res}
-#' in \code{bc@@meta.data}. Also, an Elbow plot (\code{\link[ggplot]{ggplot}}
+#' in \code{bc@@meta.data}. Also, an Elbow plot (\code{\link[ggplot2]{ggplot2}}
 #' object) is printed (if \code{elbow.path = NULL}) or saved (if
 #' \code{elbow.path} is not \code{NULL}).
 #' @examples

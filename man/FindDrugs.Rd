@@ -19,8 +19,8 @@ A \code{data.frame}.
 }
 \description{
 This function searches information about the inputted drugs in
-the pre-loaded \code{\link[beyondcell]{beyondcell}} matrices and returns a
-\code{data.frame} with their drug synonyms and MoAs.
+the pre-loaded \code{beyondcell} matrices and returns a \code{data.frame}
+with their drug synonyms and MoAs.
 }
 \details{
 The output \code{data.frame} has the following columns:

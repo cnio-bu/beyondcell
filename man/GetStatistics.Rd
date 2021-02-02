@@ -31,5 +31,5 @@ A \code{data.frame} with the statistics and ranks per signature.
 }
 \description{
 This function computes the bcscores' statistics and ranks
-returned by \code{\link[bcRnaks]{bcRanks}}.
+returned by \code{\link[beyondcell]{bcRanks}}.
 }

@@ -5,7 +5,7 @@
 #' @import Seurat
 #' @import scales
 #' @param sc \code{\link[Seurat]{Seurat}} object or expression matrix.
-#' @param gs \code{\link[geneset]{geneset}} object.
+#' @param gs \code{\link[beyondcell]{geneset}} object.
 #' @param expr.thres Minimum fraction of signature genes that must be
 #' expressed in a cell to compute its beyondcell score. Cells with a number of
 #' expressed genes below this fraction will have a \code{NaN} beyondcell

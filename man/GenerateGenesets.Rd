@@ -25,7 +25,7 @@ for more information.}
 \item{filters}{If \code{x} is a pre-loaded matrix, you can provide a list of
 filters to subset these matrices. You can specify which drug names, sig IDs,
 mechanisms of action (MoAs), target genes and sources you are interested in
-(cap insensitive). You can call \code{\link[ListFilters]{ListFilters}} to
+(cap insensitive). You can call \code{\link[beyondcell]{ListFilters}} to
 check all the available values for these filters. The signatures that pass
 \strong{ANY} of these filters are included in the output.}
 
@@ -36,8 +36,8 @@ check all the available values for these filters. The signatures that pass
 not return \code{beyoncell}'s pre-computed genesets for functional pathways.}
 }
 \value{
-A \code{\link[geneset]{geneset}} object with up and/or down genes for
-each drug and pathway.
+A \code{\link[beyondcell]{geneset}} object with up and/or down genes
+for each drug and pathway.
 }
 \description{
 This function generates up and/or down genelists for each drug
@@ -46,8 +46,7 @@ and pathway.
 \details{
 \code{x} can be:
 \itemize{
-\item{A pre-loaded matrix:} {Either \code{\link[PSc]{PSc}},
-\code{\link[SSc]{SSc}} or \code{\link[DSS]{DSS}}.}
+\item{A pre-loaded matrix:} {Either \code{PSc}, \code{SSc} or \code{DSS}.}
 \item{A numeric matrix:} {A matrix with genes as rows and signatures as
 columns that contains some type of numerical value such a t-stat or a LFC to
 rank the genes accordingly.}

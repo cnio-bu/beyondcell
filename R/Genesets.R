@@ -12,7 +12,7 @@
 #' @param filters If \code{x} is a pre-loaded matrix, you can provide a list of
 #' filters to subset these matrices. You can specify which drug names, sig IDs,
 #' mechanisms of action (MoAs), target genes and sources you are interested in
-#' (cap insensitive). You can call \code{\link[ListFilters]{ListFilters}} to
+#' (cap insensitive). You can call \code{\link[beyondcell]{ListFilters}} to
 #' check all the available values for these filters. The signatures that pass
 #' \strong{ANY} of these filters are included in the output.
 #' @param comparison \code{"treated_vs_control"} or
@@ -21,8 +21,7 @@
 #' not return \code{beyoncell}'s pre-computed genesets for functional pathways.
 #' @details \code{x} can be:
 #' \itemize{
-#' \item{A pre-loaded matrix:} {Either \code{\link[PSc]{PSc}},
-#' \code{\link[SSc]{SSc}} or \code{\link[DSS]{DSS}}.}
+#' \item{A pre-loaded matrix:} {Either \code{PSc}, \code{SSc} or \code{DSS}.}
 #' \item{A numeric matrix:} {A matrix with genes as rows and signatures as
 #' columns that contains some type of numerical value such a t-stat or a LFC to
 #' rank the genes accordingly.}
@@ -48,8 +47,8 @@
 #' between drug sensitive and resistant cells.}
 #' }
 #' When \code{x} is a pre-loaded matrix, \code{comparison} is set automatically.
-#' @return A \code{\link[geneset]{geneset}} object with up and/or down genes for
-#' each drug and pathway.
+#' @return A \code{\link[beyondcell]{geneset}} object with up and/or down genes
+#' for each drug and pathway.
 #' @examples
 #' @export
 
@@ -298,7 +297,7 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
 #' @title Returns all the possible values for the specified filter
 #' @description This function returns all the available values for \code{drugs},
 #' \code{IDs}, \code{MoAs}, \code{targets} or \code{sources} filters in
-#' \code{\link[GenerateGenesets]{GenerateGenesets}} function.
+#' \code{\link[beyondcell]{GenerateGenesets}} function.
 #' @name ListFilters
 #' @param entry Either \code{"drugs"}, \code{"IDs"}, \code{"MoAs"},
 #' \code{"targets"} or \code{"sources"}.

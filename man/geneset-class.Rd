@@ -14,11 +14,9 @@ An S4 class to represent the genesets of each drug
 \item{\code{genelist}}{A list of drug and functional signatures (\code{pathways})
 with up and/or down-regulated genes.}
 
-\item{\code{n.genes}}{Argument passed to
-\code{\link[GenerateGenesets]{GenerateGenesets}}.}
+\item{\code{n.genes}}{Argument passed to \code{\link[beyondcell]{GenerateGenesets}}.}
 
-\item{\code{mode}}{Argument passed to
-\code{\link[GenerateGenesets]{GenerateGenesets}}.}
+\item{\code{mode}}{Argument passed to \code{GenerateGenesets}.}
 
 \item{\code{info}}{If \code{GenerateGenesets}' input is a pre-loaded matrix,
 \code{info} will be a \code{data.frame} with the correspondences between
@@ -26,7 +24,6 @@ with up and/or down-regulated genes.}
 matrices (LINCS, CTRP, GDSC or CCLE). If \code{GenerateGenesets}' input is a
 path to a GMT file, \code{info} will be empty.}
 
-\item{\code{comparison}}{Argument passed to
-\code{\link[GenerateGenesets]{GenerateGenesets}}.}
+\item{\code{comparison}}{Argument passed to \code{GenerateGenesets}.}
 }}
 

@@ -1,7 +1,7 @@
 #' @title Returns a vector of colors to use in \code{center_scale_colour_stepsn}
 #' @description This function gets a color palette and returns a vector with 5
 #' color values to be used in
-#' \code{\link[center_scale_colour_stepsn]{center_scale_colour_stepsn}}.
+#' \code{\link[beyondcell]{center_scale_colour_stepsn}}.
 #' @name get_colour_stepsn
 #' @importFrom viridis viridis
 #' @importrom RColorBrewer brewer.pal
@@ -87,7 +87,7 @@ get_colour_stepsn <- function(colorscale = NULL) {
 #' @import scales
 #' @param x A numeric vector. Can contain \code{NA}s.
 #' @param colorscale A vector with 5 colors which can be obtained using
-#' \code{\link[get_colour_stepsn]{get_colour_stepsn}}.
+#' \code{\link[beyondcell]{get_colour_stepsn}}.
 #' @param alpha Transparency level between 0 (not transparent) and 1 (fully
 #' transparent).
 #' @param na.value Color to use for missing values.

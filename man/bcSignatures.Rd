@@ -20,7 +20,7 @@ bcSignatures(
 \item{bc}{\code{\link[beyondcell]{beyondcell}} object.}
 
 \item{UMAP}{UMAP reduction to plot. Either \code{"beyondcell"} (computed
-using \code{\link[bcUMAP]{bcUMAP}}) or \code{"Seurat"} computed using
+using \code{\link[beyondcell]{bcUMAP}}) or \code{"Seurat"} computed using
 \code{\link[Seurat]{Seurat}}'s functions.}
 
 \item{signatures}{List with parameters to color the UMAP by bcscores:
@@ -72,7 +72,7 @@ the arrays in which the plots will be drawn. If you want to draw the plots
 individually, set \code{mfrow = c(1, 1)}.}
 
 \item{...}{Other arguments passed to \code{Seurat}'s
-\code{\link[FeaturePlot]{FeaturePlot}}.}
+\code{\link[Seurat]{FeaturePlot}}.}
 }
 \value{
 A list of \code{patchwork}s (if \code{mfrow != c(1, 1)}) or

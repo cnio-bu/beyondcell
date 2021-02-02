@@ -19,7 +19,7 @@ A recomputed \code{beyondcell} object.
 This function recomputes a beyondcell object using the matrix
 stored in the slot \code{@data} (original scores) or \code{@normalized}
 (which can contain subsetted and/or regressed bcscores). Columns added with
-\code{\link[bcAddMetadata]{bcAddMetadata}} are preserved, except if they
+\code{\link[beyondcell]{bcAddMetadata}} are preserved, except if they
 define therapeutic clusters. Important: \code{bc@reductions} and
 \code{bc@background} remain the same, while \code{bc@ranks} and
 \code{bc@reductions} are removed.

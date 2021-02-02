@@ -82,7 +82,7 @@ Mean.Med.SD <- function(x) {
 
 #' @title Computes bcRanks' statistics and ranks
 #' @description This function computes the bcscores' statistics and ranks
-#' returned by \code{\link[bcRnaks]{bcRanks}}.
+#' returned by \code{\link[beyondcell]{bcRanks}}.
 #' @name GetStatistics
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
 #' @param signatures Vector with the names of the signatures of interest.
@@ -298,8 +298,8 @@ GetIDs <- function(values, filter, df = drugInfo) {
 
 #' @title Returns a dataframe with information about the input drugs
 #' @description This function searches information about the inputted drugs in
-#' the pre-loaded \code{\link[beyondcell]{beyondcell}} matrices and returns a
-#' \code{data.frame} with their drug synonyms and MoAs.
+#' the pre-loaded \code{beyondcell} matrices and returns a \code{data.frame}
+#' with their drug synonyms and MoAs.
 #' @name FindDrugs
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
 #' @param x A character vector with drug names and/or sig IDs.

@@ -19,7 +19,7 @@ other hand, if \code{idents != NULL} a histogram for each level found in
 \code{idents} will be drawn.}
 }
 \value{
-A list of \code{\link[ggplot]{ggplot}} histograms, one for each
+A list of \code{\link[ggplot2]{ggplot2}} histograms, one for each
 signature of interest. In each histogram, the median, mean and sd are
 reported. Also, the mean is indicated with a black dashed line and the median
 with a red dashed line.
