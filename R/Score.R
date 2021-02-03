@@ -46,8 +46,8 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
     stop('expr.thres must be a positive number between 0 and 1.')
   }
   # Check that gene names are in the same format.
-  sc.gene.case <- names(which.max(GeneCase(rownames(expr.matrix))))
-  gs.gene.case <- names(which.max(GeneCase(unique(unlist(gs@genelist)))))
+  sc.gene.case <- names(which.max(CaseFraction(rownames(expr.matrix))))
+  gs.gene.case <- names(which.max(CaseFraction(unique(unlist(gs@genelist)))))
   if (sc.gene.case != gs.gene.case) {
     warning(paste0('gs genes are ', sc.gene.case, ' and sc genes are ',
                    gs.gene.case, '. Please check your ', input,
@@ -168,14 +168,14 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
 #' @title Returns the fraction of each case type in the input vector
 #' @description This function computes the fraction of of each case type
 #' (uppercase, lowercase or capitalized) in a character vector.
-#' @name GeneCase
+#' @name CaseFraction
 #' @import useful
 #' @param x Character vector.
 #' @return A named numeric vector with the fractions of each case type.
 #' @examples
 #' @export
 
-GeneCase <- function(x) {
+CaseFraction <- function(x) {
   # --- Checks ---
   if(!is.character(x)) stop('x must be a character vector.')
   # --- Code ---
