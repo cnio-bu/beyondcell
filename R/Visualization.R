@@ -205,7 +205,7 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
 #' custom palette of 3 colours (low, medium and high) to colour all signatures'
 #' plots. If \code{colorscale = NULL} (default), the plots are coloured using
 #' \code{beyondcell}'s own palette.}
-#' \item{\code{alpha}:} {Transparency level between 0 (not transparent) and 1
+#' \item{\code{alpha}:} {Transparency level between 1 (not transparent) and 0
 #' (fully transparent).}
 #' \item{\code{na.value}:} {Colour to use for missing values (\code{NA}s).}
 #' \item{\code{limits}:} {Vector with the desired limits for all signatures'
@@ -639,7 +639,7 @@ bcCellCycle <- function(bc, signatures) {
 #' labelled (either their names and/or sig IDs).
 #' @param force (From \code{ggrepel}) Force of repulsion between overlapping
 #' text labels. Defaults to 1.
-#' @param alpha Transparency level between 0 (not transparent) and 1 (fully
+#' @param alpha Transparency level between 1 (not transparent) and 0 (fully
 #' transparent).
 #' @pt.size Point size.
 #' @details This function returns a list of \code{\link[ggplot2]{ggplot2}}

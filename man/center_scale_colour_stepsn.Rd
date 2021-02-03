@@ -20,7 +20,7 @@ center_scale_colour_stepsn(
 \item{colorscale}{A vector with 5 colours which can be obtained using
 \code{\link[beyondcell]{get_colour_stepsn}}.}
 
-\item{alpha}{Transparency level between 0 (not transparent) and 1 (fully
+\item{alpha}{Transparency level between 1 (not transparent) and 0 (fully
 transparent).}
 
 \item{na.value}{Colour to use for missing values.}

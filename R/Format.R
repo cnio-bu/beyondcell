@@ -89,7 +89,7 @@ get_colour_stepsn <- function(colorscale = NULL) {
 #' @param x A numeric vector. Can contain \code{NA}s.
 #' @param colorscale A vector with 5 colours which can be obtained using
 #' \code{\link[beyondcell]{get_colour_stepsn}}.
-#' @param alpha Transparency level between 0 (not transparent) and 1 (fully
+#' @param alpha Transparency level between 1 (not transparent) and 0 (fully
 #' transparent).
 #' @param na.value Colour to use for missing values.
 #' @param limits Vector with the desired limits.

@@ -31,7 +31,7 @@ labelled (either their names and/or sig IDs).}
 \item{force}{(From \code{ggrepel}) Force of repulsion between overlapping
 text labels. Defaults to 1.}
 
-\item{alpha}{Transparency level between 0 (not transparent) and 1 (fully
+\item{alpha}{Transparency level between 1 (not transparent) and 0 (fully
 transparent).}
 }
 \value{
