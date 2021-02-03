@@ -116,7 +116,7 @@ center_scale_colour_stepsn <- function(x, colorscale, alpha = 0.7,
   range.values <- pretty(x)
   # Check colorscale.
   if (length(colorscale) != 5 |
-      !tryCatch(is.matrix(col2rgb(colorscale)), error = function(e) FALSE)) {
+      !tryCatch(is.matrix(col2rgb(colorscale)), error = function(cond) FALSE)) {
     stop('colorscale must contain exactly 5 colours.')
   }
   # Check alpha.
@@ -124,7 +124,7 @@ center_scale_colour_stepsn <- function(x, colorscale, alpha = 0.7,
     stop('alpha must be a positive number between 0 and 1.')
   }
   # Check na.value.
-  if (!tryCatch(is.matrix(col2rgb(na.value)), error = function(e) FALSE)) {
+  if (!tryCatch(is.matrix(col2rgb(na.value)), error = function(cond) FALSE)) {
     stop('na.value is not a colour.')
   }
   # Check limits.
