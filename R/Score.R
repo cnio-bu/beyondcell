@@ -164,13 +164,13 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
   return(bc)
 }
 
-#' @title Returns the fraction of each case type in the input vector
+#' @title Returns the fraction of each case type in the input
 #' @description This function computes the fraction of of each case type
 #' (uppercase, lowercase or capitalized) in a character vector.
 #' @name GeneCase
 #' @import useful
 #' @param x Character vector.
-#' @return A named numeric vector with the fractions of each case type.
+#' @return A named numeric vector with the fraction of each case type.
 #' @examples
 #' @export
 
@@ -199,7 +199,7 @@ GeneCase <- function(x) {
 #' @description This function computes the switch point of the signatures of a
 #' given \code{\link[beyondcell]{beyondcell}} object. The switch point is the
 #' (subsetted and/or regressed) scaled beyondcell score (BCS) that corresponds
-#' to the point in which the normalized BCS in \code{beyondcell@@data} switch
+#' to the point in which the normalized BCS in \code{beyondcell@@data} switchs
 #' from negative (insensitive) to positive (sensitive) values. The closer to 0,
 #' the more sensitive are the cells to a given drug.
 #' @name SwitchPoint
