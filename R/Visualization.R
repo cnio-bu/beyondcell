@@ -1,21 +1,19 @@
-#' @title Plots the UMAP reduction coloured by metadata information
+#' @title Plots a UMAP reduction coloured by metadata information
 #' @description This function returns a {\link[ggplot2]{ggplot2}} object with
-#' the UMAP reduction (either \code{beyondcell}'s or \code{Seurat}'s) coloured
-#' by the specified metadata column.
+#' a UMAP reduction coloured by the specified metadata column.
 #' @name bcClusters
 #' @import Seurat
 #' @import ggplot2
 #' @import scales
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
 #' @param idents Name of the metadata column to colour by.
-#' @param UMAP UMAP reduction to plot. Either "beyondcell" (computed using
-#' \code{\link[beyondcell]{bcUMAP}}) or "Seurat" computed using \code{Seurat}'s
-#' functions.
+#' @param UMAP UMAP reduction to plot. Either \code{"beyondcell"}, computed
+#' using \code{\link[beyondcell]{bcUMAP}}, or \code{"Seurat"}, obtained using
+#' \code{Seurat}'s functions.
 #' @param factor.col Logical indicating if \code{idents} column is a factor or
-#' not. If \code{idents} is a numerical column (such as \code{percent.mt} or
-#' \code{nFeature_RNA}, \code{factor.col} must be \code{FALSE}).
-#' @param ... Other arguments passed to \code{Seurat}'s
-#' \code{\link[Seurat]{DimPlot}}.
+#' not. Set \code{factor.col = FALSE} if \code{idents} is a numerical column
+#' (such as \code{percent.mt} or \code{nFeature_RNA}).
+#' @param ... Other arguments passed to \code{\link[Seurat]{DimPlot}}.
 #' @return A \code{ggplot2} object with the UMAP reduction coloured by
 #' \code{idents}.
 #' @examples
@@ -73,14 +71,14 @@ bcClusters <- function(bc, idents, UMAP = "beyondcell", factor.col = TRUE,
 }
 
 #' @title Plots a histogram with the BCS of the signature of interest
-#' @description This function drawns a histogram plot of beyondcell scores (BCS)
-#' for each signature of interest. The plot can be a single histogram (if
-#' \code{idents = NULL}) or a histogram for each level found in \code{idents}.
+#' @description This function drawns a histogram of beyondcell scores (BCS) for
+#' each signature of interest. The plot can be a single histogram or a histogram
+#' for each level found in \code{idents}.
 #' @name bcHistogram
 #' @import ggplot2
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
 #' @param signatures Vector with the names of the signatures of interest. If
-#' \code{signatures == "all"}, all signatures are selected.
+#' \code{signatures = "all"}, all signatures are selected.
 #' @param idents Name of the metadata column of interest. If
 #' \code{idents = NULL}, a single histogram with all BCS is drawn. On the other
 #' hand, if \code{idents != NULL} a histogram for each level found in
@@ -184,20 +182,20 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
   return(p)
 }
 
-#' @title Plots the UMAP reduction coloured by BCS or gene expression values
+#' @title Plots a UMAP reduction coloured by BCS or gene expression values
 #' @description This function returns a list of
-#' \code{\link[patchwork]{patchwork}}s or \code{\link[ggplot2]{ggplot2}}s with
-#' the desired UMAP reduction (either \code{beyondcell}'s or \code{Seurat}'s)
-#' coloured by beyondcell scores (BCS) or gene expression values.
+#' \code{\link[patchwork]{patchwork}} or \code{\link[ggplot2]{ggplot2}} objects
+#' with the desired UMAP reduction coloured by beyondcell scores (BCS) or gene
+#' expression values.
 #' @name bcSignatures
 #' @import Seurat
 #' @import ggplot2
 #' @importFrom patchwork wrap_plots
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
-#' @param UMAP UMAP reduction to plot. Either \code{"beyondcell"} (computed
-#' using \code{\link[beyondcell]{bcUMAP}}) or \code{"Seurat"} computed using
-#' \code{\link[Seurat]{Seurat}}'s functions.
-#' @param signatures List with parameters to colour the UMAP by BCS:
+#' @param UMAP UMAP reduction to plot. Either \code{"beyondcell"}, computed
+#' using \code{\link[beyondcell]{bcUMAP}}, or \code{"Seurat"}, obtained using
+#' \code{Seurat}'s functions.
+#' @param signatures List with plot parameters to colour the UMAP by BCS:
 #' \itemize{
 #' \item{\code{values}:} {Vector with the names of the signatures of interest.
 #' If \code{signatures[["values"]] = "all"}, all signatures are selected.}
@@ -216,36 +214,41 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
 #' \item{\code{breaks}:} {A single number indicating the break size of the
 #' \code{colorscale}. Alternatively, it can be a vector with the desired breaks
 #' (which don't have to be symmetric or equally distributed).}}
-#' @param genes List with parameters to colour the UMAP by gene expression
+#' @param genes List with plot parameters to colour the UMAP by gene expression
 #' values:
 #' \itemize{
 #' \item{\code{values}:} {Vector with the names of the genes of interest. If
 #' \code{genes[["values"]] = "all"}, all genes are selected.}
 #' \item{\code{limits}:} {Vector with the desired limits for all genes' plots.
-#' If \code{limits = c(NA, NA)} (default), the \code{limits} are computed for
-#' each gene independently.}
+#' If \code{limits = c(NA, NA)} (default), the \code{limits} are computed
+#' automatically. See Details for  more information.}
 #' \item{\code{share.limits}:} {Logical argument. If \code{share.limits = TRUE},
 #' all genes' plots will have the same \code{limits}. If
 #' \code{share.limits = FALSE} (default), each gene plot will have its own
-#' \code{limits}. Note that if \code{limits != c(NA, NA)},
-#' \code{share.limits = TRUE}.}}
+#' \code{limits}. See Details for more information.}}
 #' @param merged If \code{merged != NULL}, two signatures will be superposed in
 #' the same plot. If \code{merged = "direct"}, the signatures are assumed to
-#' have a direct relationship and the BCS will be added (+). On the other hand,
-#' if \code{merged = "indirect"}, the signatures are assumed to have an indirect
-#' relationship and their BCS will be substracted (-).
-#' @param blend (From \code{Seurat}) Scale and blend expression values to
-#' visualize coexpression of two genes.
+#' have a direct relationship and the BCS will be added. On the other hand, if
+#' \code{merged = "indirect"}, the signatures are assumed to have an indirect
+#' relationship and their BCS will be substracted.
+#' @param blend (From \code{\link[Seurat]{FeaturePlot}}) Scale and blend
+#' expression values to visualise co-expression of two genes.
 #' @param mfrow Numeric vector of the form \code{c(nr, nc)}. \code{nr}
 #' corresponds to the number of rows and \code{nc} to the number of columns of
-#' the arrays in which the plots will be drawn. If you want to draw the plots
+#' the grid in which the plots will be drawn. If you want to draw the plots
 #' individually, set \code{mfrow = c(1, 1)}.
-#' @param ... Other arguments passed to \code{Seurat}'s
-#' \code{\link[Seurat]{FeaturePlot}}.
-#' @return A list of \code{patchwork}s (if \code{mfrow != c(1, 1)}) or
-#' \code{ggplot2}s (if \code{mfrow = c(1, 1)}) of the desired UMAP reduction
-#' coloured by BCS (for signatures) or gene expression values
-#' (for genes).
+#' @param ... Other arguments passed to \code{FeaturePlot}.
+#' @details When \code{genes[["limits"]] = c(NA, NA)}, \code{bcSignatures}
+#' computes the limits automatically. You can make all plots share the same
+#' limits by specifying \code{genes[["share.limits"]] = TRUE}, or make the
+#' function to compute the limits individually for each gene with
+#' \code{genes[["share.limits"]] = FALSE}. Moreover, if you specify a value for
+#' \code{genes[["limits"]]}, \code{genes[["share.limits"]]} will automatically
+#' set to \code{TRUE} and all plots will share those limits.
+#' @return A list of \code{patchwork} (if \code{mfrow != c(1, 1)}) or
+#' \code{ggplot2} objects (if \code{mfrow = c(1, 1)}) of the desired UMAP
+#' reduction coloured by the BCS (for signatures) or gene expression values (for
+#' genes).
 #' @examples
 #' @export
 
@@ -542,22 +545,21 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
   return(final.p)
 }
 
-#' @title Plots a violindot of the BCS grouped by the cell cycle phase
+#' @title Plots a violindot of the BCS grouped by cell cycle phase
 #' @description This function drawns, for each signature of interest, a
 #' \code{\link[see]{geom_violindot}} plot of the beyondcell scores (BCS) grouped
-#' by the cell cycle phase (G1, G2M or S). Note that this information must be
+#' by cell cycle phase (G1, G2M or S). Note that this information must be
 #' present in \code{bc@@meta.data} and can be obtained using
-#' \code{\link[Seurat]{Seurat}}'s function
 #' \code{\link[Seurat]{CellCycleScoring}}.
 #' @name bcCellCycle
 #' @import ggplot2
 #' @importFrom see geom_violindot
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
 #' @param signatures Vector with the names of the signatures of interest. If
-#' \code{signatures == "all"}, all signatures are selected.
+#' \code{signatures = "all"}, all signatures are selected.
 #' @return A list of \code{\link[ggplot2]{ggplot2}} violindots, one for each
-#' signature of interest. In each violindot, the BCS are grouped in G1, G2M or
-#' S phase groups.
+#' signature of interest. In each violindot, the BCS are grouped in G1, G2M or S
+#' phase groups.
 #' @examples
 #' @export
 
@@ -615,15 +617,14 @@ bcCellCycle <- function(bc, signatures) {
   return(p)
 }
 
-#' @title Plots a 4 squares plot
+#' @title Drawns a 4 squares plot
 #' @description This function drawns a 4 square plot of the drug signatures
 #' present in a \code{\link[beyondcell]{beyondcell}} object. A 4 squares plot
-#' consists in a scatter plot of the residuals' means of BCS (x axis) vs the
-#' switch points (y axis). 4 quadrants are highlighted: the top-left and
-#' bottom-right corners contain the drugs to which all selected cells are
-#' least/most sensistive, respectively. The centre quadrants show the drugs to
-#' which half of the selected cells are sensitive and the other half
-#' insensitive.
+#' consists in a scatter plot of the BCS' residuals (x axis) vs the switch
+#' points (y axis). 4 quadrants are highlighted: the top-left and bottom-right
+#' corners contain the drugs to which all selected cells are least/most
+#' sensistive, respectively. The centre quadrants show the drugs to which half
+#' of the selected cells are sensitive and the other half insensitive.
 #'
 #' x cut-offs: first and last deciles; y cut-offs: 0.1, 0.4, 0.6 and 0.9.
 #' @name bc4Squares
@@ -632,20 +633,20 @@ bcCellCycle <- function(bc, signatures) {
 #' @importFrom cowplot theme_cowplot
 #' @param bc \code{beyondcell} object.
 #' @param idents Name of the metadata column of interest.
-#' @param lvl Character vector with the \code{idents}' level of interest. If
+#' @param lvl Character vector with the \code{idents}' level(s) of interest. If
 #' \code{lvl = NULL}, all levels will be plotted.
-#' @param top Number of top drugs per group to be labelled.
+#' @param top Number of top drugs per quadrant to be labelled.
 #' @param topnames Character vector with additional interesting drugs to be
-#' labelled (either their names and/or sig IDs).
-#' @param force (From \code{ggrepel}) Force of repulsion between overlapping
-#' text labels. Defaults to 1.
+#' labelled (either their names or sig IDs).
+#' @param force (From \code{\link[ggrepel]{ggrepel}}) Force of repulsion between
+#' overlapping text labels. Defaults to 1.
 #' @param alpha Transparency level between 1 (not transparent) and 0 (fully
 #' transparent).
-#' @pt.size Point size.
+#' @param pt.size Point size.
 #' @details This function returns a list of \code{\link[ggplot2]{ggplot2}}
-#' objects, one per each \code{lvl}. Note that residuals' means are different
-#' for each level while swicth points are signature-specific. So, x axis will
-#' vary and y axis will remain constant accross all plots.
+#' objects, one per each \code{lvl}. Note that residuals are different for each
+#' level while swicth points are signature-specific. So, x axis will vary and y
+#' axis will remain constant accross all plots.
 #' @return A list of \code{ggplot2} objects, one per \code{lvl}.
 #' @examples
 #' @export

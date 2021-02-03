@@ -2,7 +2,7 @@
 % Please edit documentation in R/Visualization.R
 \name{bcCellCycle}
 \alias{bcCellCycle}
-\title{Plots a violindot of the BCS grouped by the cell cycle phase}
+\title{Plots a violindot of the BCS grouped by cell cycle phase}
 \usage{
 bcCellCycle(bc, signatures)
 }
@@ -10,18 +10,17 @@ bcCellCycle(bc, signatures)
 \item{bc}{\code{\link[beyondcell]{beyondcell}} object.}
 
 \item{signatures}{Vector with the names of the signatures of interest. If
-\code{signatures == "all"}, all signatures are selected.}
+\code{signatures = "all"}, all signatures are selected.}
 }
 \value{
 A list of \code{\link[ggplot2]{ggplot2}} violindots, one for each
-signature of interest. In each violindot, the BCS are grouped in G1, G2M or
-S phase groups.
+signature of interest. In each violindot, the BCS are grouped in G1, G2M or S
+phase groups.
 }
 \description{
 This function drawns, for each signature of interest, a
 \code{\link[see]{geom_violindot}} plot of the beyondcell scores (BCS) grouped
-by the cell cycle phase (G1, G2M or S). Note that this information must be
+by cell cycle phase (G1, G2M or S). Note that this information must be
 present in \code{bc@meta.data} and can be obtained using
-\code{\link[Seurat]{Seurat}}'s function
 \code{\link[Seurat]{CellCycleScoring}}.
 }

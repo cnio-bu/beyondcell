@@ -10,7 +10,7 @@ bcHistogram(bc, signatures, idents = NULL)
 \item{bc}{\code{\link[beyondcell]{beyondcell}} object.}
 
 \item{signatures}{Vector with the names of the signatures of interest. If
-\code{signatures == "all"}, all signatures are selected.}
+\code{signatures = "all"}, all signatures are selected.}
 
 \item{idents}{Name of the metadata column of interest. If
 \code{idents = NULL}, a single histogram with all BCS is drawn. On the other
@@ -24,7 +24,7 @@ reported. Also, the mean is indicated with a black dashed line and the median
 with a red dashed line.
 }
 \description{
-This function drawns a histogram plot of beyondcell scores (BCS)
-for each signature of interest. The plot can be a single histogram (if
-\code{idents = NULL}) or a histogram for each level found in \code{idents}.
+This function drawns a histogram of beyondcell scores (BCS) for
+each signature of interest. The plot can be a single histogram or a histogram
+for each level found in \code{idents}.
 }
