@@ -1,5 +1,5 @@
 #' @title Ranks the signatures from most sensitive to least sensitive
-#' @description  This function computes the beyondcell scores' (BCS) statistics
+#' @description  This function computes the beyondcell score's (BCS) statistics
 #' of each signature and ranks them according to the switch point and mean.
 #' @name bcRanks
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
@@ -8,12 +8,12 @@
 #' \code{idents != NULL}, the signatures' ranks are computed for each level in
 #' \code{idents}.
 #' @param extended If \code{extended = TRUE}, this function returns the switch
-#' point, mean, median, sd, variance, min, max, proportion of \code{NaN} and
-#' residuals' mean per signature. If \code{extended = FALSE}, this function
-#' returns only the switch point, mean and residuals' mean.
-#' @return A \code{beyondcell object} with the results in a new entry of
-#' \code{bc@@ranks} (\code{bc@@ranks$general} if \code{idents = NULL} or
-#' \code{bc@@ranks$idents} if \code{idents != NULL}).
+#' point, mean, median, standard deviation, variance, min, max, proportion of
+#' \code{NaN} and residuals' mean per signature. If \code{extended = FALSE},
+#' this function returns only the switch point, mean and residuals' mean.
+#' @return A \code{beyondcell} object with the results in a new entry of
+#' \code{bc@@ranks}: \code{bc@@ranks[["general"]]} (if \code{idents = NULL}) or
+#' \code{bc@@ranks[[idents]]} (if \code{idents != NULL}).
 #' @examples
 #' @export
 
@@ -134,17 +134,18 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE) {
 
 #' @title Returns the first/last n ranked signatures
 #' @description  This function returns the top/bottom \code{n} signatures ranked
-#' according to the beyondcell score (BCS) of cells that satisfy
-#' \code{bc@@meta.data$idents == cond}.
+#' by \code{\link[beyondcell]{bcRanks}}. If the rank has not been previously
+#' computed, \code{rankSigs} performs the ranking itself.
 #' @name rankSigs
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
 #' @param idents Name of the metadata column of interest. If
-#' \code{idents = NULL}, the function computes the ranks using all cells.
+#' \code{idents = NULL}, the function uses the general rank computed with all
+#' cells.
 #' @param cond Level of \code{idents} to rank by the output vector. If
 #' \code{idents = NULL}, this parameter is deprecated.
 #' @param n Number of signatures to return in the output vector.
-#' @param decreasing Return the top \code{n} signatures (default) or the bottom
-#' \code{n} signatures (\code{decreasing = FALSE}).
+#' @param decreasing Logical. Return the top \code{n} signatures (default) or
+#' the bottom \code{n} signatures (\code{decreasing = FALSE})?.
 #' @return An ordered vector with the signature's names.
 #' @examples
 #' @export
