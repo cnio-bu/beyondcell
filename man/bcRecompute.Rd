@@ -7,20 +7,19 @@
 bcRecompute(bc, slot = "data")
 }
 \arguments{
-\item{bc}{\code{\link[beyondcell]{beyondcell}} object.}
+\item{bc}{\code{beyondcell} object.}
 
-\item{slot}{Matrix to recompute the beyondcell object. Either \code{"data"}
-or \code{"normalized"}.}
+\item{slot}{Score matrix to recompute the \code{beyondcell} object. Either
+\code{"data"} or \code{"normalized"}.}
 }
 \value{
 A recomputed \code{beyondcell} object.
 }
 \description{
-This function recomputes a beyondcell object using the matrix
-stored in the slot \code{@data} (original BCS) or \code{@normalized}
-(which can contain subsetted and/or regressed BCS). Columns added with
-\code{\link[beyondcell]{bcAddMetadata}} are preserved, except if they
-define therapeutic clusters. Important: \code{bc@reductions} and
-\code{bc@background} remain the same, while \code{bc@ranks} and
-\code{bc@reductions} are removed.
+This function recomputes a \code{\link[beyondcell]{beyondcell}}
+object using the matrix stored in the slot \code{@data} (original scores) or
+\code{@normalized} (which can contain subsetted and/or regressed scores).
+Columns added with \code{\link[beyondcell]{bcAddMetadata}} are preserved,
+except if they define therapeutic clusters. Important: \code{bc@background}
+remains the same, while \code{bc@ranks} and \code{bc@reductions} are removed.
 }
