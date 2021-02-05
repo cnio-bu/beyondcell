@@ -14,61 +14,66 @@ GenerateGenesets(
 )
 }
 \arguments{
-\item{x}{A pre-loaded matrix, a numeric matrix or a path to a GMT file with
-custom genesets.}
+\item{x}{A pre-loaded matrix, a ranked matrix or a path to a GMT file with
+custom gene sets. See Details for more information.}
 
-\item{n.genes}{Number of top and/or down genes in the desired genelists.}
+\item{n.genes}{Number of up and/or down-regulated genes used to compute each
+signature.}
 
-\item{mode}{\code{"up"}, \code{"down"} or \code{c("up", "down")}. See Details
-for more information.}
+\item{mode}{Whether the output \code{geneset} must contain up and/or
+down-regulated genes. See Details for more information.}
 
 \item{filters}{If \code{x} is a pre-loaded matrix, you can provide a list of
-filters to subset these matrices. You can specify which drug names, sig IDs,
-mechanisms of action (MoAs), target genes and sources you are interested in
-(cap insensitive). You can call \code{\link[beyondcell]{ListFilters}} to
-check all the available values for these filters. The signatures that pass
-\strong{ANY} of these filters are included in the output.}
+filters to subset it. You can specify which \code{drugs}, sig \code{IDs},
+mechanisms of action (\code{MoAs}), \code{targets} and/or \code{sources} you
+are interested in (cap insensitive). You can call
+\code{\link[beyondcell]{ListFilters}} to check all the available values for
+these filters. The signatures that pass \strong{ANY} of them are included in
+the output.}
 
 \item{comparison}{\code{"treated_vs_control"} or
-\code{"control_vs_treated"}. See Details for more information.}
+\code{"sensitive_vs_resistant"}. See Details for more information.}
 
-\item{include.pathways}{\code{TRUE} (default) or \code{FALSE}. Whether or
-not return \code{beyoncell}'s pre-computed genesets for functional pathways.}
+\item{include.pathways}{Logical. Return \code{beyoncell}'s pre-computed
+signatures for functional pathways?}
 }
 \value{
-A \code{\link[beyondcell]{geneset}} object with up and/or down genes
-for each drug and pathway.
+A \code{geneset} object.
 }
 \description{
-This function generates up and/or down genelists for each drug
-and pathway.
+This function creates a \code{\link[beyondcell]{geneset}}
+object.
 }
 \details{
 \code{x} can be:
 \itemize{
 \item{A pre-loaded matrix:} {Either \code{PSc}, \code{SSc} or \code{DSS}.}
-\item{A numeric matrix:} {A matrix with genes as rows and signatures as
+\item{A ranked matrix:} {A matrix with genes as rows and signatures as
 columns that contains some type of numerical value such a t-stat or a LFC to
 rank the genes accordingly.}
-\item{A path to a GMT file:} {A file that contains custom genesets. Each
-geneset must have an "_UP" or "_DOWN" suffix.}
+\item{A path to a GMT file:} {A file that contains custom gene sets. Each
+gene set must have an "_UP" or "_DOWN" suffix.}
 }
 In addition, \code{mode} can be:
 \itemize{
-\item{\code{"up"}:} {To return over-expressed genes in the signatures.}
-\item{\code{"down"}:} {To return under-expressed genes in the signatures.}
+\item{\code{"up"}:} {To compute the signatures using only up-regulated
+genes.}
+\item{\code{"down"}:} {To compute the signatures using only down-regulated
+genes.}
+\item{\code{c("up", "down")} :} {To compute the signatures using both up and
+down-regulated genes.}
 }
 If \code{x} is a path to a GMT file, \code{mode} is deprecated and the names
-of all genesets must end in "_UP" or "_DOWN" to indicate the mode of each
-one.
+of all gene sets must end in "_UP" or "_DOWN" to indicate the \code{mode} of
+each one.
 
 Finally, \code{comparison} can be:
 \itemize{
 \item{\code{"treated_vs_control"}:} {(\code{PSc} and \code{DSS} like) When
-the numeric values or the genesets in the GMT file were obtained from a
+the numeric values or the gene sets in the GMT file were obtained from a
 comparison between drug treated and untreated cells.}
-\item{\code{"control_vs_treated"}:} {(\code{SSc} like) When the numeric
-values or the genesets in the GMT file were obtained from a comparison
+\item{\code{"sensitive_vs_resistant"}:} {(\code{SSc} like) When the numeric
+values or the gene sets in the GMT file were obtained from a comparison
 between drug sensitive and resistant cells.}
 }
 When \code{x} is a pre-loaded matrix, \code{comparison} is set automatically.
