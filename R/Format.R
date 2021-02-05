@@ -1,9 +1,8 @@
-#' @title Returns a vector of colours to use in
-#' \code{center_scale_colour_stepsn}
+#' @title Returns a vector of 5 colours
 #' @description This function gets a colour palette and returns a vector with 5
 #' colour values to be used in
 #' \code{\link[beyondcell]{center_scale_colour_stepsn}}.
-#' @name get_colour_stepsn
+#' @name get_colour_steps
 #' @importFrom viridis viridis
 #' @importrom RColorBrewer brewer.pal
 #' @param colorscale Either a \code{viridis}, \code{RColorBrewer} or a custom
@@ -80,15 +79,15 @@ get_colour_stepsn <- function(colorscale = NULL) {
   return(colors)
 }
 
-#' @title Creates a centred diverging binned colour gradient
-#' @description This function creates a diverging binned colour gradient
+#' @title Creates a centred sequential binned colour gradient
+#' @description This function creates a sequential binned colour gradient
 #' (low-mid-high) centred around \code{center}.
 #' @name center_scale_colour_stepsn
 #' @import ggplot2
 #' @import scales
-#' @param x A numeric vector. Can contain \code{NA}s.
-#' @param colorscale A vector with 5 colours which can be obtained using
-#' \code{\link[beyondcell]{get_colour_stepsn}}.
+#' @param x A numeric vector. It can contain \code{NA}s.
+#' @param colorscale A vector with 5 colours that can be obtained using
+#' \code{\link[beyondcell]{get_colour_steps}}.
 #' @param alpha Transparency level between 1 (not transparent) and 0 (fully
 #' transparent).
 #' @param na.value Colour to use for missing values.
@@ -98,11 +97,9 @@ get_colour_stepsn <- function(colorscale = NULL) {
 #' \code{x}.
 #' @param breaks A single number indicating the break size of the
 #' \code{colorscale}. Alternatively, it can be a vector with the desired breaks
-#' (which don't have to be symmetric or equally distributed). If \code{center}
-#' is a vector of two numbers, \code{breaks} are computed using the difference
-#' between them.
-#' @return A centred diverging binned colour gradient that can be use to colour
-#' \code{\link[ggplot2]{ggplot2}} objects.
+#' (which don't have to be symmetric or equally distributed).
+#' @return A centred sequential binned colour gradient that can be used to
+#' colour \code{\link[ggplot2]{ggplot2}} objects.
 #' @examples
 #' @export
 
@@ -283,10 +280,10 @@ center_scale_colour_stepsn <- function(x, colorscale, alpha = 0.7,
 #' @description This function breaks a string \code{x} formed by elements
 #' separated by \code{split} into lines of length \code{line.length}.
 #' @name BreakString
-#' @param x String to be breaked, formed by elements separated by \code{split}.
+#' @param x String to be broken, formed by elements separated by \code{split}.
 #' @param split Character that separates the elements of \code{x}.
-#' @param line.length Length of the lines into which \code{x} will be breaked.
-#' @return A string with the same contents that \code{x} breaked in lines of
+#' @param line.length Length of the lines into which \code{x} will be broken.
+#' @return A string with the same content as \code{x} broken in lines of
 #' length \code{line.length}.
 #' @examples
 #' @export
