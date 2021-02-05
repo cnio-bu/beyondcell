@@ -157,11 +157,11 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
     ### Comparison.
     if (is.null(comparison)) {
       stop(paste('Comparison must be either "treated_vs_control" or',
-                 '"control_vs_treated".'))
+                 '"sensitive_vs_resistant".'))
     } else if (length(comparison) != 1 |
-               !(comparison[1] %in% c("treated_vs_control", "control_vs_treated"))) {
+               !(comparison[1] %in% c("treated_vs_control", "sensitive_vs_resistant"))) {
       stop(paste('Comparison must be either "treated_vs_control" or',
-                 '"control_vs_treated".'))
+                 '"sensitive_vs_resistant".'))
     }
   } else {
     ### Filters.
@@ -174,16 +174,16 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
     selected.filters <- selected.filters[!sapply(filters, is.null)]
     ### Comparison.
     if (is.null(comparison)) {
-      if(is.D[2]) comparison <- "control_vs_treated"
+      if(is.D[2]) comparison <- "sensitive_vs_resistant"
       else comparison <- "treated_vs_control"
     } else {
       if (length(comparison) != 1 |
-          !(comparison[1] %in% c("treated_vs_control", "control_vs_treated"))) {
+          !(comparison[1] %in% c("treated_vs_control", "sensitive_vs_resistant"))) {
         stop('Incorrect comparison.')
       }
-      if (is.D[2] & comparison != "control_vs_treated") {
-        comparison <- "control_vs_treated"
-        warning('x = SSc, comparison changed to "control_vs_treated".')
+      if (is.D[2] & comparison != "sensitive_vs_resistant") {
+        comparison <- "sensitive_vs_resistant"
+        warning('x = SSc, comparison changed to "sensitive_vs_resistant".')
       } else if (!is.D[2] & comparison != "treated_vs_control") {
         comparison <- "treated_vs_control"
         warning(paste0('x = ', c("PSc", "SSc", "DSS")[is.D], ', comparison ',
