@@ -341,7 +341,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
   gene <- unique(genes[["values"]][in.genes])
   features <- c(sigs, gene)
   # Check signature's colorscale.
-  signatures[["colorscale"]] <- get_colour_stepsn(signatures[["colorscale"]])
+  signatures[["colorscale"]] <- get_colour_steps(signatures[["colorscale"]])
   # Check signatures' alpha, na.value and breaks -> inside center_scale_colour_stepsn().
   # Check signatures' limits.
   if (length(signatures[["limits"]]) != 2) {
