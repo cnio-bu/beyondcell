@@ -12,7 +12,7 @@
 #' @examples
 #' @export
 
-get_colour_stepsn <- function(colorscale = NULL) {
+get_colour_steps <- function(colorscale = NULL) {
   # --- Checks and Code ---
   default <- c("#1D61F2", "#98B9FF", "#F7F7F7", "#FF9CBB", "#DA0078")
   # Check colorscale and get its value.
