@@ -2,23 +2,23 @@
 % Please edit documentation in R/Basics.R
 \name{GetIDs}
 \alias{GetIDs}
-\title{Returns the \code{sig_ids} that match the specified values}
+\title{Returns the IDs that match the specified filter's values}
 \usage{
 GetIDs(values, filter, df = drugInfo)
 }
 \arguments{
-\item{values}{User-supplied filtering vector for either drugs, MoAs, target
-genes or source databases.}
+\item{values}{User-supplied filtering vector.}
 
-\item{filter}{Column name to subset by. You can also spcify the colum}
+\item{filter}{Column name or number to subset by.}
 
-\item{df}{\code{data.frame} with all drug information.}
+\item{df}{\code{data.frame} with drug information. It must contain, at least,
+two columns: \code{"IDs"} and \code{filter}.}
 }
 \value{
-A vector with the \code{sig_ids} that match the \code{filter}'s
-elements.
+A vector with the IDs that match the \code{filter}'s values.
 }
 \description{
 This function subsets \code{df} to select only the entries that
-match the specified \code{values} and returns the corresponding \code{sig_ids}.
+match the specified \code{filter}'s \code{values} and returns the
+corresponding IDs.
 }

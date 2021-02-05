@@ -1,9 +1,9 @@
 #' @title Substracts to the first element of a vector the rest of elements
-#' @description This function substracts to the first element of a numerical
+#' @description This function substracts to the first element of a numeric
 #' vector (\code{x[1]}) the rest of elements of the same vector.
 #' (\code{x[2:length(x)]}).
 #' @name minus
-#' @param x Numerical vector
+#' @param x Numeric vector.
 #' @param na.rm (From \code{base}) Logical. Should missing values (including
 #' \code{NaN}) be removed?
 #' @return The result of the substraction.
@@ -26,14 +26,14 @@ minus <- function(x, na.rm = FALSE) {
   return(out)
 }
 
-#' @title Substracts to the first row of a rectangular object the rest of rows
-#' @description This function substracts to the first row of a numerical
-#' rectangular object (\code{x[1, ]}) the rest of rows of the same rectangular
-#' object (\code{x[2:length(x), ]}).
+#' @title Computes the column substraction
+#' @description This function substracts to the first element of each column of
+#' a rectangular object (\code{x[1, n]}) the rest of elements of the same column
+#' (\code{x[2:length(x), n]}).
 #' @name colMinus
-#' @param x A matrix or a data frame.
+#' @param x A matrix or a dataframe.
 #' @param na.rm (From \code{base}) Logical. Should missing values (including
-#' \code{NaN}) from rows 2:length(x) be omitted from the calculations?
+#' \code{NaN}) from rows \code{2:length(x)} be omitted from the calculations?
 #' @return A numeric rectangular object with the result of the substraction.
 #' @examples
 #' @export
@@ -59,9 +59,11 @@ colMinus <- function(x, na.rm = FALSE) {
 
 #' @title Computes the mean, the median and the sd of a vector
 #' @description This function computes the mean, the median and the sd of a
-#' vector removing \code{NA} values.
+#' vector.
 #' @name Mean.Med.SD
-#' @param x A numeric vector for which to compute the statistics.
+#' @param x Numeric vector.
+#' @param na.rm (From base) Logical. Should missing values (including NaN) be
+#' removed?
 #' @return A named numeric vector with the mean, median and sd of \code{x}.
 #' @examples
 #' @export
@@ -80,23 +82,23 @@ Mean.Med.SD <- function(x) {
                   c("mean", "median", "sd")))
 }
 
-#' @title Computes bcRanks' statistics and ranks
+#' @title Computes the BCS' statistics and ranks
 #' @description This function computes the beyondcell scores' (BCS) statistics
 #' and ranks returned by \code{\link[beyondcell]{bcRanks}}.
 #' @name GetStatistics
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
 #' @param signatures Vector with the names of the signatures of interest.
 #' @param cells Vector with the names of the cells of interest.
-#' @param pb Progress bar.
-#' @param total Number of iterations to complete the progress bar.
-#' @param i Iteration number; used for increasing the progress bar.
-#' @param n.rows Number of signatures; used for increasing the progress bar.
+#' @param pb \code{\link[utils]{txtProgressBar}}.
+#' @param total Number of iterations to complete the \code{pb}.
+#' @param i Iteration number. Used to increase the \code{pb}.
+#' @param n.rows Number of signatures. Used to increase the \code{pb}.
 #' @param extended If \code{extended = TRUE}, this function returns the switch
 #' point, mean, median, sd, variance, min, max, proportion of \code{NaN} and
 #' residuals' mean per signature. If \code{extended = FALSE}, this function
 #' returns only the switch point, mean and residuals' mean.
 #'
-#' @return A \code{data.frame} with the statistics and ranks per signature.
+#' @return A \code{data.frame} with the BCS' statistics and ranks.
 #' @examples
 #' @export
 
@@ -239,16 +241,16 @@ GetStatistics <- function(bc, signatures, cells, pb, total, i, n.rows,
   return(stats)
 }
 
-#' @title Returns the \code{sig_ids} that match the specified values
+#' @title Returns the IDs that match the specified filter's values
 #' @description This function subsets \code{df} to select only the entries that
-#' match the specified \code{values} and returns the corresponding \code{sig_ids}.
+#' match the specified \code{filter}'s \code{values} and returns the
+#' corresponding IDs.
 #' @name GetIDs
-#' @param values User-supplied filtering vector for either drugs, MoAs, target
-#' genes or source databases.
-#' @param filter Column name to subset by. You can also spcify the colum
-#' @param df \code{data.frame} with all drug information.
-#' @return A vector with the \code{sig_ids} that match the \code{filter}'s
-#' elements.
+#' @param values User-supplied filtering vector.
+#' @param filter Column name or number to subset by.
+#' @param df \code{data.frame} with drug information. It must contain, at least,
+#' two columns: \code{"IDs"} and \code{filter}.
+#' @return A vector with the IDs that match the \code{filter}'s values.
 #' @export
 
 GetIDs <- function(values, filter, df = drugInfo) {
@@ -297,24 +299,23 @@ GetIDs <- function(values, filter, df = drugInfo) {
 }
 
 #' @title Returns a dataframe with information about the input drugs
-#' @description This function searches information about the inputted drugs in
-#' the pre-loaded \code{beyondcell} matrices and returns a \code{data.frame}
-#' with their drug synonyms and MoAs.
+#' @description This function searches the input drugs in the pre-loaded
+#' \code{beyondcell} matrices and returns a dataframe with drug information,
+#' including drug synonyms and MoAs.
 #' @name FindDrugs
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
 #' @param x A character vector with drug names and/or sig IDs.
-#' @param na.rm Logical. Should \code{x} entries with no available data be
-#' removed from the final output?
+#' @param na.rm Logical. Should \code{x} entries with no available information
+#' be removed from the final output?
 #' @details The output \code{data.frame} has the following columns:
 #' \itemize{
-#' \item{\code{original.names}}: Inputted drug name.
-#' \item{\code{bc.names}}: Drug name used in \code{bc}.
-#' \item{\code{preferred.drug.names}}: Drug name used in \code{beyondcell}
-#' plots.
+#' \item{\code{original.names}}: Input drug names.
+#' \item{\code{bc.names}}: Drug names used in \code{bc}.
+#' \item{\code{preferred.drug.names}}: Standard drug names.
 #' \item{\code{drugs}}: Other drug names.
-#' \item{\code{sig_id}}: Signature ID.
-#' \item{\code{preferred.and.sigs}}: \code{preferred.drug.names} (or
-#' alternatively \code{bc.names}) and \code{IDs}.
+#' \item{\code{IDs}}: Signature IDs.
+#' \item{\code{preferred.and.sigs}}: \code{preferred.drug.names} (or alternatively
+#' \code{bc.names}) and \code{IDs}. Used as title in \code{beyondcell} plots.
 #' \item{\code{MoAs}}: Mechanism(s) of action.
 #' }
 #' @return A \code{data.frame}.
