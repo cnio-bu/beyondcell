@@ -1,55 +1,59 @@
 #' @title Creates a geneset object
-#' @description This function generates up and/or down genelists for each drug
-#' and pathway.
+#' @description This function creates a \code{\link[beyondcell]{geneset}}
+#' object.
 #' @name GenerateGenesets
 #' @importFrom qusage read.gmt
 #' @importFrom gdata trim
-#' @param x A pre-loaded matrix, a numeric matrix or a path to a GMT file with
-#' custom genesets.
-#' @param n.genes Number of top and/or down genes in the desired genelists.
-#' @param mode \code{"up"}, \code{"down"} or \code{c("up", "down")}. See Details
-#' for more information.
+#' @param x A pre-loaded matrix, a ranked matrix or a path to a GMT file with
+#' custom gene sets. See Details for more information.
+#' @param n.genes Number of up and/or down-regulated genes used to compute each
+#' signature.
+#' @param mode Whether the output \code{geneset} must contain up and/or
+#' down-regulated genes. See Details for more information.
 #' @param filters If \code{x} is a pre-loaded matrix, you can provide a list of
-#' filters to subset these matrices. You can specify which drug names, sig IDs,
-#' mechanisms of action (MoAs), target genes and sources you are interested in
-#' (cap insensitive). You can call \code{\link[ListFilters]{ListFilters}} to
-#' check all the available values for these filters. The signatures that pass
-#' \strong{ANY} of these filters are included in the output.
+#' filters to subset it. You can specify which \code{drugs}, sig \code{IDs},
+#' mechanisms of action (\code{MoAs}), \code{targets} and/or \code{sources} you
+#' are interested in (cap insensitive). You can call
+#' \code{\link[beyondcell]{ListFilters}} to check all the available values for
+#' these filters. The signatures that pass \strong{ANY} of them are included in
+#' the output.
 #' @param comparison \code{"treated_vs_control"} or
-#' \code{"control_vs_treated"}. See Details for more information.
-#' @param include.pathways \code{TRUE} (default) or \code{FALSE}. Whether or
-#' not return \code{beyoncell}'s pre-computed genesets for functional pathways.
+#' \code{"sensitive_vs_resistant"}. See Details for more information.
+#' @param include.pathways Logical. Return \code{beyoncell}'s pre-computed
+#' signatures for functional pathways?
 #' @details \code{x} can be:
 #' \itemize{
-#' \item{A pre-loaded matrix:} {Either \code{\link[PSc]{PSc}},
-#' \code{\link[SSc]{SSc}} or \code{\link[DSS]{DSS}}.}
-#' \item{A numeric matrix:} {A matrix with genes as rows and signatures as
-#' columns that contains some type of numerical value such a t-stat or a LFC to
+#' \item{A pre-loaded matrix:} {Either \code{PSc}, \code{SSc} or \code{DSS}.}
+#' \item{A ranked matrix:} {A matrix with genes as rows and signatures as
+#' columns that contains some type of numeric value such a t-stat or a LFC to
 #' rank the genes accordingly.}
-#' \item{A path to a GMT file:} {A file that contains custom genesets. Each
-#' geneset must have an "_UP" or "_DOWN" suffix.}
+#' \item{A path to a GMT file:} {A file that contains custom gene sets. Each
+#' gene set must have an "_UP" or "_DOWN" suffix.}
 #' }
 #' In addition, \code{mode} can be:
 #' \itemize{
-#' \item{\code{"up"}:} {To return over-expressed genes in the signatures.}
-#' \item{\code{"down"}:} {To return under-expressed genes in the signatures.}
+#' \item{\code{"up"}:} {To compute the signatures using only up-regulated
+#' genes.}
+#' \item{\code{"down"}:} {To compute the signatures using only down-regulated
+#' genes.}
+#' \item{\code{c("up", "down")} :} {To compute the signatures using both up and
+#' down-regulated genes.}
 #' }
 #' If \code{x} is a path to a GMT file, \code{mode} is deprecated and the names
-#' of all genesets must end in "_UP" or "_DOWN" to indicate the mode of each
-#' one.
+#' of all gene sets must end in "_UP" or "_DOWN" to indicate the \code{mode} of
+#' each one.
 #'
 #' Finally, \code{comparison} can be:
 #' \itemize{
 #' \item{\code{"treated_vs_control"}:} {(\code{PSc} and \code{DSS} like) When
-#' the numeric values or the genesets in the GMT file were obtained from a
+#' the numeric values or the gene sets in the GMT file were obtained from a
 #' comparison between drug treated and untreated cells.}
-#' \item{\code{"control_vs_treated"}:} {(\code{SSc} like) When the numeric
-#' values or the genesets in the GMT file were obtained from a comparison
+#' \item{\code{"sensitive_vs_resistant"}:} {(\code{SSc} like) When the numeric
+#' values or the gene sets in the GMT file were obtained from a comparison
 #' between drug sensitive and resistant cells.}
 #' }
 #' When \code{x} is a pre-loaded matrix, \code{comparison} is set automatically.
-#' @return A \code{\link[geneset]{geneset}} object with up and/or down genes for
-#' each drug and pathway.
+#' @return A \code{geneset} object.
 #' @examples
 #' @export
 
@@ -157,11 +161,11 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
     ### Comparison.
     if (is.null(comparison)) {
       stop(paste('Comparison must be either "treated_vs_control" or',
-                 '"sensitive_vs_resistant".'))
+                 '"control_vs_treated".'))
     } else if (length(comparison) != 1 |
-               !(comparison[1] %in% c("treated_vs_control", "sensitive_vs_resistant"))) {
+               !(comparison[1] %in% c("treated_vs_control", "control_vs_treated"))) {
       stop(paste('Comparison must be either "treated_vs_control" or',
-                 '"sensitive_vs_resistant".'))
+                 '"control_vs_treated".'))
     }
   } else {
     ### Filters.
@@ -174,16 +178,16 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
     selected.filters <- selected.filters[!sapply(filters, is.null)]
     ### Comparison.
     if (is.null(comparison)) {
-      if(is.D[2]) comparison <- "sensitive_vs_resistant"
+      if(is.D[2]) comparison <- "control_vs_treated"
       else comparison <- "treated_vs_control"
     } else {
       if (length(comparison) != 1 |
-          !(comparison[1] %in% c("treated_vs_control", "sensitive_vs_resistant"))) {
+          !(comparison[1] %in% c("treated_vs_control", "control_vs_treated"))) {
         stop('Incorrect comparison.')
       }
-      if (is.D[2] & comparison != "sensitive_vs_resistant") {
-        comparison <- "sensitive_vs_resistant"
-        warning('x = SSc, comparison changed to "sensitive_vs_resistant".')
+      if (is.D[2] & comparison != "control_vs_treated") {
+        comparison <- "control_vs_treated"
+        warning('x = SSc, comparison changed to "control_vs_treated".')
       } else if (!is.D[2] & comparison != "treated_vs_control") {
         comparison <- "treated_vs_control"
         warning(paste0('x = ', c("PSc", "SSc", "DSS")[is.D], ', comparison ',
@@ -298,7 +302,7 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
 #' @title Returns all the possible values for the specified filter
 #' @description This function returns all the available values for \code{drugs},
 #' \code{IDs}, \code{MoAs}, \code{targets} or \code{sources} filters in
-#' \code{\link[GenerateGenesets]{GenerateGenesets}} function.
+#' \code{\link[beyondcell]{GenerateGenesets}} function.
 #' @name ListFilters
 #' @param entry Either \code{"drugs"}, \code{"IDs"}, \code{"MoAs"},
 #' \code{"targets"} or \code{"sources"}.

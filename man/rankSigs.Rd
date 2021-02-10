@@ -10,21 +10,22 @@ rankSigs(bc, idents = NULL, cond = NULL, n = 10, decreasing = TRUE)
 \item{bc}{\code{\link[beyondcell]{beyondcell}} object.}
 
 \item{idents}{Name of the metadata column of interest. If
-\code{idents = NULL}, the function computes the ranks using all cells.}
+\code{idents = NULL}, the function uses the general rank computed with all
+cells.}
 
 \item{cond}{Level of \code{idents} to rank by the output vector. If
 \code{idents = NULL}, this parameter is deprecated.}
 
 \item{n}{Number of signatures to return in the output vector.}
 
-\item{decreasing}{Return the top \code{n} signatures (default) or the bottom
-\code{n} signatures (\code{decreasing = FALSE}).}
+\item{decreasing}{Logical. Return the top \code{n} signatures (default) or
+the bottom \code{n} signatures (\code{decreasing = FALSE})?.}
 }
 \value{
 An ordered vector with the signature's names.
 }
 \description{
 This function returns the top/bottom \code{n} signatures ranked
-according to the bcscores of cells that satisfy
-\code{bc@meta.data$idents == cond}.
+by \code{\link[beyondcell]{bcRanks}}. If the rank has not been previously
+computed, \code{rankSigs} performs the ranking itself.
 }
