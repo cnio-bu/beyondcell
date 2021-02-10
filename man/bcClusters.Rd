@@ -16,8 +16,8 @@ using \code{\link[beyondcell]{bcUMAP}}, or \code{"Seurat"}, obtained using
 \code{Seurat}'s functions.}
 
 \item{factor.col}{Logical indicating if \code{idents} column is a factor or
-not. Set \code{factor.col = FALSE} if \code{idents} is a numerical column
-(such as \code{percent.mt} or \code{nFeature_RNA}).}
+not. Set \code{factor.col = FALSE} if \code{idents} is a numeric column (such
+as \code{percent.mt} or \code{nFeature_RNA}).}
 
 \item{...}{Other arguments passed to \code{\link[Seurat]{DimPlot}}.}
 }

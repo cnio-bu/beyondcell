@@ -49,7 +49,7 @@ object.
 \itemize{
 \item{A pre-loaded matrix:} {Either \code{PSc}, \code{SSc} or \code{DSS}.}
 \item{A ranked matrix:} {A matrix with genes as rows and signatures as
-columns that contains some type of numerical value such a t-stat or a LFC to
+columns that contains some type of numeric value such a t-stat or a LFC to
 rank the genes accordingly.}
 \item{A path to a GMT file:} {A file that contains custom gene sets. Each
 gene set must have an "_UP" or "_DOWN" suffix.}
