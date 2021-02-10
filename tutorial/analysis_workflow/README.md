@@ -61,7 +61,7 @@ PSc and SSc signatures can also be filtered according to several values. Moreove
 #### Compute the BCS
 ```r
 # Compute score for the PSc. This might take a few minutes depending on the size of your dataset.
-bc <- bcScore(sc, gs, expr.thres = 0.1) 
+bc <- bcScore(sc, gset, expr.thres = 0.1) 
 ```
 > TIP: we recommend to input cells with at least 1000-1500 genes detected.
 
