@@ -6,31 +6,16 @@
 \usage{
 center_scale_colour_stepsn(
   x,
+  colorscale,
+  alpha = 0.7,
+  na.value = "grey50",
   limits = c(NA, NA),
   center = NULL,
-  breaks = 0.1,
-  colorscale = NULL,
-  alpha = 0.7,
-  na.value = "grey50"
+  breaks = 0.1
 )
 }
 \arguments{
 \item{x}{A numeric vector. Can contain \code{NA}s.}
-
-\item{limits}{Vector with the desired limits.}
-
-\item{center}{A single number indicating the center of the \code{colorscale}.
-Alternatively, the \code{center} can be a vector of two numbers. In this
-case, the \code{center} of the \code{colorscale} is the middle point between
-these two numbers and the \code{breaks} are computed using the difference
-between them. If \code{center = NULL} (default), the center is set to the
-middle point of \code{x}.}
-
-\item{breaks}{A single number indicating the break size of the
-\code{colorscale}. Alternatively, it can be a vector with the desired breaks
-(which don't have to be symmetric or equally distributed). If \code{center}
-is a vector of two numbers, \code{breaks} are computed using the difference
-between them.}
 
 \item{colorscale}{A vector with 5 colors which can be obtained using
 \code{\link[get_colour_stepsn]{get_colour_stepsn}}.}
@@ -39,6 +24,18 @@ between them.}
 transparent).}
 
 \item{na.value}{Color to use for missing values.}
+
+\item{limits}{Vector with the desired limits.}
+
+\item{center}{A single number indicating the center of the \code{colorscale}.
+If \code{center = NULL} (default), the center is set to the middle point of
+\code{x}.}
+
+\item{breaks}{A single number indicating the break size of the
+\code{colorscale}. Alternatively, it can be a vector with the desired breaks
+(which don't have to be symmetric or equally distributed). If \code{center}
+is a vector of two numbers, \code{breaks} are computed using the difference
+between them.}
 }
 \value{
 A centered diverging binned colour gradient that can be use to color

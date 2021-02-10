@@ -4,16 +4,16 @@
 \alias{bcClusters}
 \title{Plots the UMAP reduction colored by metadata information}
 \usage{
-bcClusters(bc, UMAP = "beyondcell", idents = NULL, factor.col = TRUE, ...)
+bcClusters(bc, idents, UMAP = "beyondcell", factor.col = TRUE, ...)
 }
 \arguments{
 \item{bc}{\code{\link[beyondcell]{beyondcell}} object.}
 
+\item{idents}{Name of the metadata column to color by.}
+
 \item{UMAP}{UMAP reduction to plot. Either "beyondcell" (computed using
 \code{\link[bcUMAP]{bcUMAP}}) or "Seurat" computed using \code{Seurat}'s
 functions.}
-
-\item{idents}{Name of the metadata column to color by.}
 
 \item{factor.col}{Logical indicating if \code{idents} column is a factor or
 not. If \code{idents} is a numerical column (such as \code{percent.mt} or

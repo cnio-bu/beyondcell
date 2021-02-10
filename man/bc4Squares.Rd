@@ -6,7 +6,7 @@
 \usage{
 bc4Squares(
   bc,
-  idents = NULL,
+  idents,
   lvl = NULL,
   top = 3,
   topnames = NULL,
@@ -40,17 +40,18 @@ A list of \code{ggplot2} objects, one per \code{lvl}.
 \description{
 This function drawns a 4 square plot of the drug signatures
 present in a \code{\link[beyondcell]{beyondcell}} object. A 4 squares plot
-consists in a scatter plot of the bcscores' residuals (x axis) vs the switch
-points (y axis). 4 quadrants are highlighted: the top-left and bottom-right
-corners contain the drugs to which all selected cells are most/least
-sensistive, respectively. The centre quadrants show the drugs to which half
-of the selected cells are sensitive and the other half insensitive.
+consists in a scatter plot of the residuals' means of BCS (x axis) vs the
+switch points (y axis). 4 quadrants are highlighted: the top-left and
+bottom-right corners contain the drugs to which all selected cells are
+least/most sensistive, respectively. The centre quadrants show the drugs to
+which half of the selected cells are sensitive and the other half
+insensitive.
 
 x cut-offs: first and last deciles; y cut-offs: 0.1, 0.4, 0.6 and 0.9.
 }
 \details{
 This function returns a list of \code{\link[ggplot2]{ggplot2}}
-objects, one per each \code{lvl}. Note that residuals are different for each
-level while swicth points are signature-specific. So, x axis will vary and y
-axis will remain constant accross all plots.
+objects, one per each \code{lvl}. Note that residuals' means are different
+for each level while swicth points are signature-specific. So, x axis will
+vary and y axis will remain constant accross all plots.
 }
