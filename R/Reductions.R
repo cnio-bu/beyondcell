@@ -56,16 +56,15 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
   # Check pc.
   if (!is.null(pc)) {
-    if (length(pc) != 1 | !is.numeric(pc) | pc[1] < 2) {
-      stop('pc must be an integer >= 2.')
-    }
+    if (length(pc) != 1 | pc[1] < 2) stop('pc must be an integer >= 2.')
   }
   # Check k.neighbors.
-  if (length(k.neighbors) != 1 | !is.numeric(k.neighbors) | k.neighbors < 1) {
+  if (length(k.neighbors) != 1 | k.neighbors < 1) {
     stop('k.neighbors must be a positive integer.')
   }
   # Check res.
-  if (!all(sapply(res, is.numeric)) | any(sapply(res, function(x) x < 0))) {
+  if (any(sapply(res, function(x) !is.numeric(x))) |
+      any(sapply(res, function(y) y < 0))) {
     stop('res must be a vector of numbers >= 0.')
   }
   # Check add.DSS.
@@ -74,22 +73,23 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
   if (length(add.DSS) != 1 | !is.logical(add.DSS)) {
     stop('add.DSS must be TRUE or FALSE.')
   } else if (!add.DSS) {
-    if (n.drugs < 3) {
+    if (n.drugs <= 10) {
       stop(paste('Only', n.drugs, 'drug signatures (excluding pathways) are',
-                 'present in bc object, please set add.DSS = TRUE.'))
-    } else if (n.drugs < 20) {
+                 'present in the bc object, please set add.DSS = TRUE.'))
+    } else if (n.drugs <= 20) {
       warning(paste('Computing an UMAP reduction for', n.drugs,
                     'drugs. We recommend to set add.DSS = TRUE when the number',
-                    'of signatures (excluding pathways) is below 20.'))
+                    'of signatures (excluding pathways) is below or equal to 20.'))
     }
   }
   # Check elbow.path.
   if (!is.null(elbow.path)) {
     if (length(elbow.path) != 1 | !is.character(elbow.path)) {
-      stop(paste('To save the Elbow plot, you must specify a character string',
+      stop(paste('To save the elbow plot, you must specify a character string',
                  'with the desired destination.'))
     } else {
-      parent.dir <- sub("(.*\\/)([^.]+)(\\.[[:alnum:]]+$)", "\\1", elbow.path)
+      parent.dir <- sub(pattern = "(.*\\/)([^.]+)(\\.[[:alnum:]]+$)",
+                        replacement = "\\1", x = elbow.path)
       if (!dir.exists(parent.dir)) {
         stop(paste(parent.dir, 'path not found.'))
       }
@@ -99,33 +99,35 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
   # Cells in bc.
   cells <- colnames(bc@normalized)
   if (add.DSS) {
-    ### DSS (background) beyondcell scores.
-    if (!identical(sort(rownames(bc@background)), sort(DSS[[1]]$sig_id)) |
-        !identical(sort(colnames(bc@background)), sort(cells)) |
+    ### DSS (background) BCS.
+    if (!identical(sort(rownames(bc@background), decreasing = FALSE),
+                   sort(DSS[[1]]$sig_id, decreasing = FALSE)) |
+        !identical(sort(colnames(bc@background), decreasing = FALSE),
+                   sort(cells, decreasing = FALSE)) |
         !identical(bc@regression$order, bc@regression$order.background)) {
-      message('Computing background beyondcell scores using DSS signatures...')
+      message('Computing background BCS using DSS signatures...')
       ### Genesets.
       gs.background <- suppressMessages(
         GenerateGenesets(DSS, n.genes = bc@n.genes, mode = bc@mode,
                          include.pathways = FALSE))
-      ### Beyondcell score.
+      ### BCS.
       background <- suppressWarnings(
-        bcScore(bc@expr.matrix, gs.background, expr.thres = bc@thres))
+        bcScore(bc@expr.matrix, gs = gs.background, expr.thres = bc@thres))
       ### Add metadata.
       background@meta.data <- background@meta.data[, -c(1:ncol(background@meta.data))]
-      background <- bcAddMetatada(background, metadata = bc@meta.data)
+      background <- bcAddMetadata(background, metadata = bc@meta.data)
       ### Subset and regress (if needed).
       if (bc@regression$order[1] == "subset") {
         background <- bcSubset(background, cells = cells)
       } else if (bc@regression$order[1] == "regression") {
-        message('Regressing background scores...')
+        message('Regressing background BCS...')
         background <- suppressMessages(
           bcRegressOut(background, vars.to.regress = bc@regression[["vars"]]))
       }
       if (bc@regression$order[2] == "subset") {
         background <- bcSubset(background, cells = cells)
       } else if (bc@regression$order[2] == "regression") {
-        message('Regressing background scores...')
+        message('Regressing background BCS...')
         background <- suppressMessages(
           bcRegressOut(background, vars.to.regress = bc@regression[["vars"]]))
       }
@@ -134,7 +136,7 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
       ### Add order.background to bc@regression.
       bc@regression[["order.background"]] <- bc@regression[["order"]]
     } else {
-      message('Background beyondcell scores already computed. Skipping this step.')
+      message('Background BCS already computed. Skipping this step.')
     }
     ### Add background to bc.
     all.rows <- unique(c(rownames(bc@normalized), rownames(bc@background)))
@@ -143,7 +145,7 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
     merged.score <- t(apply(merged.score, 1, scales::rescale, to = c(0, 1)))
     bc.merged <- beyondcell(scaled = merged.score)
   } else {
-    ### No background DSS beyondcell scores.
+    ### No background BCS.
     message(paste('DSS background not computed. UMAP will be created just with',
                   'the drugs (not pathways) in bc object.'))
     bc.merged <- bc
@@ -156,10 +158,10 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
   # Elbow plot.
   elbowplot <- Seurat::ElbowPlot(sc, ndims = 50) + ggplot2::theme(legend.position = "bottom")
   if (is.null(elbow.path)) {
-    message('Printing Elbow plot...')
+    message('Printing elbow plot...')
     print(elbowplot)
   } else {
-    message(paste('Saving Elbow plot in', elbow.path))
+    message(paste('Saving elbow plot in', elbow.path))
     ggplot2::ggsave(elbow.path, plot = elbowplot)
   }
   if (!is.null(pc)) {
