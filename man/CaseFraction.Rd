@@ -2,7 +2,7 @@
 % Please edit documentation in R/Score.R
 \name{CaseFraction}
 \alias{CaseFraction}
-\title{Returns the fraction of each case type in the input vector}
+\title{Returns the fraction of each case type in the input}
 \usage{
 CaseFraction(x)
 }
@@ -10,7 +10,7 @@ CaseFraction(x)
 \item{x}{Character vector.}
 }
 \value{
-A named numeric vector with the fractions of each case type.
+A named numeric vector with the fraction of each case type.
 }
 \description{
 This function computes the fraction of of each case type

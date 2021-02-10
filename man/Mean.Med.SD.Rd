@@ -7,12 +7,15 @@
 Mean.Med.SD(x)
 }
 \arguments{
-\item{x}{A numeric vector for which to compute the statistics.}
+\item{x}{Numeric vector.}
+
+\item{na.rm}{(From base) Logical. Should missing values (including NaN) be
+removed?}
 }
 \value{
 A named numeric vector with the mean, median and sd of \code{x}.
 }
 \description{
 This function computes the mean, the median and the sd of a
-vector removing \code{NA} values.
+vector.
 }

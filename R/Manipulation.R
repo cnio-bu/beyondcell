@@ -1,27 +1,27 @@
 #' @title Subsets a beyondcell object
 #' @description This function subsets a \code{\link[beyondcell]{beyondcell}}
-#' object based on the names of the signatures, cells and/or the maximum desired
-#' proportion of \code{NaN} values in each signature and/or cell. See Details
-#' for more information.
+#' object based on signature names, cells and/or the maximum proportion of
+#' \code{NaN} values desired in each signature and/or cell. See Details for more
+#' information.
 #' @name bcSubset
 #' @param bc \code{beyondcell} object.
 #' @param signatures Vector with the names of the signatures to subset by. If
 #' \code{signatures = NULL}, all signatures will be kept.
-#' @param bg.signatures Vector with the names of the \code{@@background}
-#' signatures to subset by. If \code{bg.signatures = NULL}, all background
-#' signatures will be kept.
+#' @param bg.signatures Vector with the names of the background signatures to
+#' subset by. If \code{bg.signatures = NULL}, all background signatures will be
+#' kept.
 #' @param cells Vector with the names of the cells to subset by. If
 #' \code{cells = NULL}, all cells will be kept.
-#' @param nan.sigs Maximum desired proportion of \code{NaN} values per signature
-#' in the output \code{beyondcell} object. All signatures with a proportion of
+#' @param nan.sigs Maximum proportion of \code{NaN} values per signature in the
+#' output \code{beyondcell} object. All signatures with a proportion of
 #' \code{NaN > nan.sig} will be removed.
-#' @param nan.cells Maximum desired proportion of \code{NaN} values per cell
-#' in the output \code{beyondcell} object. All cells with a proportion of
+#' @param nan.cells Maximum proportion of \code{NaN} values per cell in the
+#' output \code{beyondcell} object. All cells with a proportion of
 #' \code{NaN > nan.cells} will be removed.
 #' @details This function can subset a \code{beyondcell} object using its 5
 #' parameters alone or in combination.
 #'
-#' So, for example if you specify \code{signatures} and \code{cells}, the
+#' So, for example, if you specify \code{signatures} and \code{cells}, the
 #' resulting \code{beyondcell} object (except the \code{@@background} slot) will
 #' be subsetted according to those vectors. The slot \code{@@background} will be
 #' only subsetted according to \code{cells}. If you want to subset it by
@@ -29,14 +29,14 @@
 #'
 #' On the other hand, if you specify \code{cells} and \code{nan.sigs}, the
 #' output \code{beyondcell} object will keep the selected cells and those
-#' signatures with aproportion of \code{NaN} values above \code{nan.sigs}. Note
-#' that \code{nan.sigs} and \code{nan.cells} arguments also subset the
-#' signatures and cells that do not meet the criteria in \code{@@background}
-#' slot.
+#' signatures with a proportion of \code{NaN} values below or equal to
+#' \code{nan.sigs}. Note that \code{nan.sigs} and \code{nan.cells} arguments
+#' also subset the signatures and cells that meet the criteria in
+#' \code{@@background} slot.
 #'
 #' Finally, if you specify all parameters, the result will keep those signatures
-#' and cells of interest with a proportion of \code{NaN} above \code{nan.sigs}
-#' and \code{nan.cells} respectively.
+#' and cells of interest with a proportion of \code{NaN} below or equal to
+#' \code{nan.sigs} and \code{nan.cells}, respectively.
 #' @return A subsetted \code{beyondcell} object.
 #' @examples
 #' @export
@@ -169,16 +169,15 @@ bcSubset <- function(bc, signatures = NULL, bg.signatures = NULL, cells = NULL,
   return(bc)
 }
 
-#' @title Regress out unwanted effects from beyondcell scores
+#' @title Regresses out unwanted effects from BCS
 #' @description This function regresses out unwanted effects from normalized
-#' beyondcell scores.
+#' beyondcell scores (BCS).
 #' @name bcRegressOut
 #' @importFrom bnstruct knn.impute
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
-#' @param vars.to.regress Vector of metadata columns to regress out the
-#' beyondcell scores.
-#' @return Returns a \code{beyondcell} object with regressed normalized scores,
-#' regressed scaled scores and regressed switch points.
+#' @param vars.to.regress Vector of metadata columns to regress out the BCS.
+#' @return Returns a \code{beyondcell} object with regressed normalized BCS,
+#' regressed scaled BCS and regressed switch points.
 #' @examples
 #' @export
 
@@ -316,18 +315,17 @@ bcRegressOut <- function(bc, vars.to.regress) {
 }
 
 #' @title Recomputes a beyondcell object
-#' @description This function recomputes a beyondcell object using the matrix
-#' stored in the slot \code{@@data} (original scores) or \code{@@normalized}
-#' (which can contain subsetted and/or regressed bcscores). Columns added with
-#' \code{\link[bcAddMetadata]{bcAddMetadata}} are preserved, except if they
-#' define therapeutic clusters. Important: \code{bc@reductions} and
-#' \code{bc@background} remain the same, while \code{bc@ranks} and
-#' \code{bc@reductions} are removed.
+#' @description This function recomputes a \code{\link[beyondcell]{beyondcell}}
+#' object using the matrix stored in the slot \code{@@data} (original scores) or
+#' \code{@@normalized} (which can contain subsetted and/or regressed scores).
+#' Columns added with \code{\link[beyondcell]{bcAddMetadata}} are preserved,
+#' except if they define therapeutic clusters. Important: \code{bc@background}
+#' remains the same, while \code{bc@ranks} and \code{bc@reductions} are removed.
 #' @name bcRecompute
 #' @import scales
-#' @param bc \code{\link[beyondcell]{beyondcell}} object.
-#' @param slot Matrix to recompute the beyondcell object. Either \code{"data"}
-#' or \code{"normalized"}.
+#' @param bc \code{beyondcell} object.
+#' @param slot Score matrix to recompute the \code{beyondcell} object. Either
+#' \code{"data"} or \code{"normalized"}.
 #' @return A recomputed \code{beyondcell} object.
 #' @examples
 #' @export
@@ -370,15 +368,15 @@ bcRecompute <- function(bc, slot = "data") {
   return(bc)
 }
 
-#' @title Add new metadata columns to an existing beyondcell object
-#' @description This function adds new metadata columns to an existing
+#' @title Add new metadata to an existing beyondcell object
+#' @description This function adds new metadata to an existing
 #' \code{\link[beyondcell]{beyondcell}} object.
 #' @name bcAddMetadata
 #' @param bc \code{beyondcell} object.
 #' @param metadata Matrix or dataframe with metadata to add. Rownames should be
 #' cell names and colnames should not be already present in
-#' \code{beyondcell@@meta.data}.
-#' @return Returns a \code{beyondcell} object with new added metadata columns.
+#' \code{bc@@meta.data}.
+#' @return Returns a \code{beyondcell} object with updated metadata.
 #' @examples
 #' @export
 
@@ -409,8 +407,8 @@ bcAddMetadata <- function(bc, metadata) {
 #' @title Merges two beyondcell objects
 #' @description This function merges two \code{\link[beyondcell]{beyondcell}}
 #' objects obtained from the same single-cell matrix using the same
-#' \code{expr.thres} (See \code{\link[bcScore]{bcScore}} for more information).
-#' It binds signatures, not cells.
+#' \code{expr.thres} (see \code{\link[beyondcell]{bcScore}} for more
+#' information). It binds signatures, not cells.
 #' @name bcMerge
 #' @importFrom plyr join
 #' @param bc1 First \code{beyondcell} object to merge.
@@ -490,10 +488,10 @@ bcMerge <- function(bc1, bc2) {
 #' @import scales
 #' @param bc \code{beyondcell} object.
 #' @details This function creates a new \code{beyondcell} object by using the
-#' \code{@@normalized} scores as the original \code{@@data}. Switch points are
-#' recomputed and \code{@@regression} is restarted. The expression and
-#' metadata matrices are subsetted to keep only those cells present in the new
-#' \code{@@data} slot.
+#' normalized BCS as the original \code{@@data}. Switch points are
+#' recomputed and \code{@@regression} is restarted. The \code{@@expr.matrix} and
+#' \code{@@meta.data} slots are subsetted to keep only those cells present in
+#' the new \code{@@data} slot.
 #' @return A new \code{beyondcell} object.
 #' @examples
 #' @export

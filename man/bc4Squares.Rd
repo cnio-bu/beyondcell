@@ -2,7 +2,7 @@
 % Please edit documentation in R/Visualization.R
 \name{bc4Squares}
 \alias{bc4Squares}
-\title{Plots a 4 squares plot}
+\title{Drawns a 4 squares plot}
 \usage{
 bc4Squares(
   bc,
@@ -20,19 +20,21 @@ bc4Squares(
 
 \item{idents}{Name of the metadata column of interest.}
 
-\item{lvl}{Character vector with the \code{idents}' level of interest. If
+\item{lvl}{Character vector with the \code{idents}' level(s) of interest. If
 \code{lvl = NULL}, all levels will be plotted.}
 
-\item{top}{Number of top drugs per group to be labelled.}
+\item{top}{Number of top drugs per quadrant to be labelled.}
 
 \item{topnames}{Character vector with additional interesting drugs to be
-labelled (either their names and/or sig IDs).}
+labelled (either their names or sig IDs).}
 
-\item{force}{(From \code{ggrepel}) Force of repulsion between overlapping
-text labels. Defaults to 1.}
+\item{force}{(From \code{\link[ggrepel]{ggrepel}}) Force of repulsion between
+overlapping text labels. Defaults to 1.}
 
-\item{alpha}{Transparency level between 0 (not transparent) and 1 (fully
+\item{alpha}{Transparency level between 1 (not transparent) and 0 (fully
 transparent).}
+
+\item{pt.size}{Point size.}
 }
 \value{
 A list of \code{ggplot2} objects, one per \code{lvl}.
@@ -40,12 +42,11 @@ A list of \code{ggplot2} objects, one per \code{lvl}.
 \description{
 This function drawns a 4 square plot of the drug signatures
 present in a \code{\link[beyondcell]{beyondcell}} object. A 4 squares plot
-consists in a scatter plot of the residuals' means of BCS (x axis) vs the
-switch points (y axis). 4 quadrants are highlighted: the top-left and
-bottom-right corners contain the drugs to which all selected cells are
-least/most sensistive, respectively. The centre quadrants show the drugs to
-which half of the selected cells are sensitive and the other half
-insensitive.
+consists in a scatter plot of the residuals' means (x axis) vs the switch
+points (y axis). 4 quadrants are highlighted: the top-left and bottom-right
+corners contain the drugs to which all selected cells are least/most
+sensistive, respectively. The centre quadrants show the drugs to which half
+of the selected cells are sensitive and the other half insensitive.
 
 x cut-offs: first and last deciles; y cut-offs: 0.1, 0.4, 0.6 and 0.9.
 }

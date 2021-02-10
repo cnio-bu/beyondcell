@@ -2,21 +2,20 @@
 % Please edit documentation in R/Manipulation.R
 \name{bcRegressOut}
 \alias{bcRegressOut}
-\title{Regress out unwanted effects from beyondcell scores}
+\title{Regresses out unwanted effects from BCS}
 \usage{
 bcRegressOut(bc, vars.to.regress)
 }
 \arguments{
 \item{bc}{\code{\link[beyondcell]{beyondcell}} object.}
 
-\item{vars.to.regress}{Vector of metadata columns to regress out the
-beyondcell scores.}
+\item{vars.to.regress}{Vector of metadata columns to regress out the BCS.}
 }
 \value{
-Returns a \code{beyondcell} object with regressed normalized scores,
-regressed scaled scores and regressed switch points.
+Returns a \code{beyondcell} object with regressed normalized BCS,
+regressed scaled BCS and regressed switch points.
 }
 \description{
 This function regresses out unwanted effects from normalized
-beyondcell scores.
+beyondcell scores (BCS).
 }

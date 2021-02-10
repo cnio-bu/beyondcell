@@ -11,28 +11,27 @@ FindDrugs(bc, x, na.rm = TRUE)
 
 \item{x}{A character vector with drug names and/or sig IDs.}
 
-\item{na.rm}{Logical. Should \code{x} entries with no available data be
-removed from the final output?}
+\item{na.rm}{Logical. Should \code{x} entries with no available information
+be removed from the final output?}
 }
 \value{
 A \code{data.frame}.
 }
 \description{
-This function searches information about the inputted drugs in
-the pre-loaded \code{\link[beyondcell]{beyondcell}} matrices and returns a
-\code{data.frame} with their drug synonyms and MoAs.
+This function searches the input drugs in the pre-loaded
+\code{beyondcell} matrices and returns a dataframe with drug information,
+including drug synonyms and MoAs.
 }
 \details{
 The output \code{data.frame} has the following columns:
 \itemize{
-\item{\code{original.names}}: Inputted drug name.
-\item{\code{bc.names}}: Drug name used in \code{bc}.
-\item{\code{preferred.drug.names}}: Drug name used in \code{beyondcell}
-plots.
+\item{\code{original.names}}: Input drug names.
+\item{\code{bc.names}}: Drug names used in \code{bc}.
+\item{\code{preferred.drug.names}}: Standard drug names.
 \item{\code{drugs}}: Other drug names.
-\item{\code{sig_id}}: Signature ID.
-\item{\code{preferred.and.sigs}}: \code{preferred.drug.names} (or
-alternatively \code{bc.names}) and \code{IDs}.
+\item{\code{IDs}}: Signature IDs.
+\item{\code{preferred.and.sigs}}: \code{preferred.drug.names} (or alternatively
+\code{bc.names}) and \code{IDs}. Used as title in \code{beyondcell} plots.
 \item{\code{MoAs}}: Mechanism(s) of action.
 }
 }

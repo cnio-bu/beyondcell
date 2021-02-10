@@ -4,29 +4,28 @@
 \name{geneset-class}
 \alias{geneset-class}
 \alias{geneset}
-\title{An S4 class to represent the genesets of each drug}
+\title{Geneset class}
 \description{
-An S4 class to represent the genesets of each drug
+An object to represent signatures.
 }
 \section{Slots}{
 
 \describe{
-\item{\code{genelist}}{A list of drug and functional signatures (\code{pathways})
-with up and/or down-regulated genes.}
+\item{\code{genelist}}{A list of drug signatures and functional \code{pathways} (if
+specified) with up and/or down-regulated genes.}
 
-\item{\code{n.genes}}{Argument passed to
-\code{\link[GenerateGenesets]{GenerateGenesets}}.}
+\item{\code{n.genes}}{Argument passed to \code{\link[beyondcell]{GenerateGenesets}}.
+Number of up and/or down-regulated genes per signature.}
 
-\item{\code{mode}}{Argument passed to
-\code{\link[GenerateGenesets]{GenerateGenesets}}.}
+\item{\code{mode}}{Argument passed to \code{GenerateGenesets}. Whether the
+\code{geneset} contains up and/or down-regulated genes.}
 
-\item{\code{info}}{If \code{GenerateGenesets}' input is a pre-loaded matrix,
-\code{info} will be a \code{data.frame} with the correspondences between
-\code{sig_ids} and drug names, as well as the source of the pre-loaded
-matrices (LINCS, CTRP, GDSC or CCLE). If \code{GenerateGenesets}' input is a
-path to a GMT file, \code{info} will be empty.}
+\item{\code{info}}{Dataframe with drug signatures information, including sig IDs,
+drug names, MoAs, target genes and data sources (LINCS, CTRP, GDSC or CCLE).
+This slot is only filled if \code{GenerateGenesets}' input is a pre-loaded
+matrix.}
 
-\item{\code{comparison}}{Argument passed to
-\code{\link[GenerateGenesets]{GenerateGenesets}}.}
+\item{\code{comparison}}{Argument passed to \code{GenerateGenesets}. Either
+\code{"treated_vs_control"} or \code{"control_vs_treated"}.}
 }}
 

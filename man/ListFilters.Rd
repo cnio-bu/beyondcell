@@ -16,5 +16,5 @@ All the possible values for the specified \code{entry}.
 \description{
 This function returns all the available values for \code{drugs},
 \code{IDs}, \code{MoAs}, \code{targets} or \code{sources} filters in
-\code{\link[GenerateGenesets]{GenerateGenesets}} function.
+\code{\link[beyondcell]{GenerateGenesets}} function.
 }
