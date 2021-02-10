@@ -2,10 +2,9 @@
 % Please edit documentation in R/Format.R
 \name{get_colour_steps}
 \alias{get_colour_steps}
-\alias{get_colour_stepsn}
 \title{Returns a vector of 5 colours}
 \usage{
-get_colour_stepsn(colorscale = NULL)
+get_colour_steps(colorscale = NULL)
 }
 \arguments{
 \item{colorscale}{Either a \code{viridis}, \code{RColorBrewer} or a custom

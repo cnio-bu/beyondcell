@@ -343,7 +343,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
   gene <- unique(genes[["values"]][in.genes])
   features <- c(sigs, gene)
   # Check signature's colorscale.
-  signatures[["colorscale"]] <- get_colour_stepsn(signatures[["colorscale"]])
+  signatures[["colorscale"]] <- get_colour_steps(signatures[["colorscale"]])
   # Check signatures' alpha, na.value and breaks -> inside center_scale_colour_stepsn().
   # Check signatures' limits.
   if (length(signatures[["limits"]]) != 2) {
@@ -620,7 +620,7 @@ bcCellCycle <- function(bc, signatures) {
 #' @title Drawns a 4 squares plot
 #' @description This function drawns a 4 square plot of the drug signatures
 #' present in a \code{\link[beyondcell]{beyondcell}} object. A 4 squares plot
-#' consists in a scatter plot of the BCS' residuals (x axis) vs the switch
+#' consists in a scatter plot of the residuals' means (x axis) vs the switch
 #' points (y axis). 4 quadrants are highlighted: the top-left and bottom-right
 #' corners contain the drugs to which all selected cells are least/most
 #' sensistive, respectively. The centre quadrants show the drugs to which half
@@ -644,9 +644,9 @@ bcCellCycle <- function(bc, signatures) {
 #' transparent).
 #' @param pt.size Point size.
 #' @details This function returns a list of \code{\link[ggplot2]{ggplot2}}
-#' objects, one per each \code{lvl}. Note that residuals are different for each
-#' level while swicth points are signature-specific. So, x axis will vary and y
-#' axis will remain constant accross all plots.
+#' objects, one per each \code{lvl}. Note that residuals' means are different
+#' for each level while swicth points are signature-specific. So, x axis will
+#' vary and y axis will remain constant accross all plots.
 #' @return A list of \code{ggplot2} objects, one per \code{lvl}.
 #' @examples
 #' @export

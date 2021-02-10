@@ -245,7 +245,7 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
       return(l)
     })
     names(genes) <- ids
-    # Else if x is a numeric matrix...
+    # Else if x is a ranked matrix...
   } else if (type == "matrix") {
     genes <- apply(x, 2, FUN = function(sig) {
       l <- list()
