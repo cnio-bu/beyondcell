@@ -4,7 +4,7 @@
 \alias{bcRegressOut}
 \title{Regress out unwanted effects from beyondcell scores}
 \usage{
-bcRegressOut(bc, vars.to.regress = NULL)
+bcRegressOut(bc, vars.to.regress)
 }
 \arguments{
 \item{bc}{\code{\link[beyondcell]{beyondcell}} object.}

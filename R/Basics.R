@@ -33,7 +33,7 @@ minus <- function(x, na.rm = FALSE) {
 #' @name colMinus
 #' @param x A matrix or a data frame.
 #' @param na.rm (From \code{base}) Logical. Should missing values (including
-#' \code{NaN}) be omitted from the calculations?
+#' \code{NaN}) from rows 2:length(x) be omitted from the calculations?
 #' @return A numeric rectangular object with the result of the substraction.
 #' @examples
 #' @export
@@ -50,11 +50,9 @@ colMinus <- function(x, na.rm = FALSE) {
   }
   # --- Code ---
   # If x has a single row, append a row of zeros so we can run the next step.
-  if (dim(x)[1] == 1) x <- rbind(x, rep(0, ncol(x)))
-  # If na.rm == TRUE, remove NAs from the first.row.
-  if (na.rm) first.row <- na.omit(x[1, , drop = FALSE])
-  else first.row <- x[1, , drop = FALSE]
+  if (dim(x)[1] == 1) x <- rbind(x, rep(0, times = ncol(x)))
   # Substract to the first row of x the rest of rows.
+  first.row <- x[1, , drop = FALSE]
   out <- first.row - colSums(x[2:nrow(x), , drop = FALSE], na.rm = na.rm)
   return(out)
 }
@@ -108,7 +106,7 @@ GetStatistics <- function(bc, signatures, cells, pb, total, i, n.rows,
   # Check that bc is a beyondcell object.
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
   # Check signatures.
-  in.signatures <- signatures %in% rownames(bc@normalized)
+  in.signatures <- !is.null(signatures) & signatures %in% rownames(bc@normalized)
   if (all(!in.signatures)) {
     stop('None of the specified signatures were found.')
   } else if (any(!in.signatures)) {
@@ -116,7 +114,7 @@ GetStatistics <- function(bc, signatures, cells, pb, total, i, n.rows,
                    paste0(signatures[!in.signatures], collapse = ", "), '.'))
   }
   # Check cells.
-  in.cells <- cells %in% colnames(bc@normalized)
+  in.cells <- !is.null(cells) & cells %in% colnames(bc@normalized)
   if (all(!in.cells)) {
     stop('None of the specified cells were found.')
   } else if (any(!in.cells)) {
@@ -154,11 +152,11 @@ GetStatistics <- function(bc, signatures, cells, pb, total, i, n.rows,
     data <- cbind(seq_len(n.rows) + (n.rows * 6) * (i - 1),
                   bc@data[signatures, cells])
     mean.med.sd <- as.data.frame(t(apply(data, 1, function(u) {
-      mms <- round(Mean.Med.SD(u[-1]), 2)
+      mms <- round(Mean.Med.SD(u[-1]), digits = 2)
       ### Update the progress bar.
       if (u[1]%%bins == 0) {
         Sys.sleep(0.1)
-        setTxtProgressBar(pb, u[1])
+        setTxtProgressBar(pb, value = u[1])
       }
       return(mms)
     })))
@@ -169,40 +167,40 @@ GetStatistics <- function(bc, signatures, cells, pb, total, i, n.rows,
       ### Update the progress bar.
       if (v[1]%%bins == 0) {
         Sys.sleep(0.1)
-        setTxtProgressBar(pb, v[1])
+        setTxtProgressBar(pb, value = v[1])
       }
       return(variance)
     })
-    # Min normalized bcscore per signature.
+    # Min normalized BCS per signature.
     data[, 1] <- data[, 1] + n.rows
     min.bcscore <- apply(data, 1, function(w) {
       min.bcs <- min(w[-1], na.rm = TRUE)
       ### Update the progress bar.
       if (w[1]%%bins == 0) {
         Sys.sleep(0.1)
-        setTxtProgressBar(pb, w[1])
+        setTxtProgressBar(pb, value = w[1])
       }
       return(min.bcs)
     })
-    # Max normalized bcscore per signature.
+    # Max normalized BCS per signature.
     data[, 1] <- data[, 1] + n.rows
     max.bcscore <- apply(data, 1, function(x) {
       max.bcs <- max(x[-1], na.rm = TRUE)
       ### Update the progress bar.
       if (x[1]%%bins == 0) {
         Sys.sleep(0.1)
-        setTxtProgressBar(pb, x[1])
+        setTxtProgressBar(pb, value = x[1])
       }
       return(max.bcs)
     })
     # NA proportion per signature.
     data[, 1] <- data[, 1] + n.rows
     prop.na <- apply(data, 1, function(y) {
-      nas <- round(sum(is.na(y[-1]))/length(y[-1]), 2)
+      nas <- round(sum(is.na(y[-1]))/length(y[-1]), digits = 2)
       ### Update the progress bar.
       if (y[1]%%bins == 0) {
         Sys.sleep(0.1)
-        setTxtProgressBar(pb, y[1])
+        setTxtProgressBar(pb, value = y[1])
       }
       return(nas)
     })
@@ -216,8 +214,9 @@ GetStatistics <- function(bc, signatures, cells, pb, total, i, n.rows,
                         max = max.bcscore, prop.na = prop.na,
                         row.names = signatures)
   } else {
-    # Mean bcscores per signature.
-    mean.bc <- round(rowMeans(bc@data[signatures, cells], na.rm = TRUE), 2)
+    # Mean BCS per signature.
+    mean.bc <- round(rowMeans(bc@data[signatures, cells], na.rm = TRUE),
+                     digits = 2)
     # Residuals.
     normalized <- cbind(seq_len(n.rows) + (n.rows * (i - 1)),
                         bc@normalized[signatures, cells])
@@ -225,17 +224,169 @@ GetStatistics <- function(bc, signatures, cells, pb, total, i, n.rows,
     stats <- data.frame(switch.point = switch.p, mean = mean.bc,
                         row.names = signatures)
   }
-  # Regression residuals.
+  # Residuals' mean.
   resid <- apply(normalized, 1, function(z) {
-    res <- round(mean(z[-1], na.rm = TRUE), 2)
+    res <- round(mean(z[-1], na.rm = TRUE), digits = 2)
     ### Update the progress bar.
     if (z[1]%%bins == 0 | z[1] == total) {
       Sys.sleep(0.1)
-      setTxtProgressBar(pb, z[1])
+      setTxtProgressBar(pb, value = z[1])
     }
     return(res)
   })
   # Update dataframe.
-  stats <- cbind(stats, data.frame(residuals = resid, row.names = signatures))
+  stats <- cbind(stats, data.frame(residuals.mean = resid, row.names = signatures))
   return(stats)
+}
+
+#' @title Returns the \code{sig_ids} that match the specified values
+#' @description This function subsets \code{df} to select only the entries that
+#' match the specified \code{values} and returns the corresponding \code{sig_ids}.
+#' @name GetIDs
+#' @param values User-supplied filtering vector for either drugs, MoAs, target
+#' genes or source databases.
+#' @param filter Column name to subset by. You can also spcify the colum
+#' @param df \code{data.frame} with all drug information.
+#' @return A vector with the \code{sig_ids} that match the \code{filter}'s
+#' elements.
+#' @export
+
+GetIDs <- function(values, filter, df = drugInfo) {
+  # --- Checks ---
+  # Check values.
+  if (length(values) < 1 | !is.character(values)) {
+    stop('values must be a character vector.')
+  }
+  # Check filter.
+  if (length(filter) != 1) {
+    stop('You must specify a single filter.')
+  }
+  if (is.character(filter) & !(filter %in% colnames(df))) {
+    stop(paste('filter =', filter, 'is not a column of df.'))
+  }
+  if (is.numeric(filter) & (filter < 1 | filter > ncol(df))) {
+    stop(paste('filter = ', filter, 'is out of range.'))
+  }
+  # Check df.
+  if (class(df) != "data.frame") {
+    stop('df must be a data.frame')
+  }
+  if (!("IDs" %in% colnames(df))) {
+    stop('df must contain an "IDs" column.')
+  }
+  # --- Code ---
+  upper.values <- toupper(values)
+  selected <- subset(df, subset = toupper(df[[filter]]) %in% upper.values)
+  if (filter == "drugs" & "preferred.drug.names" %in% colnames(df)) {
+    synonyms <- subset(df, subset = toupper(df[["preferred.drug.names"]]) %in%
+                         unique(toupper(selected[["preferred.drug.names"]])))
+    selected <- unique(rbind(selected, synonyms))
+  }
+  ids <- unique(selected$IDs)
+  not.found <- values[!(upper.values %in% toupper(df[[filter]]))]
+  if (all(values %in% not.found)) {
+    stop('No sig ID was found for any of the elements in values.')
+  } else if (length(not.found) > 0) {
+    filtername <- gsub(pattern = '"', replacement = '',
+                       x = deparse(substitute(filter)))
+    warning(paste0('sig IDs were not found for ', length(not.found), ' out of ',
+                   length(values), " ", filtername, ': ',
+                   paste0(not.found, collapse = ", "), "."))
+  }
+  return(ids)
+}
+
+#' @title Returns a dataframe with information about the input drugs
+#' @description This function searches information about the inputted drugs in
+#' the pre-loaded \code{\link[beyondcell]{beyondcell}} matrices and returns a
+#' \code{data.frame} with their drug synonyms and MoAs.
+#' @name FindDrugs
+#' @param bc \code{\link[beyondcell]{beyondcell}} object.
+#' @param x A character vector with drug names and/or sig IDs.
+#' @param na.rm Logical. Should \code{x} entries with no available data be
+#' removed from the final output?
+#' @details The output \code{data.frame} has the following columns:
+#' \itemize{
+#' \item{\code{original.names}}: Inputted drug name.
+#' \item{\code{bc.names}}: Drug name used in \code{bc}.
+#' \item{\code{preferred.drug.names}}: Drug name used in \code{beyondcell}
+#' plots.
+#' \item{\code{drugs}}: Other drug names.
+#' \item{\code{sig_id}}: Signature ID.
+#' \item{\code{preferred.and.sigs}}: \code{preferred.drug.names} (or
+#' alternatively \code{bc.names}) and \code{IDs}.
+#' \item{\code{MoAs}}: Mechanism(s) of action.
+#' }
+#' @return A \code{data.frame}.
+#' @examples
+#' @export
+
+FindDrugs <- function(bc, x, na.rm = TRUE) {
+  # --- Checks ---
+  # Check that bc is a beyondcell object.
+  if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
+  # Check x.
+  if (!is.character(x)) stop('x must be a character vector.')
+  # Check na.rm.
+  if (length(na.rm) != 1 | !is.logical(na.rm)) {
+    stop('na.rm must be TRUE or FALSE.')
+  }
+  # --- Code ---
+  # bc signatures.
+  sigs <- rownames(bc@normalized)
+  # Match x with bc signatures and get the indices of matching elements.
+  indices <- lapply(x, function(y) {
+    idx <- match(toupper(y), table = toupper(sigs), nomatch = 0)
+    if (idx == 0) {
+      idx <- unique(match(drugInfo$IDs[drugInfo$drugs == toupper(y)],
+                          table = sigs))
+    }
+    return(idx[!is.na(idx)])
+  })
+  # Original names (x) and bc names (sigs).
+  df <- data.frame(original.names = unlist(sapply(seq_along(x), function(i) {
+    rep(x[i], times = length(indices[[i]]))
+  })), IDs = unlist(sapply(indices, function(z) sigs[z])))
+  df.not.found <- !(x %in% df$original.names)
+  if (any (df.not.found)) {
+    empty.df <- data.frame(original.names = x[df.not.found],
+                           IDs = rep(NA, sum(df.not.found)))
+    df <- rbind(df, empty.df)
+  }
+  # Get the names and pathways of the selected signatures.
+  info <- subset(drugInfo, subset = IDs %in% df$IDs)
+  if (all(dim(info) != 0)) {
+    info <- aggregate(.~ IDs, data = info, na.action = NULL, FUN = function(w) {
+      paste(na.omit(unique(w)), collapse = ", ")
+    })
+  }
+  info.not.found <- !(df$IDs %in% drugInfo$IDs)
+  if (any(info.not.found)) {
+    empty.info <- matrix(rep(NA, times = sum(info.not.found)*6), ncol = 6,
+                         dimnames = list(1:sum(info.not.found),
+                                         colnames(drugInfo)))
+    info <- rbind(info, as.data.frame(empty.info))
+  }
+  # Merge df and info.
+  df <- unique(merge(df, info[, c("IDs", "drugs", "preferred.drug.names",
+                                  "MoAs")], by = "IDs", all.x = TRUE))
+  # Add bc.names column and remove names that are not sig IDs from sig_id
+  # column.
+  df$bc.names <- df$IDs
+  df$IDs[!startsWith(df$IDs, prefix = "sig_")] <- NA
+  # Create preferred.and.sigs column: Preferred name and sig_id.
+  df$preferred.and.sigs <- sapply(1:nrow(df), function(j) {
+    return(ifelse(test = !is.na(df$preferred.drug.names[j]),
+                  yes = paste0(df$preferred.drug.names[j],
+                               paste0(" (", df$IDs[j], ")")),
+                  no = df$bc.names[j]))
+  })
+  # Reorder df.
+  rows <- unlist(lapply(x, function(entry) which(df$original.names == entry)))
+  cols <- c("original.names", "bc.names", "preferred.drug.names", "drugs", "IDs",
+            "preferred.and.sigs", "MoAs")
+  df <- df[rows, cols]
+  # If na.rm = TRUE, remove rows with NAs in all fields but original.names.
+  if (na.rm) df <- df[rowSums(is.na(df[, -1])) != ncol(df) - 1, ]
+  return(df)
 }

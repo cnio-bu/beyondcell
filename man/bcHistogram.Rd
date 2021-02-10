@@ -5,7 +5,7 @@
 \title{Plots a histogram with the beyondcell scores of the signature of
 interest}
 \usage{
-bcHistogram(bc, signatures = NULL, idents = NULL)
+bcHistogram(bc, signatures, idents = NULL)
 }
 \arguments{
 \item{bc}{\code{\link[beyondcell]{beyondcell}} object.}

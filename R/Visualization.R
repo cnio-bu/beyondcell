@@ -7,10 +7,10 @@
 #' @import ggplot2
 #' @import scales
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
+#' @param idents Name of the metadata column to color by.
 #' @param UMAP UMAP reduction to plot. Either "beyondcell" (computed using
 #' \code{\link[bcUMAP]{bcUMAP}}) or "Seurat" computed using \code{Seurat}'s
 #' functions.
-#' @param idents Name of the metadata column to color by.
 #' @param factor.col Logical indicating if \code{idents} column is a factor or
 #' not. If \code{idents} is a numerical column (such as \code{percent.mt} or
 #' \code{nFeature_RNA}, \code{factor.col} must be \code{FALSE}).
@@ -21,11 +21,20 @@
 #' @examples
 #' @export
 
-bcClusters <- function(bc, UMAP = "beyondcell", idents = NULL,
-                       factor.col = TRUE, ...) {
+bcClusters <- function(bc, idents, UMAP = "beyondcell", factor.col = TRUE,
+                       ...) {
   # --- Checks ---
   # Check that bc is a beyondcell object.
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
+  # Check idents.
+  if (length(idents) != 1) {
+    stop('Idents must be a single metadata column.')
+  }
+  if (idents %in% colnames(bc@meta.data)) {
+    meta <- bc@meta.data[colnames(bc@scaled), idents, drop = FALSE]
+  } else {
+    stop('Idents not found.')
+  }
   # Check UMAP.
   if (UMAP == "beyondcell") {
     if (length(bc@reductions) == 0) {
@@ -42,19 +51,13 @@ bcClusters <- function(bc, UMAP = "beyondcell", idents = NULL,
   } else {
     stop('Incorrect UMAP argument. Please use either "Seurat" or "beyondcell".')
   }
-  # Check idents.
-  if (idents %in% colnames(bc@meta.data)) {
-    meta <- bc@meta.data[colnames(bc@scaled), idents, drop = FALSE]
-  } else {
-    stop('Idents not found.')
-  }
   # Check factor.col.
   if (length(factor.col) != 1 | !is.logical(factor.col)) {
     stop('factor.col must be TRUE or FALSE.')
   }
   # --- Code ---
   # Add metadata.
-  sc <- Seurat::AddMetaData(sc, meta)
+  sc <- Seurat::AddMetaData(sc, metadata = meta)
   # Add reductions.
   sc@reductions <- reduction
   # Plot.
@@ -64,7 +67,7 @@ bcClusters <- function(bc, UMAP = "beyondcell", idents = NULL,
     p <- Seurat::DimPlot(sc, reduction = "umap", ...) + ggplot2::theme_minimal()
   } else {
     p <- Seurat::FeaturePlot(sc, reduction = "umap", features = idents, ...) +
-      ggplot2::theme_minimal()
+      ggplot2::theme_minimal() + ggplot2::labs(title = NULL)
   }
   return(p)
 }
@@ -90,22 +93,20 @@ bcClusters <- function(bc, UMAP = "beyondcell", idents = NULL,
 #' @examples
 #' @export
 
-bcHistogram <- function(bc, signatures = NULL, idents = NULL) {
+bcHistogram <- function(bc, signatures, idents = NULL) {
   # --- Checks ---
   # Check that bc is a beyondcell object.
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
   # Check signatures.
-  if (is.null(signatures)) {
-    stop('You must specify the signatures of interest.')
-  }
   if (!is.character(signatures)) {
     stop("Signatures must be a character vector.")
   }
   if (length(signatures) == 1 & signatures[1] == "all") {
     signatures <- rownames(bc@normalized)
-    in.signatures <- rep(TRUE, nrow(bc@normalized))
+    in.signatures <- rep(TRUE, times = nrow(bc@normalized))
   } else {
-    in.signatures <- signatures %in% rownames(bc@normalized)
+    in.signatures <- !is.null(signatures) &
+      signatures %in% rownames(bc@normalized)
     if (all(!in.signatures)) {
       stop('None of the specified signatures were found.')
     } else if (any(!in.signatures)) {
@@ -126,34 +127,29 @@ bcHistogram <- function(bc, signatures = NULL, idents = NULL) {
     }
   } else {
     ### If idents = NULL, all cells have the same metadata.
-    meta <- rep("", ncol(bc@normalized))
+    meta <- rep("", times = ncol(bc@normalized))
   }
   # --- Code ---
   # Metadata levels.
   lvls <- levels(as.factor(meta))
   # Subset bc to the selected signatures.
   sub.bc <- bc@data[signatures[in.signatures], , drop = FALSE]
-  # Get maximum and minimum normalized bcscores (for common x axis in all
-  # plots).
+  # Get maximum and minimum normalized BCS (for common x axis in all plots).
   limits <- c(min(as.vector(sub.bc), na.rm = TRUE),
               max(as.vector(sub.bc), na.rm = TRUE))
-  # Get the names and pathways of the selected signatures.
-  info <- subset(drugInfo, sig_id %in% signatures[in.signatures])
-  if (nrow(info) > 0) {
-    info <- aggregate(.~ sig_id, data = info, na.action = NULL, FUN = function(m) {
-      paste(na.omit(unique(m)), collapse = ", ")
-    })
-  }
+  # Get info about drugs (their corresponding name in bc, the preferred name
+  # used by beyondcell and the MoA).
+  info <- FindDrugs(bc, x = signatures[in.signatures])
   # For each signature.
   p <- lapply(signatures[in.signatures], function(x) {
-    ### Data frame of normalized bcscores and metadata.
+    ### Data frame of normalized BCS and metadata.
     sub.df <- na.omit(data.frame(bcscore = sub.bc[x, ],
                                  condition = as.factor(meta),
                                  row.names = colnames(sub.bc)))
     ### Statistics by metadata (mean, median and sd).
     stats.cond <- sapply(lvls, function(y) {
-      stats <- round(Mean.Med.SD(subset(sub.df$bcscore,
-                                        sub.df$condition == y)), 2)
+      stats <- round(Mean.Med.SD(subset(sub.df$bcscore, subset = sub.df$condition == y)),
+                     digits = 2)
       return(stats)
     })
     stats.labels <- data.frame(label = apply(stats.cond, 2, function(z) {
@@ -161,9 +157,10 @@ bcHistogram <- function(bc, signatures = NULL, idents = NULL) {
     }), mean = stats.cond["mean", ], median = stats.cond["median", ],
     condition = colnames(stats.cond))
     ### Drug name and MoA
-    if (x %in% info$sig_id) {
-      drug.and.MoA <- info[which(info$sig_id == x), c("Name", "MoA")]
-      drug.and.MoA[2] <- ifelse(drug.and.MoA[2] == "NA", "", drug.and.MoA[2])
+    if (x %in% info$IDs) {
+      drug.and.MoA <- info[which(info$IDs == x), c("preferred.and.sigs", "MoAs")]
+      drug.and.MoA[2] <- ifelse(test = drug.and.MoA[2] == "NA", yes = "",
+                                no = drug.and.MoA[2])
     } else {
       drug.and.MoA <- c(x, "")
     }
@@ -205,33 +202,21 @@ bcHistogram <- function(bc, signatures = NULL, idents = NULL) {
 #' \itemize{
 #' \item{\code{values}:} {Vector with the names of the signatures of interest.
 #' If \code{signatures[["values"]] = "all"}, all signatures are selected.}
-#' \item{\code{limits}:} {Vector with the desired limits for all signatures'
-#' plots. If \code{limits = c(NA, NA)} (default), the \code{limits} are computed
-#' for each signature independently.}
-#' \item{\code{center}:} {A single number indicating the center of the
-#' \code{colorscale} for all signatures' plots. Alternatively, the \code{center}
-#' can be a vector of two numbers. In this case, the \code{center} of the
-#' \code{colorscale} is the middle point between these two numbers and the
-#' \code{breaks} are computed using the difference between them. If
-#' \code{center = NULL} (default), the \code{center} of each signature is its
-#' switch point.}
-#' \item{\code{breaks}:} {A single number indicating the break size of the
-#' \code{colorscale}. Alternatively, it can be a vector with the desired breaks
-#' (which don't have to be symmetric or equally distributed). If \code{center}
-#' is a vector of two numbers, \code{breaks} are computed using the difference
-#' between them.}
-#' \item{\code{share.limits}:} {Logical argument. If \code{share.limits = TRUE}
-#' (default), all signatures' plots will have the same \code{limits = c(0, 1)}.
-#' If \code{share.limits = FALSE}, each signature plot will have its own
-#' \code{limits}. Note that if \code{limits != c(NA, NA)},
-#' \code{share.limits = TRUE}.}
 #' \item{\code{colorscale}:} {Either a \code{viridis}, \code{RColorBrewer} or a
 #' custom palette of 3 colors (low, medium and high) to color all signatures'
 #' plots. If \code{colorscale = NULL} (default), the plots are colored using
 #' \code{beyondcell}'s own palette.}
 #' \item{\code{alpha}:} {Transparency level between 0 (not transparent) and 1
 #' (fully transparent).}
-#' \item{\code{na.value}:} {Color to use for missing values (\code{NA}s).}}
+#' \item{\code{na.value}:} {Color to use for missing values (\code{NA}s).}
+#' \item{\code{limits}:} {Vector with the desired limits for all signatures'
+#' plots.}
+#' \item{\code{center}:} {A single number indicating the center of the
+#' \code{colorscale} for all signatures' plots. If \code{center = NULL}
+#' (default), the \code{center} for each signature is its switch point.}
+#' \item{\code{breaks}:} {A single number indicating the break size of the
+#' \code{colorscale}. Alternatively, it can be a vector with the desired breaks
+#' (which don't have to be symmetric or equally distributed).}}
 #' @param genes List with parameters to color the UMAP by gene expression
 #' values:
 #' \itemize{
@@ -266,10 +251,10 @@ bcHistogram <- function(bc, signatures = NULL, idents = NULL) {
 #' @export
 
 bcSignatures <- function(bc, UMAP = "beyondcell",
-                         signatures = list(values = NULL, limits = c(0, 1),
-                                           center = NULL, breaks = 0.1,
-                                           share.limits = TRUE, colorscale = NULL,
-                                           alpha = 0.7, na.value = "grey50"),
+                         signatures = list(values = NULL, colorscale = NULL,
+                                           alpha = 0.7, na.value = "grey50",
+                                           limits = c(0, 1), center = NULL,
+                                           breaks = 0.1),
                          genes = list(values = NULL, limits = c(NA, NA),
                                       share.limits = FALSE),
                          merged = NULL, blend = FALSE, mfrow = c(1, 1), ...) {
@@ -283,7 +268,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
     }
     reduction <- bc@reductions
     cells <- subset(rownames(bc@meta.data),
-                    rownames(bc@meta.data) %in% colnames(bc@normalized))
+                    subset = rownames(bc@meta.data) %in% colnames(bc@normalized))
   } else if (UMAP == "Seurat") {
     if (length(bc@SeuratInfo$reductions) == 0) {
       stop('No UMAP projection available for your Seurat\'s object.')
@@ -294,9 +279,9 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
     stop('Incorrect UMAP argument. Please use either "Seurat" or "beyondcell".')
   }
   # Check signatures' list values.
-  default.sigs <- list(values = NULL, limits = c(0, 1), center = NULL,
-                       breaks = 0.1, share.limits = TRUE, colorscale = NULL,
-                       alpha = 0.7, na.value = "grey")
+  default.sigs <- list(values = NULL, colorscale = NULL, alpha = 0.7,
+                       na.value = "grey", limits = c(0, 1), center = NULL,
+                       breaks = 0.1)
   selected.sigs <- names(signatures) %in% names(default.sigs)
   if (any(!selected.sigs)) {
     warning(paste0('Incorrect entries in signatures: ',
@@ -320,7 +305,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
   if (!is.null(signatures[["values"]])) {
     if (length(signatures[["values"]]) == 1 & signatures[["values"]][1] == "all") {
       signatures[["values"]] <- rownames(bc@normalized)
-      in.signatures <- rep(TRUE, nrow(bc@normalized))
+      in.signatures <- rep(TRUE, times = nrow(bc@normalized))
     } else {
       in.signatures <- signatures[["values"]] %in% rownames(bc@normalized)
       if (all(!in.signatures)) {
@@ -338,9 +323,9 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
   if (!is.null(genes[["values"]])) {
     if (length(genes[["values"]]) == 1 & genes[["values"]][1] == "all") {
       genes[["values"]] <- rownames(bc@expr.matrix)
-      in.genes <- rep(TRUE, nrow(bc@expr.matrix))
+      in.genes <- rep(TRUE, times = nrow(bc@expr.matrix))
     } else {
-      in.genes <- tolower(genes[["values"]]) %in% tolower(rownames(bc@expr.matrix))
+      in.genes <- toupper(genes[["values"]]) %in% toupper(rownames(bc@expr.matrix))
       if (all(!in.genes)) {
         stop('None of the specified genes were found.')
       } else if (any(!in.genes)) {
@@ -355,21 +340,27 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
   sigs <- unique(signatures[["values"]][in.signatures])
   gene <- unique(genes[["values"]][in.genes])
   features <- c(sigs, gene)
+  # Check signature's colorscale.
+  signatures[["colorscale"]] <- get_colour_steps(signatures[["colorscale"]])
+  # Check signatures' alpha, na.value and breaks -> inside center_scale_colour_stepsn().
   # Check signatures' limits.
   if (length(signatures[["limits"]]) != 2) {
     stop('Signatures\' limits must be a vector of length 2.')
   }
-  na.limits.sigs <- is.na(signatures[["limits"]])
-  if (length(signatures[["limits"]][!na.limits.sigs]) > 0 &
-      (!is.numeric(signatures[["limits"]][!na.limits.sigs]) |
-       any(signatures[["limits"]][!na.limits.sigs] < 0))) {
-    stop('Signatures\' limits must be numeric (>= 0) or NAs.')
+  if (!is.numeric(signatures[["limits"]]) | any(signatures[["limits"]] < 0)) {
+    stop('Signatures\' limits must be numeric (>= 0).')
   }
-  if (all(!na.limits.sigs) &
-      signatures[["limits"]][2] < signatures[["limits"]][1]) {
+  if (signatures[["limits"]][2] < signatures[["limits"]][1]) {
     warning(paste('Signatures\' upper limit is smaller than lower limit.',
                   'Sorting limits in increasing order.'))
-    signatures[["limits"]] <- sort(signatures[["limits"]])
+    signatures[["limits"]] <- sort(signatures[["limits"]], decreasing = FALSE)
+  }
+  # Check signature's center.
+  if (!is.null(signatures[["center"]])) {
+    if (length(signatures[["center"]]) != 1 |
+        !is.numeric(signatures[["center"]])) {
+      stop('Signatures\' center must be a single number or NULL.')
+    }
   }
   # Check genes' limits.
   if (length(genes[["limits"]]) != 2) {
@@ -384,17 +375,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
   if (all(!na.limits.genes) & genes[["limits"]][2] < genes[["limits"]][1]) {
     warning(paste('Genes\' upper limit is smaller than lower limit.',
                   'Sorting limits in increasing order.'))
-    genes[["limits"]] <- sort(genes[["limits"]])
-  }
-  # Check signatures' share.limits.
-  if (length(signatures[["share.limits"]]) != 1 |
-      !is.logical(signatures[["share.limits"]])) {
-    stop('signatures$share.limits must be TRUE or FALSE.')
-  }
-  if (!signatures[["share.limits"]] &
-      !identical(signatures[["limits"]], c(NA, NA))) {
-    warning(paste('Signatures\' limits were specified, setting',
-                  'signatures[["share.limits"]] = TRUE.'))
+    genes[["limits"]] <- sort(genes[["limits"]], decreasing = FALSE)
   }
   # Check genes' share.limits.
   if (length(genes[["share.limits"]]) != 1 | !is.logical(genes[["share.limits"]])) {
@@ -405,34 +386,19 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
     warning(paste('Genes\' limits were specified, setting',
                   'genes[["share.limits"]] = TRUE.'))
   }
-  # Check signature's center.
-  len.center <- length(signatures[["center"]])
-  if (!is.null(signatures[["center"]])) {
-    if (len.center < 1 | len.center > 2 | !is.numeric(signatures[["center"]])) {
-      stop('Signatures\' center must be a vector of 1 or 2 numbers.')
-    }
-  }
-  # Check signatures' breaks, alpha and na.value -> inside center_scale_colour_stepsn().
-  # Check signature's colorscale.
-  signatures[["colorscale"]] <- get_colour_stepsn(signatures[["colorscale"]])
-  # Check if merged and blend values are both specified.
-  if (!is.null(merged) & blend) {
-    stop(paste('You can\'t specify simultaneously a value for merged and',
-               'blend = TRUE.'))
-  }
   # Check merged.
   if (!is.null(merged)) {
     if (length(merged) != 1 | !(merged %in% c("direct", "indirect"))) {
       stop(paste('Incorrect merged value: It must be either NULL, "direct"',
                  'or "indirect".'))
     }
-    if (length(features) != 2) {
+    if (length(features) != 2 | length(signatures[["values"]]) != 2) {
       stop('When merged != NULL, the number of signatures must be exactly 2.')
-    } else if (!(all(features %in% sigs))) {
+    } else if (any(!(features %in% sigs))) {
       stop(paste('The merged features must be signatures. For blending genes,',
                  'please use blend = TRUE.'))
     }
-    merged.symbol <- ifelse(merged == "direct", " + ", " - ")
+    merged.symbol <- ifelse(test = merged == "direct", yes = " + ", no = " - ")
     merged.sigs <- paste0(sigs, collapse = merged.symbol)
   } else {
     merged.symbol <- ""
@@ -443,19 +409,16 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
     stop('blend must be TRUE or FALSE.')
   }
   if (blend) {
-    if (length(features) != 2) {
+    if (length(features) != 2 | length(genes[["values"]]) != 2) {
       stop('When blend = TRUE, the number of genes must be exactly 2.')
-    } else if (!(all(features %in% gene))) {
+    } else if (any(!(features %in% gene))) {
       stop(paste('The blended features must be genes. For merging signatures,',
                  'please use merged argument.'))
     }
   }
   # Check mfrow.
-  if (length(mfrow) != 2 | !is.numeric(mfrow)) {
-    stop('mfrow must be a vector of two numbers.')
-  }
-  if (any(mfrow < 0) | any(mfrow%%1 != 0)) {
-    stop('mfrow must contain two integers > 0.')
+  if (length(mfrow) != 2 | any(mfrow < 0) | any(mfrow%%1 != 0)) {
+    stop('mfrow must be a vector of two integers > 0.')
   }
   # --- Code ---
   # If blend = TRUE, plot a Seurat::FeaturePlot.
@@ -465,19 +428,16 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
     ### Add reductions.
     sc@reductions <- reduction
     ### Plot.
-    p <- list(suppressMessages(
-      Seurat::FeaturePlot(sc, features = gene, blend = TRUE)))
+    p <- suppressMessages(
+      Seurat::FeaturePlot(sc, features = gene, blend = TRUE, combine = FALSE))
     # Else...
   } else {
-    ### Get the names and pathways of the selected signatures.
-    info <- subset(drugInfo, sig_id %in% sigs)
-    if (dim(info)[1] > 0) {
-      info <- aggregate(.~ sig_id, data = info, na.action = NULL, FUN = function(x) {
-        paste(na.omit(unique(x)), collapse = ", ")
-      })
-    }
+    # Get info about drugs (their corresponding name in bc, the preferred name
+    # used by beyondcell and the MoA).
+    info <- tryCatch(suppressWarnings(FindDrugs(bc, x = sigs)),
+                     error = function(cond) data.frame())
     ### If we want to merge signatures, we must recompute the bc object using
-    ### the added or substracted bc@normalized scores.
+    ### the added or substracted bc@normalized BCS.
     if (!is.null(merged)) {
       if (merged == "direct") {
         merged.bcscores <- colSums(bc@normalized[sigs, cells, drop = FALSE],
@@ -487,25 +447,21 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
                                     na.rm = TRUE)
       }
       bc@data <- matrix(merged.bcscores, nrow = 1, dimnames = list(merged.sigs, cells))
-      bc <- bcRecompute(bc, slot = "data")
+      bc <- suppressMessages(bcRecompute(bc, slot = "data"))
       features <- merged.sigs
     }
-    ### Join scaled bcscores and gene expression values for selected features.
+    ### Join scaled BCS and gene expression values for selected features.
     full.matrix <- rbind(bc@scaled[merged.sigs, cells, drop = FALSE],
-                         bc@expr.matrix[gene, cells, drop = FALSE])[features, ,
-                                                                    drop = FALSE]
+                         bc@expr.matrix[gene, cells,
+                                        drop = FALSE])[features, , drop = FALSE]
     ### Signature's center. If center == NULL, set center to switch.points.
     if (is.null(signatures[["center"]])) {
       center.sigs <- bc@switch.point[merged.sigs]
     } else {
-      center.sigs <- setNames(rep(signatures[["center"]], length(merged.sigs)),
-                              merged.sigs)
+      center.sigs <- setNames(rep(signatures[["center"]],
+                                  times = length(merged.sigs)), merged.sigs)
     }
-    ### Signature's limits.
-    if (signatures[["share.limits"]] & any(na.limits.sigs)) {
-      signatures[["limits"]][na.limits.sigs] <- c(0, 1)[na.limits.sigs]
-    }
-    ### Gene's colors.
+    ### Gene's colours.
     if ((genes[["share.limits"]] | !identical(genes[["limits"]], c(NA, NA))) &
         !is.null(genes[["values"]])) {
       if (any(na.limits.genes)) {
@@ -530,34 +486,42 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
         ids <- unlist(strsplit(y, split = merged.symbol, fixed = TRUE))
       } else ids <- y
       ### Drug name and MoA.
-      if (any(ids %in% info$sig_id)) {
-        drug.and.MoA <- info[which(info$sig_id %in% ids), c("Name", "MoA")]
-        if (nrow(drug.and.MoA) > 1) { ### When merged != NULL, convert "" to "NA".
-          drug.and.MoA[drug.and.MoA[, 2] == "", 2] <- "NA"
-          drug.and.MoA <- t(as.data.frame(apply(drug.and.MoA, 2, paste0,
-                                                collapse = merged.symbol)))
+      if (any(ids %in% info$IDs)) {
+        drug.and.MoA <- info[which(info$IDs %in% ids),
+                             c("preferred.and.sigs", "MoAs")]
+        ### When merged != NULL...
+        if (nrow(drug.and.MoA) > 1) {
+          ### Paste both drug names and MoAs. If MoAs are the same, just print
+          ### them one time
+          drug.and.MoA <- as.data.frame(t(apply(drug.and.MoA, 2, FUN = function(z) {
+            paste0(unique(z), collapse = merged.symbol)
+          })))
         }
         drug.and.MoA[, 2] <- BreakString(drug.and.MoA[, 2]) ### Format subtitle.
       } else {
         ### Empty subtitle.
         drug.and.MoA <- c(paste0(ids, collapse = merged.symbol), "")
       }
-      ### Colors (depending on wether y is a signature or a gene).
+      ### Colours (depending on wether y is a signature or a gene).
       if (all(ids %in% sigs)) {
-        ### Binned colorscale centered around the switch point or the
-        ### specified center.
-        colors <- center_scale_colour_stepsn(full.matrix[y, ], signatures[["limits"]],
-                                             center.sigs[y], signatures[["breaks"]],
-                                             signatures[["colorscale"]], signatures[["alpha"]])
+        ### Binned colorscale centred around the switch point or the specified
+        ### center.
+        colors <- center_scale_colour_stepsn(full.matrix[y, ],
+                                             colorscale = signatures[["colorscale"]],
+                                             alpha = signatures[["alpha"]],
+                                             na.value = signatures[["na.value"]],
+                                             limits = signatures[["limits"]],
+                                             center = center.sigs[y],
+                                             breaks = signatures[["breaks"]])
       } else {
-        ### Continuous colorscale with default seurat colors.
+        ### Continuous colorscale with default Seurat colours.
         colors <- colors.genes
       }
       ### Plot.
       fp <- suppressMessages(
-        Seurat::FeaturePlot(sc, features = gsub("_", "-", y),
-                            combine = FALSE, ...)[[1]] + colors +
-          ggplot2::labs(title = drug.and.MoA[1], subtitle = drug.and.MoA[2]))
+        Seurat::FeaturePlot(sc, features = gsub(pattern = "_", replacement = "-",
+                                                x = y), combine = FALSE, ...)[[1]] +
+          colors + ggplot2::labs(title = drug.and.MoA[1], subtitle = drug.and.MoA[2]))
       return(fp)
     })
   }
@@ -598,7 +562,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
 #' @examples
 #' @export
 
-bcCellCycle <- function(bc, signatures = NULL) {
+bcCellCycle <- function(bc, signatures) {
   # --- Checks ---
   # Check that bc is a beyondcell object.
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
@@ -607,17 +571,14 @@ bcCellCycle <- function(bc, signatures = NULL) {
     stop("Cell cycle information not present in bc@meta.data.")
   }
   # Check signatures.
-  if (is.null(signatures)) {
-    stop('You must specify the signatures of interest.')
-  }
   if (!is.character(signatures)) {
     stop("Signatures must be a character vector.")
   }
   if (length(signatures) == 1 & signatures[1] == "all") {
     signatures <- rownames(bc@normalized)
-    in.signatures <- rep(TRUE, nrow(bc@normalized))
+    in.signatures <- rep(TRUE, times = nrow(bc@normalized))
   } else {
-    in.signatures <- signatures %in% rownames(bc@normalized)
+    in.signatures <- !is.null(signatures) & signatures %in% rownames(bc@normalized)
     if (all(!in.signatures)) {
       stop('None of the specified signatures were found.')
     } else if (any(!in.signatures)) {
@@ -628,21 +589,20 @@ bcCellCycle <- function(bc, signatures = NULL) {
   # --- Code ---
   # Cells in beyondcell object.
   cells <- subset(rownames(bc@meta.data),
-                  rownames(bc@meta.data) %in% colnames(bc@normalized))
-  # Get the names and pathways of the selected signatures.
-  info <- subset(drugInfo, sig_id %in% signatures[in.signatures])
-  info <- aggregate(.~ sig_id, data = info, na.action = NULL, FUN = function(y) {
-    paste(na.omit(unique(y)), collapse = ", ")
-  })
+                  subset = rownames(bc@meta.data) %in% colnames(bc@normalized))
+  # Get info about drugs (their corresponding name in bc, the preferred name
+  # used by beyondcell and the MoA).
+  info <- FindDrugs(bc, x = signatures[in.signatures])
   # For each signature...
   p <- lapply(signatures[in.signatures], function(x) {
-    ### Data frame of normalized bcscores and phase metadata.
+    ### Data frame of normalized BCS and phase metadata.
     sub.df <- na.omit(data.frame(bcscore = bc@data[x, cells],
                                  phase = bc@meta.data[cells, "Phase"],
                                  row.names = cells))
     ### Drug name and MoA.
-    if (x %in% info$sig_id) {
-      drug.and.MoA <- info[which(info$sig_id == x), c("Name", "MoA")]
+    if (x %in% info$IDs) {
+      drug.and.MoA <- info[which(info$IDs == x),
+                           c("preferred.and.sigs", "MoAs")]
       drug.and.MoA[, 2] <- BreakString(drug.and.MoA[, 2]) ### Format subtitle.
     } else {
       drug.and.MoA <- c(x, "")
@@ -659,11 +619,12 @@ bcCellCycle <- function(bc, signatures = NULL) {
 #' @title Plots a 4 squares plot
 #' @description This function drawns a 4 square plot of the drug signatures
 #' present in a \code{\link[beyondcell]{beyondcell}} object. A 4 squares plot
-#' consists in a scatter plot of the bcscores' residuals (x axis) vs the switch
-#' points (y axis). 4 quadrants are highlighted: the top-left and bottom-right
-#' corners contain the drugs to which all selected cells are most/least
-#' sensistive, respectively. The centre quadrants show the drugs to which half
-#' of the selected cells are sensitive and the other half insensitive.
+#' consists in a scatter plot of the residuals' means of BCS (x axis) vs the
+#' switch points (y axis). 4 quadrants are highlighted: the top-left and
+#' bottom-right corners contain the drugs to which all selected cells are
+#' least/most sensistive, respectively. The centre quadrants show the drugs to
+#' which half of the selected cells are sensitive and the other half
+#' insensitive.
 #'
 #' x cut-offs: first and last deciles; y cut-offs: 0.1, 0.4, 0.6 and 0.9.
 #' @name bc4Squares
@@ -683,33 +644,29 @@ bcCellCycle <- function(bc, signatures = NULL) {
 #' transparent).
 #' @pt.size Point size.
 #' @details This function returns a list of \code{\link[ggplot2]{ggplot2}}
-#' objects, one per each \code{lvl}. Note that residuals are different for each
-#' level while swicth points are signature-specific. So, x axis will vary and y
-#' axis will remain constant accross all plots.
+#' objects, one per each \code{lvl}. Note that residuals' means are different
+#' for each level while swicth points are signature-specific. So, x axis will
+#' vary and y axis will remain constant accross all plots.
 #' @return A list of \code{ggplot2} objects, one per \code{lvl}.
 #' @examples
 #' @export
 
-bc4Squares <- function(bc, idents = NULL, lvl = NULL, top = 3,
+bc4Squares <- function(bc, idents, lvl = NULL, top = 3,
                        topnames = NULL, force = 1, alpha = 0.7, pt.size = 3) {
   # --- Checks ---
   # Check that bc is a beyondcell object.
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
   # Check idents.
-  if (is.null(idents)) {
-    stop("You must specify an idents value.")
-  } else {
-    if (length(idents) != 1) stop('Idents must be a single metadata column.')
-    if (!(idents %in% names(bc@ranks))) {
-      stop(paste0('$', idents, ' not found in bc@ranks.'))
-    } else if (idents == "general") {
-      stop('General rank cant be used in bc4Squares(). All residuals are 0.')
-    }
+  if (length(idents) != 1) stop('Idents must be a single metadata column.')
+  if (!(idents %in% names(bc@ranks))) {
+    stop(paste0('$', idents, ' not found in bc@ranks.'))
+  } else if (idents == "general") {
+    stop('General rank can\'t be used in bc4Squares(). All residuals are 0.')
   }
   # Check lvl.
   if (is.null(lvl)) {
     lvl <- unique(bc@meta.data[, idents])
-    in.lvl <- rep(TRUE, length(lvl))
+    in.lvl <- rep(TRUE, times = length(lvl))
   } else {
     in.lvl <- lvl %in% unique(bc@meta.data[, idents])
     if (all(!in.lvl)) {
@@ -720,22 +677,21 @@ bc4Squares <- function(bc, idents = NULL, lvl = NULL, top = 3,
     }
   }
   # Check top.
-  if (length(top) != 1 | !is.numeric(top) | top[1]%%1 != 0 | top[1] < 0) {
+  if (length(top) != 1 | top[1]%%1 != 0 | top[1] < 0) {
     stop('top must be a single integer >= 0.')
   }
   # Check topnames.
   if (!is.null(topnames)) {
     not.paths <- which(!(toupper(rownames(bc@normalized)) %in%
                            toupper(names(pathways))))
-    in.topnames <- toupper(topnames) %in% drugInfo$Name | tolower(topnames) %in% drugInfo$sig_id |
+    in.topnames <- toupper(topnames) %in% drugInfo$drugs |
+      tolower(topnames) %in% drugInfo$IDs |
       toupper(topnames) %in% toupper(rownames(bc@normalized)[not.paths])
     if (all(!in.topnames)) {
-      warning(paste('None of the specified topname drugs were found in the',
-                    'beyondcell object.'))
+      warning('None of the specified topname drugs were found in bc.')
     } else if (any(!in.topnames)) {
-      warning(paste0('The following topname drugs were not found in the' ,
-                     'beyondcell object: ', paste0(topnames[!in.topnames],
-                                                   collapse = ", "), '.'))
+      warning(paste0('The following topname drugs were not found in bc: ' ,
+                     paste0(topnames[!in.topnames], collapse = ", "), '.'))
     }
   } else {
     in.topnames <- NULL
@@ -755,68 +711,73 @@ bc4Squares <- function(bc, idents = NULL, lvl = NULL, top = 3,
   # --- Code ---
   # Get info about drugs (their corresponding name in bc, the preferred name
   # used by beyondcell and the MoA).
-  drug <- FindDrugs(bc, rownames(bc@scaled))
+  info <- FindDrugs(bc, x = rownames(bc@scaled))
   # Switch points.
-  sp <- data.frame(switch.point = bc@switch.point[drug$bc_Name],
-                   row.names = drug$bc_Name)
+  sp <- data.frame(switch.point = bc@switch.point[info$bc.names],
+                   row.names = info$bc.names)
   # One plot per level.
   p4s <- lapply(lvl[in.lvl], function(l) {
-    ### Subset residuals and switch points.
-    res <- bc@ranks[[idents]][drug$bc_Name, paste0("residuals.", l), drop = FALSE]
-    colnames(res) <- "residuals"
+    ### Subset residuals' means and switch points.
+    res <- bc@ranks[[idents]][info$bc.names,
+                              paste0("residuals.mean.", l), drop = FALSE]
+    colnames(res) <- "residuals.mean"
     df <- transform(merge(res, sp, by = 0), row.names = Row.names, Row.names = NULL)
     ### Residual's deciles.
-    res.decil <- quantile(as.numeric(res$residuals), prob = seq(0, 1, length = 11))
+    res.decil <- quantile(as.numeric(res$residuals.mean),
+                          prob = seq(from = 0, to = 1, length = 11))
     ### Drug annotation.
     sp_lower_01 <- as.numeric(df$switch.point) < 0.1
     sp_lower_06 <- as.numeric(df$switch.point) < 0.6
     sp_higher_04 <- as.numeric(df$switch.point) > 0.4
     sp_higher_09 <- as.numeric(df$switch.point) > 0.9
-    res_lower_10 <- as.numeric(df$residuals) < res.decil[["10%"]]
-    res_higher_90 <- as.numeric(df$residuals) > res.decil[["90%"]]
-    df$annotation <- rep("no", nrow(df))
+    res_lower_10 <- as.numeric(df$residuals.mean) < res.decil[["10%"]]
+    res_higher_90 <- as.numeric(df$residuals.mean) > res.decil[["90%"]]
+    df$annotation <- rep("no", times = nrow(df))
     df$annotation[sp_lower_01 & res_higher_90] <- "TOP-HighSensitivityDrugs"
     df$annotation[sp_higher_09 & res_lower_10] <- "TOP-LowSensitivityDrugs"
     df$annotation[sp_higher_04 & sp_lower_06 &
-                    res_lower_10] <- "TOPDifferential-LowSensitivityDrugs"
+                    res_lower_10] <- "TOP-Differential-LowSensitivityDrugs"
     df$annotation[sp_higher_04 & sp_lower_06 &
-                    res_higher_90] <- "TOPDifferential-HighSensitivityDrugs"
+                    res_higher_90] <- "TOP-Differential-HighSensitivityDrugs"
     ### Drug labels.
-    df$labels <- rep("", nrow(df))
-    decreasing_order <- c("TOPDifferential-HighSensitivityDrugs",
+    df$labels <- rep("", times = nrow(df))
+    decreasing_order <- c("TOP-Differential-HighSensitivityDrugs",
                           "TOP-HighSensitivityDrugs")
     unique.annotations <- unique(df$annotation[df$annotation != "no"])
     sel.labels <- unlist(sapply(unique.annotations, function(x) {
-      sub.df <- subset(df, df$annotation == x)
+      sub.df <- subset(df, subset = df$annotation == x)
       if (x %in% decreasing_order) {
-        sub.df <- sub.df[order(sub.df$residuals, sub.df$switch.point,
+        sub.df <- sub.df[order(sub.df$residuals.mean, sub.df$switch.point,
                                decreasing = TRUE), ]
       } else {
-        sub.df <- sub.df[order(sub.df$residuals, sub.df$switch.point), ]
+        sub.df <- sub.df[order(sub.df$residuals.mean, sub.df$switch.point,
+                               decreasing = FALSE), ]
       }
       return(rownames(sub.df)[1:min(top, nrow(sub.df))])
     }))
-    df[sel.labels, "labels"] <- drug$Preferred_and_sig[match(sel.labels,
-                                                             drug$bc_Name)]
+    df[sel.labels, "labels"] <- info$preferred.and.sigs[match(sel.labels,
+                                                              info$bc.names)]
     ### Topnames.
     if(length(topnames[in.topnames]) > 0) {
-      topnames <- FindDrugs(bc, topnames[in.topnames])
-      df[match(topnames$bc_Name, rownames(df)), "labels"] <- topnames$Preferred_and_sig
+      topnames <- FindDrugs(bc, x = topnames[in.topnames])
+      df[match(topnames$bc.names,
+               table = rownames(df)), "labels"] <- topnames$preferred.and.sigs
     }
-    ### Colors and names.
+    ### Colours and names.
     colors <- c("#1D61F2", "#DA0078", "orange", "#C7A2F5", "grey80", "black")
     names <- c("TOP-LowSensitivityDrugs", "TOP-HighSensitivityDrugs",
-               "TOPDifferential-HighSensitivityDrugs",
-               "TOPDifferential-LowSensitivityDrugs", "no", "black")
-    ### Circle's borders color.
+               "TOP-Differential-HighSensitivityDrugs",
+               "TOP-Differential-LowSensitivityDrugs", "no", "black")
+    ### Circle's borders colour.
     df$borders <- df$annotation
     df$borders[df$labels != ""] <- "black"
     ### Reorder df so labeled points are plotted on top.
-    df <- rbind(subset(df, df$borders != "black"),
-                subset(df, df$borders == "black"))
+    df <- rbind(subset(df, subset = df$borders != "black"),
+                subset(df, subset = df$borders == "black"))
     ### Plot.
-    p <- ggplot(df, aes(x = as.numeric(residuals), y = as.numeric(switch.point),
-                        color = borders, fill = annotation)) +
+    p <- ggplot(df, aes(x = as.numeric(residuals.mean),
+                        y = as.numeric(switch.point), color = borders,
+                        fill = annotation)) +
       geom_point(shape = 21, alpha = alpha, size = pt.size) +
       scale_color_manual(values = setNames(colors, names)) +
       scale_fill_manual(values = setNames(colors, names), breaks = names[1:4],
@@ -829,7 +790,7 @@ bc4Squares <- function(bc, idents = NULL, lvl = NULL, top = 3,
       geom_hline(yintercept = 0.6, linetype = "dotted") + ylim(0, 1) +
       labs(title = paste(idents, "=", lvl),
            caption = paste0("x cut-offs: first and last deciles; y cut-offs:",
-                            " 0.1, 0.4, 0.6 and 0.9")) + xlab("Residuals") +
+                            " 0.1, 0.4, 0.6 and 0.9")) + xlab("Residuals' Mean") +
       ylab("Switch Point") +
       ggrepel::geom_text_repel(label = df$labels, force = force) +
       guides(fill = guide_legend(title = "Drug Annotation"), color = FALSE) +
