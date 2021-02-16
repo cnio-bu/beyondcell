@@ -21,7 +21,7 @@ For a correct analysis with **Beyondcell**, users should follow these steps:
     * Regress out unwanted sources of variation
     * Recompute the UMAP reduction
  4. Compute ranks
- 5. [**Visualize**](https://gitlab.com/bu_cnio/Beyondcell/-/tree/master/tutorial/visualization) 
+ 5. [Visualize](https://gitlab.com/bu_cnio/Beyondcell/-/tree/master/tutorial/visualization) 
  the results
 
 ### 1. Read a single-cell expression object
