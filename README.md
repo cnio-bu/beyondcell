@@ -26,7 +26,7 @@ status.
 
 ![drug signatures](./.img/drug_signatures.png)
 
-## Beyoncell's key applications
+## Beyondcell's key applications
  * Analyse the intratumoural heterogeneity (ITH) of your experiment 
  * Classify your cells into TCs
  * Prioritize cancer treatments
@@ -87,4 +87,4 @@ For general instructions on running Beyondcell, check out the [analysis workflow
 ## Citation
 
 ## Support
-If you have any question regarding the use of Beyoncell, feel free to submit an [issue](https://gitlab.com/bu_cnio/Beyondcell/issues).
+If you have any question regarding the use of Beyondcell, feel free to submit an [issue](https://gitlab.com/bu_cnio/Beyondcell/issues).
