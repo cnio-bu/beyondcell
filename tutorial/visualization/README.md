@@ -28,15 +28,16 @@ the number of features per cell or the cell cycle phase can be analyzed with
 **Therapeutic Clusters** (TCs) using this same function:
 
 ```r
-# Beyondcell UMAP
-bcClusters(bc, UMAP = "beyondcell", idents = "bc_clusters_res.0.2", pt.size = 1)
+# Beyondcell UMAP.
+bcClusters(bc, UMAP = "beyondcell", idents = "bc_clusters_res.0.2")
 ```
 <img src=".img/bc_clusters.png" width="500">
 
 In addition, we can visualize condition-based metadata: 
 
 ```r
-bcClusters(bc, UMAP = "beyondcell", idents = "condition", pt.size = 1)
+# UMAP with bigger point size.
+bcClusters(bc, UMAP = "beyondcell", idents = "condition", pt.size = 1.5)
 ```
 <img src=".img/bc_condition.png" width="500">
 
@@ -44,8 +45,8 @@ Also, when available, the Seurat reduction can be plotted. This will allow us to
 detect the location of the TCs in the *original* expression UMAP.
 
 ```r
-# Expression UMAP
-bcClusters(bc, UMAP = "Seurat", idents = "seurat_clusters", pt.size = 1)
+# Expression UMAP.
+bcClusters(bc, UMAP = "Seurat", idents = "seurat_clusters")
 ```
 <img src=".img/seurat_clusters.png" width="500">
 
@@ -60,19 +61,18 @@ using PSc. We can do this using `FindDrugs`.
 
 ```r
 FindDrugs(bc, "BORTEZOMIB")
-
 ```
 
 |original.names|bc.names|preferred.drug.names|drugs|IDs|preferred.and.sigs|MoAs|
 |---------------|---------|-------------|------|--------|-----------|---------------| 
-|bortezomib|sig_1866|BORTEZOMIB|BORTEZOMIB|sig_1866|BORTEZOMIB (sig_1866)|NFKB PATHWAY INHIBITOR, PROTEASOME INHIBITOR|
-|bortezomib|sig_18868|BORTEZOMIB|BORTEZOMIB|sig_18868|BORTEZOMIB (sig_18868)|NFKB PATHWAY INHIBITOR, PROTEASOME INHIBITOR|
-|bortezomib|sig_20842|BORTEZOMIB|BORTEZOMIB|sig_20842|BORTEZOMIB (sig_20842)|NFKB PATHWAY INHIBITOR, PROTEASOME INHIBITOR|
+|BORTEZOMIB|sig_1866|BORTEZOMIB|BORTEZOMIB|sig_1866|BORTEZOMIB (sig_1866)|NFKB PATHWAY INHIBITOR, PROTEASOME INHIBITOR|
+|BORTEZOMIB|sig_18868|BORTEZOMIB|BORTEZOMIB|sig_18868|BORTEZOMIB (sig_18868)|NFKB PATHWAY INHIBITOR, PROTEASOME INHIBITOR|
+|BORTEZOMIB|sig_20842|BORTEZOMIB|BORTEZOMIB|sig_20842|BORTEZOMIB (sig_20842)|NFKB PATHWAY INHIBITOR, PROTEASOME INHIBITOR|
 
 Then, we run `bcSignatures` using the `IDs` of the drug.
 
 ```r
-bcSignatures(bc, UMAP = "beyondcell", signatures = list(values = "sig_18868"), pt.size = 1)
+bcSignatures(bc, UMAP = "beyondcell", signatures = list(values = "sig_18868"), pt.size = 1.5)
 ```
 <img src=".img/bortezomib_signature_18868.png" width="500">
 
@@ -81,11 +81,23 @@ containing all the signature plots. To retrieve all the `IDs` you have two
 options: either select `IDs` column from `FindDrugs` output or use `GetIDs` 
 function.
 
+```r
+library("patchwork")
+# Get all IDs correspondig to bortezomib.
+bortezomib_IDs <- FindDrugs(bc, "bortezomib")$IDs
+# Patchwork object with all bortezomib plots.
+bortezomib <- bcSignatures(bc, UMAP = "beyondcell", 
+                           signatures = list(values = bortezomib_IDs), pt.size = 1.5)
+# Plot all three plots in one image.
+wrap_plots(bortezomib, ncol = 3)
+```
+<img src=".img/bortezomib_all_plots.png" width="1000">
+
 We can also take a look at the behaviour of specific gene expression markers, 
 such a *PSMA5*, a gene targeted by bortezomib.
 
 ```r
-bcSignatures(bc, UMAP = "beyondcell", genes = list(values = "PSMA5"), pt.size = 1)
+bcSignatures(bc, UMAP = "beyondcell", genes = list(values = "PSMA5"))
 ```
 <img src=".img/psma5_expr.png" width="500">
 
@@ -116,13 +128,13 @@ bc4Squares(bc, idents = "condition", lvl = "t0", top = 5)
 for specific signatures.
 
 ```r
-# General view
+# General view.
 bcHistogram(bc, signatures = "sig_18868", idents = NULL)
 ```
 <img src=".img/bortezomib_histogram_gral.png" width="500">
 
 ```r
-# Condition-based histograms
+# Condition-based histograms.
 bcHistogram(bc, signatures = "sig_18868", idents = "condition")
 ```
 <img src=".img/bortezomib_histogram.png" width="500">

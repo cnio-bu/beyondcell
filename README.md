@@ -40,8 +40,14 @@ running the installation via conda:
 ```r
 # Create a conda environment
 conda create -n beyondcell 
+# Activate the environment
+conda activate beyondcell
 # Install Beyondcell package and dependencies
-conda install -c bu_cnio beyondcell
+conda install -c bu_cnio r-beyondcell
+# Install RStudio
+conda install -c r rstudio
+# Launch RStudio
+rstudio
 ```
 > TIP: Are you having any trouble running `bcUMAP`? Your umap-learn version 
 might not be recognized by R. r-reticulate generates a new environment that can 

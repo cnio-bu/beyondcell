@@ -36,15 +36,16 @@ analysis with Beyondcell.
 ```r
 library("beyondcell")
 library("Seurat")
-# Read single cell experiment
-sc = readRDS(path_to_sc)
+set.seed(1)
+# Read single-cell experiment.
+sc <- readRDS(path_to_sc)
 ```
 
 Note that if you are using a `Seurat` object, the `DefaultAssay` must be 
 specified. Both `SCT` and `RNA` assays are accepted.
 
 ```r
-# Set Assay
+# Set Assay.
 DefaultAssay(sc) <- "RNA"
 ```
 
@@ -68,9 +69,9 @@ epithelial-mesenchymal transition (EMT), cell cycle, proliferation, senescence
 and apoptosis.
 
 ```r
-# Generate geneset object with one of the ready to use signature collections
-gset <- GenerateGenesets(PSc)
-# You can deactivate the functional pathways option if you are not interested in evaluating them
+# Generate geneset object with one of the ready to use signature collections.
+gs <- GenerateGenesets(PSc)
+# You can deactivate the functional pathways option if you are not interested in evaluating them.
 nopath <- GenerateGenesets(PSc, include.pathways = FALSE)
 ```
 
@@ -83,7 +84,7 @@ criteria such as the t-statistic or logFoldChange).
 #### Compute the BCS
 ```r
 # Compute score for the PSc. This might take a few minutes depending on the size of your dataset.
-bc <- bcScore(sc, gset, expr.thres = 0.1) 
+bc <- bcScore(sc, gs, expr.thres = 0.1) 
 ```
 > TIP: We recommend to input cells with at least 1000-1500 genes detected.
 
@@ -106,9 +107,9 @@ computation.
 
 ```r
 # Run the UMAP reduction. 
-bc <- bcUMAP(bc)
+bc <- bcUMAP(bc, k.neighbors = 4, res = 0.2)
 # Run the bcUMAP function again, specifying the number of principal components you want to use.
-bc <- bcUMAP(bc, pc = 5, res = 0.2)
+bc <- bcUMAP(bc, pc = 10, k.neighbors = 4, res = 0.2)
 ```
 
 **Check clustering**\
@@ -123,7 +124,7 @@ recommend checking these sources of variation among others:
  * Batch
 
 ```r
-# Visualize whether cells are clustered based on the number of genes detecter per each cell
+# Visualize whether cells are clustered based on the number of genes detecter per each cell.
 bcClusters(bc, UMAP = "beyondcell", idents = "nFeature_RNA", factor.col = FALSE)
 ```
 <img src=".img/nFeature_variation.png" width="500">
@@ -143,7 +144,7 @@ variation. Have in mind that the number of detected genes per cell will
 *always* have an inpact in the final score.
 
 ```r
-bc <- bcRegressOut(bc, vars.to.regress = c("nFeature_RNA"))
+bc <- bcRegressOut(bc, vars.to.regress = "nFeature_RNA")
 ```
 > TIP: Is the regression step taking too long? Check the amount of NAs per cell 
 of your `bc@normalized matrix`. You migth need to refine the filtering of your 
@@ -155,12 +156,12 @@ clustering, in order to find the *true* **Therapeutic Clusters** present in your
 sample. 
 
 ```r
-# Recompute UMAP
-bc <- bcUMAP(bc, pc = 5, res = 0.2, add.DSS = FALSE, k.neighbors = 20) 
-# Visualize UMAP
-bcClusters(bc, UMAP = "beyondcell", idents = "nFeature_RNA", factor.col = FALSE, pt.size = 1)
-# Visualize Therapeutic clusters
-bcClusters(bc, UMAP = "beyondcell", idents = "bc_clusters_res.0.2", pt.size = 1)
+# Recompute UMAP.
+bc <- bcUMAP(bc, pc = 10,  k.neighbors = 20, res = 0.2)
+# Visualize UMAP.
+bcClusters(bc, UMAP = "beyondcell", idents = "nFeature_RNA", factor.col = FALSE)
+# Visualize therapeutic clusters.
+bcClusters(bc, UMAP = "beyondcell", idents = "bc_clusters_res.0.2")
 ```
 
 <p float="left">
@@ -176,20 +177,21 @@ into account the SP and the mean. This table aims to help you in the
 prioritization of drug candidates. 
 
 ```r
-# Obtain general statistics
+# Obtain general statistics.
 bc <- bcRanks(bc)
-# Obtain condition-based statistics
+# Obtain condition-based statistics.
 bc <- bcRanks(bc, idents = "condition")
-head(bc@ranks$condition)
-# Obtain therapeutic cluster-based statistics
-bc <- bcRanks(bc, idents = "bc_clusters_res.0.2")
+# Obtain unextended therapeutic cluster-based statistics.
+bc <- bcRanks(bc, idents = "bc_clusters_res.0.2", extended = FALSE)
 ```
 The summary tables are saved in the slot `@ranks` as a list of dataframes. You 
 can access them as follows:
 
 ```r
-# Explore the statistics table
+# Explore the statistics table.
 head(bc@ranks$general) 
+head(bc@ranks$condition)
+head(bc@ranks$bc_clusters_res.0.2)
 ```
 
 > TIP: The ranking returned by `bcRanks` orders the drug signatures from most to 
