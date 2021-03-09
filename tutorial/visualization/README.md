@@ -106,7 +106,7 @@ function. A 4 squares plot consists in a scatter plot of the residuals' means
 group defined by experimental condition or phenotype). Four quadrants are 
 highlighted: the top-left and bottom-right corners contain the drugs to which 
 all selected cells are least/most sensistive, respectively. The centre quadrants 
-show the drugs to which these cells are differentially insensitve or sensitive 
+show the drugs to which these cells are differentially insensitive or sensitive 
 when compared to the other clusters.
 
 This function displays the top hits obtained for each of the specified condition 
