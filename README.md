@@ -38,15 +38,15 @@ The Beyondcell algorithm is implemented in R (v. 4.0.0 or greater). We recommend
 running the installation via conda: 
 
 ```r
-# Create a conda environment
+# Create a conda environment.
 conda create -n beyondcell 
-# Activate the environment
+# Activate the environment.
 conda activate beyondcell
-# Install Beyondcell package and dependencies
+# Install Beyondcell package and dependencies.
 conda install -c bu_cnio r-beyondcell
-# Install RStudio
+# Install RStudio.
 conda install -c r rstudio
-# Launch RStudio
+# Launch RStudio.
 rstudio
 ```
 > TIP: Are you having any trouble running `bcUMAP`? Your umap-learn version 
