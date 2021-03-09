@@ -77,9 +77,7 @@ bcSignatures(bc, UMAP = "beyondcell", signatures = list(values = "sig_18868"), p
 <img src=".img/bortezomib_signature_18868.png" width="500">
 
 If you input more than one `ID`, the result will be a `patchwork` object 
-containing all the signature plots. To retrieve all the `IDs` you have two 
-options: either select `IDs` column from `FindDrugs` output or use `GetIDs` 
-function.
+containing all the signature plots.
 
 ```r
 library("patchwork")
@@ -104,10 +102,12 @@ bcSignatures(bc, UMAP = "beyondcell", genes = list(values = "PSMA5"))
 ## Ranking visualization
 We can compute a drug rank and summarize the results using the `bc4Squares` 
 function. A 4 squares plot consists in a scatter plot of the residuals' means 
-(x axis) vs the Switch Points (y axis). Four quadrants are highlighted: the 
-top-left and bottom-right corners contain the drugs to which all selected cells 
-are least/most sensistive, respectively. The centre quadrants show the drugs to 
-which half of the selected cells are sensitive and the other half insensitive.
+(x axis) vs the Switch Points (y axis) of a specified cluster (either a TC or a 
+group defined by experimental condition or phenotype). Four quadrants are 
+highlighted: the top-left and bottom-right corners contain the drugs to which 
+all selected cells are least/most sensistive, respectively. The centre quadrants 
+show the drugs to which these cells are differentially insensitve or sensitive 
+when compared to the other clusters.
 
 This function displays the top hits obtained for each of the specified condition 
 levels. Note that residuals' means are different for each level while 
