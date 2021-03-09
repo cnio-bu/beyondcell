@@ -43,10 +43,12 @@ A list of \code{ggplot2} objects, one per \code{lvl}.
 This function drawns a 4 square plot of the drug signatures
 present in a \code{\link[beyondcell]{beyondcell}} object. A 4 squares plot
 consists in a scatter plot of the residuals' means (x axis) vs the switch
-points (y axis). 4 quadrants are highlighted: the top-left and bottom-right
-corners contain the drugs to which all selected cells are least/most
-sensistive, respectively. The centre quadrants show the drugs to which half
-of the selected cells are sensitive and the other half insensitive.
+points (y axis) of a specified cluster (either a therapeutic cluster or a
+group defined by experimental condition or phenotype). 4 quadrants are
+highlighted: the top-left and bottom-right corners contain the drugs to which
+all selected cells are least/most sensistive, respectively. The centre
+quadrants show the drugs to which these cells are differentially insensitive
+or sensitive when compared to the other clusters.
 
 x cut-offs: first and last deciles; y cut-offs: 0.1, 0.4, 0.6 and 0.9.
 }
