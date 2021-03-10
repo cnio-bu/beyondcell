@@ -7,14 +7,14 @@
 ListFilters(entry)
 }
 \arguments{
-\item{entry}{Either \code{"drugs"}, \code{"IDs"}, \code{"MoA"},
-\code{"targets"} or \code{"source"}.}
+\item{entry}{Either \code{"drugs"}, \code{"IDs"}, \code{"MoAs"},
+\code{"targets"} or \code{"sources"}.}
 }
 \value{
 All the possible values for the specified \code{entry}.
 }
 \description{
 This function returns all the available values for \code{drugs},
-\code{sig_ids}, \code{MoAs}, \code{targets} or \code{source} filters in
-\code{\link[GenerateGenesets]{GenerateGenesets}} function.
+\code{IDs}, \code{MoAs}, \code{targets} or \code{sources} filters in
+\code{\link[beyondcell]{GenerateGenesets}} function.
 }

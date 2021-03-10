@@ -1,6 +1,6 @@
 #' @title Ranks the signatures from most sensitive to least sensitive
-#' @description  This function computes the bcscores statistics of each
-#' signature and ranks them according to the switch point and mean.
+#' @description  This function computes the beyondcell score's (BCS) statistics
+#' of each signature and ranks them according to the switch point and mean.
 #' @name bcRanks
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
 #' @param idents Name of the metadata column of interest. If
@@ -8,12 +8,12 @@
 #' \code{idents != NULL}, the signatures' ranks are computed for each level in
 #' \code{idents}.
 #' @param extended If \code{extended = TRUE}, this function returns the switch
-#' point, mean, median, sd, variance, min, max, proportion of \code{NaN} and
-#' residuals' mean per signature. If \code{extended = FALSE}, this function
-#' returns only the switch point, mean and residuals' mean.
-#' @return A \code{beyondcell object} with the results in a new entry of
-#' \code{bc@@ranks} (\code{bc@@ranks$general} if \code{idents = NULL} or
-#' \code{bc@@ranks$idents} if \code{idents != NULL}).
+#' point, mean, median, standard deviation, variance, min, max, proportion of
+#' \code{NaN} and residuals' mean per signature. If \code{extended = FALSE},
+#' this function returns only the switch point, mean and residuals' mean.
+#' @return A \code{beyondcell} object with the results in a new entry of
+#' \code{bc@@ranks}: \code{bc@@ranks[["general"]]} (if \code{idents = NULL}) or
+#' \code{bc@@ranks[[idents]]} (if \code{idents != NULL}).
 #' @examples
 #' @export
 
@@ -52,7 +52,7 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE) {
   # Extended.
   if (extended) n <- 6
   else n <- 1
-  # Statistics for all normalized beyondcell scores.
+  # Statistics for all normalized BCS.
   if (is.null(idents)) {
     # Progress bar.
     total <- n.rows * n
@@ -63,7 +63,8 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE) {
     order.col <- "rank"
     # Get Statistics dataframe.
     final.stats <- GetStatistics(bc = bc, signatures = sigs, cells = cells,
-                                 pb, total, i = 1, n.rows, extended)
+                                 pb = pb, total = total, i = 1, n.rows = n.rows,
+                                 extended = extended)
     # Add rank.
     sig.order <- order(-1 * final.stats$switch.point, final.stats$mean,
                        decreasing = TRUE)
@@ -72,7 +73,7 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE) {
     final.stats <- final.stats[c("rank", colnames(final.stats)[-ncol(final.stats)])]
   } else {
     # Metadata levels.
-    lvls <- sort(unique(as.factor(meta)))
+    lvls <- sort(unique(as.factor(meta)), decreasing = FALSE)
     # Progress bar.
     total <- n.rows * n * length(lvls)
     pb <- txtProgressBar(min = 0, max = total, style = 3)
@@ -93,7 +94,8 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE) {
         bcSubset(sub.bc, cells = group.cells)))
       ### Get Statistics dataframe.
       out <- GetStatistics(bc = sub.bc, signatures = sigs, cells = group.cells,
-                           pb, total, i, n.rows, extended)
+                           pb = pb, total = total, i = i, n.rows = n.rows,
+                           extended = extended)
       ### Add rank.
       sig.order <- order(-1 * out$switch.point, out$mean, decreasing = TRUE)
       out$rank[sig.order] <- 1:nrow(out)
@@ -104,24 +106,24 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE) {
       return(out)
     })
     # Merge dataframes of all levels.
-    final.stats <- do.call(cbind.data.frame, stats)
+    final.stats <- do.call(what = cbind.data.frame, args = stats)
   }
   # Add Drug name and MoA to final.stats.
   cols <- colnames(final.stats)
-  info <- subset(drugInfo, drugInfo$sig_id %in% rownames(final.stats))
+  info <- subset(drugInfo, subset = drugInfo$IDs %in% rownames(final.stats))
   if (dim(info)[1] > 0) {
-    info <- aggregate(.~sig_id, data = info, na.action = NULL, FUN = function(x) {
+    info <- aggregate(.~ IDs, data = info, na.action = NULL, FUN = function(x) {
       paste(na.omit(unique(x)), collapse = "; ")
     })
   }
-  rownames(info) <- info$sig_id
-  info <- info[, c("Name", "Preferred_Name", "MoA", "Target", "Source")]
+  rownames(info) <- info$IDs
+  info <- info[, c("drugs", "preferred.drug.names", "MoAs", "targets", "sources")]
   final.stats <- transform(merge(final.stats, info, by = 0, all.x = TRUE),
                            row.names = Row.names, Row.names = NULL)
   # Order by rank and reorder columns.
-  final.stats <- final.stats[order(final.stats[, order.col]),
-                             c("Name", "Preferred_Name", "MoA", "Target",
-                               "Source", cols)]
+  final.stats <- final.stats[order(final.stats[, order.col], decreasing = FALSE),
+                             c("drugs", "preferred.drug.names", "MoAs",
+                               "targets", "sources", cols)]
   # Add to beyondcell object.
   bc@ranks[[idents]] <- final.stats
   # Close the progress bar.
@@ -132,17 +134,18 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE) {
 
 #' @title Returns the first/last n ranked signatures
 #' @description  This function returns the top/bottom \code{n} signatures ranked
-#' according to the bcscores of cells that satisfy
-#' \code{bc@@meta.data$idents == cond}.
+#' by \code{\link[beyondcell]{bcRanks}}. If the rank has not been previously
+#' computed, \code{rankSigs} performs the ranking itself.
 #' @name rankSigs
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
 #' @param idents Name of the metadata column of interest. If
-#' \code{idents = NULL}, the function computes the ranks using all cells.
+#' \code{idents = NULL}, the function uses the general rank computed with all
+#' cells.
 #' @param cond Level of \code{idents} to rank by the output vector. If
 #' \code{idents = NULL}, this parameter is deprecated.
 #' @param n Number of signatures to return in the output vector.
-#' @param decreasing Return the top \code{n} signatures (default) or the bottom
-#' \code{n} signatures (\code{decreasing = FALSE}).
+#' @param decreasing Logical. Return the top \code{n} signatures (default) or
+#' the bottom \code{n} signatures (\code{decreasing = FALSE})?.
 #' @return An ordered vector with the signature's names.
 #' @examples
 #' @export
@@ -160,13 +163,13 @@ rankSigs <- function(bc, idents = NULL, cond = NULL, n = 10,
     if (!idents %in% colnames(bc@meta.data)) {
       stop('Idents not found.')
     }
-    if (is.null(cond)) {
+    if (is.null(cond[1])) {
       stop('Invalid cond.')
     }
     meta <- idents
   } else {
     meta <- "general"
-    if (!is.null(cond)) {
+    if (!is.null(cond[1])) {
       warning('idents not specified, cond is deprecated.')
       cond <- NULL
     }
@@ -184,26 +187,20 @@ rankSigs <- function(bc, idents = NULL, cond = NULL, n = 10,
   if (length(n) != 1 | (!is.numeric(n) & !is.character(n))) {
     stop('n must be a single number or "all".')
   }
-  if (is.numeric(n)) {
-    if (n < 1 | n%%1 != 0) {
-      stop('n must be an integer > 0.')
-    }
-  } else if (is.character(n)) {
-    if (n == "all") {
-      n <- nrow(bc@normalized)
-    } else {
-      stop('To select all signatures, please set n = "all".')
-    }
+  if (is.numeric(n) & (n < 1 | n%%1 != 0)) stop('n must be an integer > 0.')
+  else if (is.character(n)) {
+    if (n == "all") n <- nrow(bc@normalized)
+    else stop('To select all signatures, please set n = "all".')
   }
   # Check decreasing.
   if (length(decreasing) != 1 | !is.logical(decreasing)) {
-    stop('decreasimg must be a logical argument of length 1.')
+    stop('decreasimg must be TRUE or FALSE.')
   }
   # --- Code ---
   # If ranks have not been computed, compute them now.
   if (!meta %in% names(bc@ranks)) {
     message('Computing ranks...')
-    bc <- bcRanks(bc, idents, extended = FALSE)
+    bc <- bcRanks(bc, idents = idents, extended = FALSE)
   }
   # Get ranks for the specified idents.
   df <- bc@ranks[[meta]]
@@ -214,8 +211,9 @@ rankSigs <- function(bc, idents = NULL, cond = NULL, n = 10,
     idx <- nrow(bc@normalized):(nrow(bc@normalized) - n + 1)
   }
   # Return signatures whose rank == idx.
-  order.col <- ifelse(meta == "general", "rank", paste0("rank.", cond))
-  ordered.df <- df[order(df[, order.col]), ]
+  order.col <- ifelse(test = meta == "general", yes = "rank",
+                      no = paste0("rank.", cond))
+  ordered.df <- df[order(df[, order.col], decreasing = FALSE), ]
   sigs <- ordered.df[idx, "Name"]
   return(sigs)
 }

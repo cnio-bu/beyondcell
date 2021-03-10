@@ -2,13 +2,13 @@
 % Please edit documentation in R/Visualization.R
 \name{bcSignatures}
 \alias{bcSignatures}
-\title{Plots the UMAP reduction colored by bcscores or gene expression values}
+\title{Plots a UMAP reduction coloured by BCS or gene expression values}
 \usage{
 bcSignatures(
   bc,
   UMAP = "beyondcell",
-  signatures = list(values = NULL, limits = c(0, 1), center = NULL, breaks = 0.1,
-    share.limits = TRUE, colorscale = NULL, alpha = 0.7, na.value = "grey50"),
+  signatures = list(values = NULL, colorscale = NULL, alpha = 0.7, na.value = "grey50",
+    limits = c(0, 1), center = NULL, breaks = 0.1),
   genes = list(values = NULL, limits = c(NA, NA), share.limits = FALSE),
   merged = NULL,
   blend = FALSE,
@@ -19,82 +19,77 @@ bcSignatures(
 \arguments{
 \item{bc}{\code{\link[beyondcell]{beyondcell}} object.}
 
-\item{UMAP}{UMAP reduction to plot. Either \code{"beyondcell"} (computed
-using \code{\link[bcUMAP]{bcUMAP}}) or \code{"Seurat"} computed using
-\code{\link[Seurat]{Seurat}}'s functions.}
+\item{UMAP}{UMAP reduction to plot. Either \code{"beyondcell"}, computed
+using \code{\link[beyondcell]{bcUMAP}}, or \code{"Seurat"}, obtained using
+\code{Seurat}'s functions.}
 
-\item{signatures}{List with parameters to color the UMAP by bcscores:
+\item{signatures}{List with plot parameters to colour the UMAP by BCS:
 \itemize{
 \item{\code{values}:} {Vector with the names of the signatures of interest.
 If \code{signatures[["values"]] = "all"}, all signatures are selected.}
+\item{\code{colorscale}:} {Either a \code{viridis}, \code{RColorBrewer} or a
+custom palette of 3 colours (low, medium and high) to colour all signatures'
+plots. If \code{colorscale = NULL} (default), the plots are coloured using
+\code{beyondcell}'s own palette.}
+\item{\code{alpha}:} {Transparency level between 1 (not transparent) and 0
+(fully transparent).}
+\item{\code{na.value}:} {Colour to use for missing values (\code{NA}s).}
 \item{\code{limits}:} {Vector with the desired limits for all signatures'
-plots. If \code{limits = c(NA, NA)} (default), the \code{limits} are computed
-for each signature independently.}
-\item{\code{center}:} {A single number indicating the center of the
-\code{colorscale} for all signatures' plots. Alternatively, the \code{center}
-can be a vector of two numbers. In this case, the \code{center} of the
-\code{colorscale} is the middle point between these two numbers and the
-\code{breaks} are computed using the difference between them. If
-\code{center = NULL} (default), the \code{center} of each signature is its
-switch point.}
+plots.}
+\item{\code{center}:} {A single number indicating the centre of the
+\code{colorscale} for all signatures' plots. If \code{center = NULL}
+(default), the \code{center} for each signature is its switch point.}
 \item{\code{breaks}:} {A single number indicating the break size of the
 \code{colorscale}. Alternatively, it can be a vector with the desired breaks
-(which don't have to be symmetric or equally distributed). If \code{center}
-is a vector of two numbers, \code{breaks} are computed using the difference
-between them.}
-\item{\code{share.limits}:} {Logical argument. If \code{share.limits = TRUE}
-(default), all signatures' plots will have the same \code{limits = c(0, 1)}.
-If \code{share.limits = FALSE}, each signature plot will have its own
-\code{limits}. Note that if \code{limits != c(NA, NA)},
-\code{share.limits = TRUE}.}
-\item{\code{colorscale}:} {Either a \code{viridis}, \code{RColorBrewer} or a
-custom palette of 3 colors (low, medium and high) to color all signatures'
-plots. If \code{colorscale = NULL} (default), the plots are colored using
-\code{beyondcell}'s own palette.}
-\item{\code{alpha}:} {Transparency level between 0 (not transparent) and 1
-(fully transparent).}
-\item{\code{na.value}:} {Color to use for missing values (\code{NA}s).}}}
+(which don't have to be symmetric or equally distributed).}}}
 
-\item{genes}{List with parameters to color the UMAP by gene expression
+\item{genes}{List with plot parameters to colour the UMAP by gene expression
 values:
 \itemize{
 \item{\code{values}:} {Vector with the names of the genes of interest. If
 \code{genes[["values"]] = "all"}, all genes are selected.}
 \item{\code{limits}:} {Vector with the desired limits for all genes' plots.
-If \code{limits = c(NA, NA)} (default), the \code{limits} are computed for
-each gene independently.}
+If \code{limits = c(NA, NA)} (default), the \code{limits} are computed
+automatically. See Details for  more information.}
 \item{\code{share.limits}:} {Logical argument. If \code{share.limits = TRUE},
 all genes' plots will have the same \code{limits}. If
 \code{share.limits = FALSE} (default), each gene plot will have its own
-\code{limits}. Note that if \code{limits != c(NA, NA)},
-\code{share.limits = TRUE}.}}}
+\code{limits}. See Details for more information.}}}
 
 \item{merged}{If \code{merged != NULL}, two signatures will be superposed in
 the same plot. If \code{merged = "direct"}, the signatures are assumed to
-have a direct relationship and the bcscores will be added (+). On the other
-hand, if \code{merged = "indirect"}, the signatures are assumed to have an
-indirect relationship and their bcscores will be substracted (-).}
+have a direct relationship and the BCS will be added. On the other hand, if
+\code{merged = "indirect"}, the signatures are assumed to have an indirect
+relationship and their BCS will be substracted.}
 
-\item{blend}{(From \code{Seurat}) Scale and blend expression values to
-visualize coexpression of two genes.}
+\item{blend}{(From \code{\link[Seurat]{FeaturePlot}}) Scale and blend
+expression values to visualise co-expression of two genes.}
 
 \item{mfrow}{Numeric vector of the form \code{c(nr, nc)}. \code{nr}
 corresponds to the number of rows and \code{nc} to the number of columns of
-the arrays in which the plots will be drawn. If you want to draw the plots
+the grid in which the plots will be drawn. If you want to draw the plots
 individually, set \code{mfrow = c(1, 1)}.}
 
-\item{...}{Other arguments passed to \code{Seurat}'s
-\code{\link[FeaturePlot]{FeaturePlot}}.}
+\item{...}{Other arguments passed to \code{FeaturePlot}.}
 }
 \value{
-A list of \code{patchwork}s (if \code{mfrow != c(1, 1)}) or
-\code{ggplot2}s (if \code{mfrow = c(1, 1)}) of the desired UMAP reduction
-colored by the beyondcell scores (for signatures) or gene expression values
-(for genes).
+A list of \code{patchwork} (if \code{mfrow != c(1, 1)}) or
+\code{ggplot2} objects (if \code{mfrow = c(1, 1)}) of the desired UMAP
+reduction coloured by the BCS (for signatures) or gene expression values (for
+genes).
 }
 \description{
 This function returns a list of
-\code{\link[patchwork]{patchwork}}s or \code{\link[ggplot2]{ggplot2}}s with
-the desired UMAP reduction (either \code{beyondcell}'s or \code{Seurat}'s)
-colored by bcscores or gene expression values.
+\code{\link[patchwork]{patchwork}} or \code{\link[ggplot2]{ggplot2}} objects
+with the desired UMAP reduction coloured by beyondcell scores (BCS) or gene
+expression values.
+}
+\details{
+When \code{genes[["limits"]] = c(NA, NA)}, \code{bcSignatures}
+computes the limits automatically. You can make all plots share the same
+limits by specifying \code{genes[["share.limits"]] = TRUE}, or make the
+function to compute the limits individually for each gene with
+\code{genes[["share.limits"]] = FALSE}. Moreover, if you specify a value for
+\code{genes[["limits"]]}, \code{genes[["share.limits"]]} will automatically
+set to \code{TRUE} and all plots will share those limits.
 }

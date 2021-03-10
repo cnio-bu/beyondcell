@@ -7,14 +7,14 @@
 BreakString(x, split = ", ", line.length = 50)
 }
 \arguments{
-\item{x}{String to be breaked, formed by elements separated by \code{split}.}
+\item{x}{String to be broken, formed by elements separated by \code{split}.}
 
 \item{split}{Character that separates the elements of \code{x}.}
 
-\item{line.length}{Length of the lines into which \code{x} will be breaked.}
+\item{line.length}{Length of the lines into which \code{x} will be broken.}
 }
 \value{
-A string with the same contents that \code{x} breaked in lines of
+A string with the same content as \code{x} broken in lines of
 length \code{line.length}.
 }
 \description{
