@@ -2,21 +2,21 @@
 % Please edit documentation in R/Basics.R
 \name{colMinus}
 \alias{colMinus}
-\title{Substracts to the first row of a rectangular object the rest of rows}
+\title{Computes the column substraction}
 \usage{
 colMinus(x, na.rm = FALSE)
 }
 \arguments{
-\item{x}{A matrix or a data frame.}
+\item{x}{A matrix or a dataframe.}
 
 \item{na.rm}{(From \code{base}) Logical. Should missing values (including
-\code{NaN}) be omitted from the calculations?}
+\code{NaN}) from rows \code{2:length(x)} be omitted from the calculations?}
 }
 \value{
 A numeric rectangular object with the result of the substraction.
 }
 \description{
-This function substracts to the first row of a numerical
-rectangular object (\code{x[1, ]}) the rest of rows of the same rectangular
-object (\code{x[2:length(x), ]}).
+This function substracts to the first element of each column of
+a rectangular object (\code{x[1, n]}) the rest of elements of the same column
+(\code{x[2:length(x), n]}).
 }

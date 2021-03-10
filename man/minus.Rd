@@ -7,7 +7,7 @@
 minus(x, na.rm = FALSE)
 }
 \arguments{
-\item{x}{Numerical vector}
+\item{x}{Numeric vector.}
 
 \item{na.rm}{(From \code{base}) Logical. Should missing values (including
 \code{NaN}) be removed?}
@@ -16,7 +16,7 @@ minus(x, na.rm = FALSE)
 The result of the substraction.
 }
 \description{
-This function substracts to the first element of a numerical
+This function substracts to the first element of a numeric
 vector (\code{x[1]}) the rest of elements of the same vector.
 (\code{x[2:length(x)]}).
 }

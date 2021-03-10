@@ -1,15 +1,14 @@
-#' @title Computes the beyondcell score
-#' @description This function computes the beyondcell score and returns an
+#' @title Computes the BCS
+#' @description This function computes the beyondcell score (BCS) and returns an
 #' object of class \code{\link[beyondcell]{beyondcell}}.
 #' @name bcScore
 #' @import Seurat
 #' @import scales
 #' @param sc \code{\link[Seurat]{Seurat}} object or expression matrix.
-#' @param gs \code{\link[geneset]{geneset}} object.
+#' @param gs \code{\link[beyondcell]{geneset}} object.
 #' @param expr.thres Minimum fraction of signature genes that must be
-#' expressed in a cell to compute its beyondcell score. Cells with a number of
-#' expressed genes below this fraction will have a \code{NaN} beyondcell
-#' score.
+#' expressed in a cell to compute its BCS. Cells with a number of expressed
+#' genes below this fraction will have a \code{NaN} BCS.
 #' @return A \code{beyondcell} object.
 #' @examples
 #' @export
@@ -29,32 +28,29 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
         stop('Default assay must include a normalized data (@data) slot.')
       }
     } else {
-      stop(paste('Seurat default assay must be either RNA or SCT.',
-                 'Integrated data is not accepted as input.'))
+      stop('Seurat default assay must be either RNA or SCT.')
     }
-  } else if ("matrix"%in% class(sc) & is.numeric(sc)) {
+  } else if ("matrix" %in% class(sc) & is.numeric(sc)) {
     input <- "expression matrix"
     warning(paste('Using count matrix as input. Please, check that this matrix',
                   'is normalized and unscaled.'))
     expr.matrix <- sc
     sc <- Seurat::CreateSeuratObject(expr.matrix)
-  } else stop('sc must be either a Seurat object or an expression matrix.')
+  } else stop(paste('sc must be either a Seurat object or a single-cell',
+                    'expression matrix.'))
   # Check if gs is a geneset object.
   if (class(gs) != "geneset") stop('gs must be a geneset object.')
   # Check expr.thres.
-  if (length(expr.thres) != 1 | !is.numeric(expr.thres)) {
-    stop('expr.thres must be a single number.')
-  }
-  if (expr.thres < 0 | expr.thres > 1) {
+  if (length(expr.thres) != 1 | expr.thres[1] < 0 | expr.thres[1] > 1) {
     stop('expr.thres must be a positive number between 0 and 1.')
   }
   # Check that gene names are in the same format.
-  sc.gene.case <- names(which.max(GeneCase(rownames(expr.matrix))))
-  gs.gene.case <- names(which.max(GeneCase(unique(unlist(gs@genelist)))))
+  sc.gene.case <- names(which.max(CaseFraction(rownames(expr.matrix))))
+  gs.gene.case <- names(which.max(CaseFraction(unique(unlist(gs@genelist)))))
   if (sc.gene.case != gs.gene.case) {
     warning(paste0('gs genes are ', sc.gene.case, ' and sc genes are ',
-                  gs.gene.case, '. Please check your ', input,
-                  ' and translate the genes if necessary.'))
+                   gs.gene.case, '. Please check your ', input,
+                   ' and translate the genes if necessary.'))
   }
   # --- Code ---
   # Create beyondcell object.
@@ -90,14 +86,14 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
     ### Update the progress bar.
     if (i%%bins == 0) {
       Sys.sleep(0.1)
-      setTxtProgressBar(pb, i)
+      setTxtProgressBar(pb, value = i)
     }
     ### Is n.expr.genes < all.genes * expr.thres?
     return(n.expr.genes < (length(all.genes) * expr.thres))
   }))
   rownames(below.thres) <- names(gs@genelist)
   below.thres <- below.thres[, colnames(expr.matrix)]
-  # Beyondcell scores.
+  # BCS.
   bcs <- lapply(seq_along(gs@mode), function(j) {
     score <- t(sapply(1:len.gs, function(k) {
       ### Common genes between the expr.marix and each signature.
@@ -108,15 +104,15 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
       sum.expr <- colSums(sub.expr.matrix)
       ### Raw score (mean).
       raw <- colMeans(sub.expr.matrix)
-      ### Stdev (for bc score normalization).
+      ### Stdev (for BCS normalization).
       sig.stdev <- apply(sub.expr.matrix, 2, sd)
-      ### Normalized score.
+      ### Normalized BCS.
       norm.score <- raw * ((sum.expr - sig.stdev)/(raw + sig.stdev))
       ### Update the progress bar.
       step <- len.gs + (j - 1) * len.gs + k
       if (step%%bins == 0 | step == total) {
         Sys.sleep(0.1)
-        setTxtProgressBar(pb, step)
+        setTxtProgressBar(pb, value = step)
       }
       return(norm.score)
     }))
@@ -144,7 +140,7 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
       scoring.matrix <- -1 * scoring.matrix[, , drop = FALSE]
     }
   }
-  # If genesets were obtained in a TREATED vs CONTROL comparison, invert bcscore
+  # If genesets were obtained in a TREATED vs CONTROL comparison, invert BCS
   # sign (exclude pathways).
   if (gs@comparison == "treated_vs_control") {
     not.paths <- which(!(rownames(scoring.matrix) %in% names(pathways)))
@@ -156,10 +152,10 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
       scoring.matrix <- (-1) * scoring.matrix[, , drop = FALSE]
     }
   }
-  slot(bc, "normalized") <- slot(bc, "data") <- round(scoring.matrix, 2)
+  slot(bc, "normalized") <- slot(bc, "data") <- round(scoring.matrix, digits = 2)
   # Scale the final matrix [0, 1] for each signature (for visualization).
   scaled.matrix <- t(apply(bc@normalized, 1, scales::rescale, to = c(0, 1)))
-  slot(bc, "scaled") <- round(scaled.matrix, 2)
+  slot(bc, "scaled") <- round(scaled.matrix, digits = 2)
   # Compute the switch point.
   switch.point <- SwitchPoint(bc)
   slot(bc, "switch.point") <- switch.point
@@ -168,19 +164,19 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
   return(bc)
 }
 
-#' @title Returns the fraction of each case type in the input vector
+#' @title Returns the fraction of each case type in the input
 #' @description This function computes the fraction of of each case type
 #' (uppercase, lowercase or capitalized) in a character vector.
-#' @name GeneCase
+#' @name CaseFraction
 #' @import useful
 #' @param x Character vector.
-#' @return A named numeric vector with the fractions of each case type.
+#' @return A named numeric vector with the fraction of each case type.
 #' @examples
 #' @export
 
-GeneCase <- function(x) {
+CaseFraction <- function(x) {
   # --- Checks ---
-  if(!is.character(x)) stop('x must be of class character.')
+  if(!is.character(x)) stop('x must be a character vector.')
   # --- Code ---
   perc <- sapply(c("upper", "lower", "capitalized"), function(case) {
     if (case == "upper" | case == "lower") {
@@ -193,7 +189,7 @@ GeneCase <- function(x) {
       p <- sum(useful::upper.case(first.letter) &
                  useful::lower.case(rest.letters))/length(x)
     }
-    return(round(p, 2))
+    return(round(p, digits = 2))
   })
   names(perc)[1:2] <- paste0("in ", names(perc)[1:2], "case")
   return(perc)
@@ -202,10 +198,10 @@ GeneCase <- function(x) {
 #' @title Computes the switch point
 #' @description This function computes the switch point of the signatures of a
 #' given \code{\link[beyondcell]{beyondcell}} object. The switch point is the
-#' (subsetted and/or regressed) scaled bcscore that corresponds to the point in
-#' which the normalized bcscores in \code{beyondcell@@data} switch from
-#' negative (insensitive) to positive (sensitive) values. The closer to 0, the
-#' more sensitive are the cells to a given drug.
+#' (subsetted and/or regressed) scaled beyondcell score (BCS) that corresponds
+#' to the point in which the normalized BCS in \code{beyondcell@@data} switchs
+#' from negative (insensitive) to positive (sensitive) values. The closer to 0,
+#' the more sensitive are the cells to a given drug.
 #' @name SwitchPoint
 #' @param bc \code{beyondcell} object.
 #' @return A named vector with the swich points of the signatures in \code{bc}.
@@ -217,7 +213,7 @@ SwitchPoint <- function(bc) {
   # Check that bc is a beyondcell object.
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
   # Check bc@mode.
-  if (!all(bc@mode %in% c("up", "down")) | all(is.null(bc@mode))) {
+  if (any(!(bc@mode %in% c("up", "down"))) | all(is.null(bc@mode))) {
     stop('Incorrect mode.')
   }
   bc@mode <- unique(bc@mode)
@@ -226,36 +222,36 @@ SwitchPoint <- function(bc) {
   sigs <- rownames(bc@normalized)
   # Cells in bc.
   cells <- colnames(bc@normalized)
-  # If bc@mode == "up", all normalized bcscores will be positive and all
-  # switch points will be 0.
+  # If bc@mode == "up", all normalized BCS will be positive and all switch
+  # points will be 0.
   if (all(bc@mode == "up")) {
-    switch.point <- rep(0, length(sigs))
-  # If bc@mode == "down", all normalized bcscores will be negative and all
-  # switch points will be 1.
+    switch.point <- rep(0, times = length(sigs))
+    # If bc@mode == "down", all normalized BCS will be negative and all switch
+    # points will be 1.
   } else if (all(bc@mode == "down")) {
-    switch.point <- rep(1, length(sigs))
-  # If bc@mode == c("up", "down")...
+    switch.point <- rep(1, times = length(sigs))
+    # If bc@mode == c("up", "down")...
   } else if(length(bc@mode) == 2) {
     ### Create a list with an entry for each signature. If the entry has
     ### length == 1, it is the final switch point. If it has length == 2, it
-    ### corresponds to the indexes of the normalized bcscores closest to 0.
+    ### corresponds to the indexes of the normalized BCS closest to 0.
     indexes <- lapply(sigs, FUN = function(x) {
-      ### Subset the normalized bcscores in @data.
+      ### Subset the normalized BCS in @data.
       m <- bc@data[x, cells]
       ### If all values are NaN, return NaN.
       if (all(is.na(m))) return(NaN)
       ### Else, remove NaN values.
       m.nona <- na.omit(m)
-      ### If all normalized bcscores are positive, the switch point is 0.
+      ### If all normalized BCS are positive, the switch point is 0.
       if (all(m.nona >= 0)) return(0)
-      ### If all normalized bcscores are negative, the switch point is 1.
+      ### If all normalized BCS are negative, the switch point is 1.
       else if (all(m.nona <= 0)) return(1)
-      ### If there are positive and negative normalized bcscores...
+      ### If there are positive and negative normalized BCS...
       else {
         exact.0 <- m.nona == 0
-        ### If any of the normalized bcscores == 0, return its index (we repeat
+        ### If any of the normalized BCS == 0, return its index (we repeat
         ### it twice to indicate it's an index and not the final switch point).
-        if (any(exact.0)) return(rep(which(m == 0)[1], 2))
+        if (any(exact.0)) return(rep(which(m == 0)[1], times = 2))
         ### Else, get the indexes of the values closer to 0.
         else {
           lower.bound <- which(m == max(m.nona[m.nona <= 0]))[1]
@@ -270,7 +266,7 @@ SwitchPoint <- function(bc) {
       ### If length(entry) == 2, the values are indexes. We subset those
       ### indexes in the scaled bcsores and take the arithmetic mean.
       if (length(indexes[[y]]) == 2) {
-        return(round(sum(bc@scaled[y, indexes[[y]]])/2, 2))
+        return(round(sum(bc@scaled[y, indexes[[y]]])/2, digits = 2))
         ### If length(entry) == 1, the value is the final switch point.
       } else {
         return(indexes[[y]])
