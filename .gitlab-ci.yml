@@ -1,0 +1,22 @@
+image: continuumio/miniconda3:latest
+
+before_script:
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update -n base conda
+  - conda info -a
+  - conda config --add channels defaults
+  - conda config --add channels bioconda
+  - conda config --add channels conda-forge
+  - conda install mamba
+  - mamba install boa
+  - cd .tests/
+  - conda create -y -q -n beyondcell_test 
+  
+conda_build:
+  stage: build
+  only:
+    - master
+    - merge_requests
+  script:
+    - source activate beyondcell_test
+    - bash build_conda_package.sh ${PYTHON_VERSION}
