@@ -107,9 +107,9 @@ computation.
 
 ```r
 # Run the UMAP reduction. 
-bc <- bcUMAP(bc, k.neighbors = 4, res = 0.2)
+bc <- bcUMAP(bc, k.neighbors = 4, res = 0.2, method = "umap-learn")
 # Run the bcUMAP function again, specifying the number of principal components you want to use.
-bc <- bcUMAP(bc, pc = 10, k.neighbors = 4, res = 0.2)
+bc <- bcUMAP(bc, pc = 10, k.neighbors = 4, res = 0.2, method = "umap-learn")
 ```
 
 **Check clustering**\
@@ -157,7 +157,7 @@ sample.
 
 ```r
 # Recompute the UMAP.
-bc <- bcUMAP(bc, pc = 10,  k.neighbors = 20, res = 0.2)
+bc <- bcUMAP(bc, pc = 10, k.neighbors = 20, res = 0.2, method = "umap-learn")
 # Visualize the UMAP.
 bcClusters(bc, UMAP = "beyondcell", idents = "nFeature_RNA", factor.col = FALSE)
 # Visualize the therapeutic clusters.
