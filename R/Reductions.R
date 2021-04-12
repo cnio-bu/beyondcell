@@ -59,7 +59,7 @@
 #' @export
 
 bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
-                   add.DSS = FALSE, method = "umap-learn", return.model = FALSE,
+                   add.DSS = FALSE, method = "uwot", return.model = FALSE,
                    elbow.path = NULL) {
   # --- Checks ---
   # Check that bc is a beyondcell object.

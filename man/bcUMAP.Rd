@@ -10,7 +10,7 @@ bcUMAP(
   k.neighbors = 20,
   res = 0.2,
   add.DSS = FALSE,
-  method = "umap-learn",
+  method = "uwot",
   return.model = FALSE,
   elbow.path = NULL
 )
