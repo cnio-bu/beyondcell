@@ -101,7 +101,9 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
     stop('return.model must be TRUE or FALSE.')
   }
   if (method == "umap-learn" & return.model == TRUE) {
-    stop('return.model = TRUE is only valid when method = "umap-learn".')
+    warning(paste('return.model = TRUE is only valid when method =',
+                  '"umap-learn". Changing return.model to FALSE.'))
+    return.model <- FALSE
   }
   # Check elbow.path.
   if (!is.null(elbow.path)) {
