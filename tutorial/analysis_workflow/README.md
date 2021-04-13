@@ -107,9 +107,9 @@ computation.
 
 ```r
 # Run the UMAP reduction. 
-bc <- bcUMAP(bc, k.neighbors = 4, res = 0.2)
+bc <- bcUMAP(bc, k.neighbors = 4, res = 0.2, method = "umap-learn")
 # Run the bcUMAP function again, specifying the number of principal components you want to use.
-bc <- bcUMAP(bc, pc = 10, k.neighbors = 4, res = 0.2)
+bc <- bcUMAP(bc, pc = 10, k.neighbors = 4, res = 0.2, method = "umap-learn")
 ```
 
 **Check clustering**\
@@ -124,13 +124,13 @@ recommend checking these sources of variation among others:
  * Batch
 
 ```r
-# Visualize whether cells are clustered based on the number of genes detecter per each cell.
+# Visualize whether the cells are clustered based on the number of genes detected per each cell.
 bcClusters(bc, UMAP = "beyondcell", idents = "nFeature_RNA", factor.col = FALSE)
 ```
 <img src=".img/nFeature_variation.png" width="500">
 
 ```r
-# Visualize whether cells are clustered based on their cell cycle status
+# Visualize whether the cells are clustered based on their cell cycle status.
 bcClusters(bc, UMAP = "beyondcell", idents = "Phase", factor.col = TRUE)
 ```
 <img src=".img/Phase_variation.png" width="500">
@@ -156,11 +156,11 @@ clustering, in order to find the *true* **Therapeutic Clusters** present in your
 sample. 
 
 ```r
-# Recompute UMAP.
-bc <- bcUMAP(bc, pc = 10,  k.neighbors = 20, res = 0.2)
-# Visualize UMAP.
+# Recompute the UMAP.
+bc <- bcUMAP(bc, pc = 10, k.neighbors = 20, res = 0.2, method = "umap-learn")
+# Visualize the UMAP.
 bcClusters(bc, UMAP = "beyondcell", idents = "nFeature_RNA", factor.col = FALSE)
-# Visualize therapeutic clusters.
+# Visualize the therapeutic clusters.
 bcClusters(bc, UMAP = "beyondcell", idents = "bc_clusters_res.0.2")
 ```
 
@@ -215,4 +215,8 @@ susceptible and non-susceptible cells.
 
 > **Note that the SP is not equivalent to the proportion of insensitive cells**
 **to a given drug, although there's a positive correlation between these two**
-**magnitudes. **
+**magnitudes.**
+
+## Support
+Additional information can be found in the package's documentation. If you have 
+any question regarding the use of **Beyondcell**, feel free to submit an [issue](https://gitlab.com/bu_cnio/Beyondcell/issues).

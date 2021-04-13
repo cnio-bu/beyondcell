@@ -151,5 +151,5 @@ bcCellCycle(bc, signatures = "sig_18868")
 
 ## Support
 Additional information can be found in the package's documentation. If you have 
-any question regarding the use of **Beyoncell**, feel free to submit an [issue](https://gitlab.com/bu_cnio/Beyondcell/issues).
+any question regarding the use of **Beyondcell**, feel free to submit an [issue](https://gitlab.com/bu_cnio/Beyondcell/issues).
 
