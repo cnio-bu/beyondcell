@@ -1,8 +1,3 @@
----
-output:
-  pdf_document: default
-  html_document: default
----
 <img src="./.img/beyondcell.png" width="500">
 
 [Package status](https://gitlab.com/bu_cnio/Beyondcell/commits/master)
