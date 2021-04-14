@@ -24,6 +24,16 @@
 #' (excluding pathways) is <= 20, it is recomended to set \code{add.DSS = TRUE}.
 #' Note that if \code{add.DSS = TRUE}, the regression and subset steps that have
 #' been applied on \code{bc} will also be applied on the background BCS.
+#' @param method (\code{\link[Seurat]{RunUMAP}}'s \code{umap.method}) UMAP
+#' implementation to run. Can be:
+#' \itemize{
+#' \item{\code{uwot}}: Runs the UMAP via the \code{\link[uwot]{umap}} function
+#' of the \code{uwot} package.
+#' \item{\code{umap-learn}}: Runs the UMAP via the \code{Seurat} wrapper of the
+#' python \code{umap-learn} package.
+#' }
+#' @param return.model (\code{\link[Seurat]{RunUMAP}}'s \code{return.model})
+#' Whether \code{RunUMAP} will return the \code{uwot} model.
 #' @param elbow.path Path to save the elbow plot. If \code{elbow.path = NULL}
 #' (default), the plot will be printed.
 #' @details This function performs all the steps required to obtain a UMAP
@@ -49,7 +59,8 @@
 #' @export
 
 bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
-                   add.DSS = FALSE, elbow.path = NULL) {
+                   add.DSS = FALSE, method = "uwot", return.model = FALSE,
+                   elbow.path = NULL) {
   # --- Checks ---
   # Check that bc is a beyondcell object.
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
@@ -80,6 +91,19 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
                     'drugs. We recommend to set add.DSS = TRUE when the number',
                     'of signatures (excluding pathways) is below or equal to 20.'))
     }
+  }
+  # Check method.
+  if (length(method) != 1 | !(method[1] %in% c("uwot", "umap-learn"))) {
+    stop('Incorrect method.')
+  }
+  # Check return.model
+  if (length(return.model) != 1 | !is.logical(return.model)) {
+    stop('return.model must be TRUE or FALSE.')
+  }
+  if (method == "umap-learn" & return.model == TRUE) {
+    warning(paste('return.model = TRUE is only valid when method =',
+                  '"umap-learn". Changing return.model to FALSE.'))
+    return.model <- FALSE
   }
   # Check elbow.path.
   if (!is.null(elbow.path)) {
@@ -155,7 +179,8 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
                           do.center = FALSE)
   sc <- Seurat::RunPCA(sc, features = rownames(sc), npcs = 100,  maxit = 100000)
   # Elbow plot.
-  elbowplot <- Seurat::ElbowPlot(sc, ndims = 50) + ggplot2::theme(legend.position = "bottom")
+  elbowplot <- Seurat::ElbowPlot(sc, ndims = 50) +
+    ggplot2::theme(legend.position = "bottom")
   if (is.null(elbow.path)) {
     message('Printing elbow plot...')
     print(elbowplot)
@@ -170,8 +195,9 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
     sc <- Seurat::FindClusters(sc, resolution = res)
     ### UMAP.
     message('Computing beyondcell\'s UMAP reduction...')
-    sc <- Seurat::RunUMAP(sc, dims = 1:pc, umap.method = "umap-learn",
-                          n.components = 2, verbose = FALSE)
+    sc <- Seurat::RunUMAP(sc, dims = 1:pc, umap.method = method,
+                          return.model = return.model, n.components = 2,
+                          verbose = FALSE)
     bc@reductions <- sc@reductions
     ### Therapeutic clusters.
     message('Adding therapeutic clusters to metadata...')

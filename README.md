@@ -43,16 +43,8 @@ conda create -n beyondcell
 # Activate the environment.
 conda activate beyondcell
 # Install Beyondcell package and dependencies.
-conda install -c bu_cnio r-beyondcell
-# Install RStudio.
-conda install -c r rstudio
-# Launch RStudio.
-rstudio
+conda install -c bu_cnio r-beyondcell=1.0.0
 ```
-> TIP: Are you having any trouble running `bcUMAP`? Your umap-learn version 
-might not be recognized by R. r-reticulate generates a new environment that can 
-bypass conda's umap-learn installation. To solve this, try erasing the 
-environment created by r-reticulate on your computer.
 
 ## Results
 We have validated Beyondcell in a population of MCF7-AA cells exposed to 500nM 

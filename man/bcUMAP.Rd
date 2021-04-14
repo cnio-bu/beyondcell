@@ -10,6 +10,8 @@ bcUMAP(
   k.neighbors = 20,
   res = 0.2,
   add.DSS = FALSE,
+  method = "uwot",
+  return.model = FALSE,
   elbow.path = NULL
 )
 }
@@ -36,6 +38,18 @@ therapeutic clusters. If the number of drugs in \code{bc}
 (excluding pathways) is <= 20, it is recomended to set \code{add.DSS = TRUE}.
 Note that if \code{add.DSS = TRUE}, the regression and subset steps that have
 been applied on \code{bc} will also be applied on the background BCS.}
+
+\item{method}{(\code{\link[Seurat]{RunUMAP}}'s \code{umap.method}) UMAP
+implementation to run. Can be:
+\itemize{
+\item{\code{uwot}}: Runs the UMAP via the \code{\link[uwot]{umap}} function
+of the \code{uwot} package.
+\item{\code{umap-learn}}: Runs the UMAP via the \code{Seurat} wrapper of the
+python \code{umap-learn} package.
+}}
+
+\item{return.model}{(\code{\link[Seurat]{RunUMAP}}'s \code{return.model})
+Whether \code{RunUMAP} will return the \code{uwot} model.}
 
 \item{elbow.path}{Path to save the elbow plot. If \code{elbow.path = NULL}
 (default), the plot will be printed.}
