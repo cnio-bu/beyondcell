@@ -43,7 +43,7 @@ conda create -n beyondcell
 # Activate the environment.
 conda activate beyondcell
 # Install Beyondcell package and dependencies.
-conda install -c bu_cnio r-beyondcell=1.0.0
+conda install -c bu_cnio r-beyondcell
 ```
 
 ## Results
