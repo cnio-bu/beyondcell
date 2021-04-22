@@ -77,6 +77,9 @@ For general instructions on running Beyondcell, check out the [analysis workflow
 
 
 ## Citation
+ **Beyondcell: targeting cancer therapeutic heterogeneity in single-cell RNA-seq**\
+Coral Fustero-Torre, María José Jiménez-Santos, Santiago García-Martín, Carlos Carretero-Puche, Luis García-Jimeno, Tomás Di Domenico, Gonzalo Gómez-López, Fátima Al-Shahrour.\
+_bioRxiv_ 2021.04.08.438954; doi: https://doi.org/10.1101/2021.04.08.438954 
 
 ## Support
 If you have any question regarding the use of Beyondcell, feel free to submit an [issue](https://gitlab.com/bu_cnio/Beyondcell/issues).
