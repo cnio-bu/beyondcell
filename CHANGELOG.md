@@ -1,3 +1,7 @@
+# [1.1.1] - 2021-05-20
+* **Updated** pathways with the latest sources from MSigDB 7.3.
+* **Added** a directory called `data-raw` with both the code and the data used to generate the pathway signatures. 
+
 # [1.1] - 2021-04-14
 
 * **Added** two new arguments in `bcUMAP`: `method` and `return.model`. `method` can be `"umap-learn"` or `"uwot"` (default). `return.model` is a logical argument that determines whether the function will return the uwot model (only valid when `method = "uwot"`).
