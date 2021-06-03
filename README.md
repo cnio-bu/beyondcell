@@ -62,7 +62,7 @@ treatment with bortezomib (right).
 
 ## How to run
 For general instructions on running Beyondcell, check out the [analysis workflow](https://gitlab.com/bu_cnio/Beyondcell/-/tree/master/tutorial/analysis_workflow) and [visualization](https://gitlab.com/bu_cnio/Beyondcell/-/tree/master/tutorial/visualization) tutorials.
-For more information about how Beyondcell normalization works, please refer to [this vignette](https://gitlab.com/bu_cnio/Beyondcell/-/tree/master/tutorial/BCS_normalization). 
+For more information about how Beyondcell normalization works, please refer to [this vignette](https://gitlab.com/bu_cnio/Beyondcell/-/tree/master/tutorial/BCS_normalization/normalization.md). 
 
 
 ## Authors
