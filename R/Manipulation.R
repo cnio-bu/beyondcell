@@ -477,7 +477,12 @@ bcMerge <- function(bc1, bc2) {
     bc@meta.data <- bc@meta.data[, -c(therapeutic.clusters), drop = FALSE]
   }
   # Merge backgrounds.
-  bc@background <- unique(rbind(bc1@background, bc2@background[, cells]))[, cells]
+  if(identical(cells, colnames(bc1@background)) & identical(cells, colnames(bc2@background))){
+      bc@background <- unique(rbind(bc1@background, bc2@background[, cells]))[, cells]
+  }else{
+    message('Skipping background merge: either one of the background matrix is empty or
+  has more cells than the other.')
+  }
   return(bc)
 }
 
