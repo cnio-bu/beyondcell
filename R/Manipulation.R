@@ -477,14 +477,18 @@ bcMerge <- function(bc1, bc2) {
     bc@meta.data <- bc@meta.data[, -c(therapeutic.clusters), drop = FALSE]
   }
   # Merge backgrounds.
-  if(identical(cells, colnames(bc1@background)) & identical(cells, colnames(bc2@background))){
-      bc@background <- unique(rbind(bc1@background, bc2@background[, cells]))[, cells]
-  }else{
-    message('Skipping background merge: either one of the background matrix is empty or
-  has more cells than the other.')
-  }
+  bg <- list(bc1 = as.data.frame(bc1@background), bc2 = as.data.frame(bc2@background))
+  is.empty.bg <- sapply(bg, FUN = function(x) dim(x)[2] == 0)
+  if all(is.empty.bg) {
+    bc@background <- matrix(ncol = 0, nrow = 0)
+  } else{
+    background <- as.matrix(do.call("rbind", bg[!is.empty.bg]))
+    rownames(background) <- gsub("bc[1|2]\\.", "", rownames(background))
+    bc@background <- background[unique(rownames(background)), ]
+    
   return(bc)
 }
+
 
 #' @title Creates a new beyondcell object
 #' @description This function creates a new \code{\link[beyondcell]{beyondcell}}
