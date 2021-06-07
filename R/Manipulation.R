@@ -481,11 +481,11 @@ bcMerge <- function(bc1, bc2) {
   is.empty.bg <- sapply(bg, FUN = function(x) dim(x)[2] == 0)
   if(all(is.empty.bg)) {
     bc@background <- matrix(ncol = 0, nrow = 0)
-  } else{
+  }else{
     background <- as.matrix(do.call("rbind", bg[!is.empty.bg]))
     rownames(background) <- gsub("bc[1|2]\\.", "", rownames(background))
     bc@background <- background[unique(rownames(background)), ]
-    
+  } 
   return(bc)
 }
 
