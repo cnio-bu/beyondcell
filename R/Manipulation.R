@@ -479,7 +479,7 @@ bcMerge <- function(bc1, bc2) {
   # Merge backgrounds.
   bg <- list(bc1 = as.data.frame(bc1@background), bc2 = as.data.frame(bc2@background))
   is.empty.bg <- sapply(bg, FUN = function(x) dim(x)[2] == 0)
-  if all(is.empty.bg) {
+  if(all(is.empty.bg)) {
     bc@background <- matrix(ncol = 0, nrow = 0)
   } else{
     background <- as.matrix(do.call("rbind", bg[!is.empty.bg]))
