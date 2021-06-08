@@ -1,3 +1,5 @@
+# [1.2.0] - 2021-06-8
+* **Fixed** an issue where bcMerge would fail if the background matrix was empty. 
 # [1.1.1] - 2021-05-20
 * **Updated** pathways with the latest sources from MSigDB 7.3.
 * **Added** a directory called `data-raw` with both the code and the data used to generate the pathway signatures. 
