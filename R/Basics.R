@@ -305,8 +305,8 @@ GetIDs <- function(values, filter, df = drugInfo) {
 #' @name FindDrugs
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
 #' @param x A character vector with drug names and/or sig IDs.
-#' @param na.rm Logical. Should \code{x} entries with no available information
-#' be removed from the final output?
+#' @param na.rm Logical. Should \code{x} entries with no available drug 
+#' information be removed from the final output?
 #' @details The output \code{data.frame} has the following columns:
 #' \itemize{
 #' \item{\code{original.names}}: Input drug names.
@@ -335,8 +335,8 @@ FindDrugs <- function(bc, x, na.rm = TRUE) {
   # --- Code ---
   # bc signatures.
   sigs <- rownames(bc@normalized)
-  # Match x with bc signatures and get the indices of matching elements.
-  indices <- lapply(x, function(y) {
+  # Match x with bc signatures and get the indexes of matching elements.
+  indexes <- lapply(x, function(y) {
     idx <- match(toupper(y), table = toupper(sigs), nomatch = 0)
     if (idx == 0) {
       idx <- unique(match(drugInfo$IDs[drugInfo$drugs == toupper(y)],
@@ -346,10 +346,10 @@ FindDrugs <- function(bc, x, na.rm = TRUE) {
   })
   # Original names (x) and bc names (sigs).
   df <- data.frame(original.names = unlist(sapply(seq_along(x), function(i) {
-    rep(x[i], times = length(indices[[i]]))
-  })), IDs = unlist(sapply(indices, function(z) sigs[z])))
+    rep(x[i], times = length(indexes[[i]]))
+  })), IDs = unlist(sapply(indexes, function(z) sigs[z])))
   df.not.found <- !(x %in% df$original.names)
-  if (any (df.not.found)) {
+  if (any(df.not.found)) {
     empty.df <- data.frame(original.names = x[df.not.found],
                            IDs = rep(NA, sum(df.not.found)))
     df <- rbind(df, empty.df)
@@ -387,7 +387,8 @@ FindDrugs <- function(bc, x, na.rm = TRUE) {
   cols <- c("original.names", "bc.names", "preferred.drug.names", "drugs", "IDs",
             "preferred.and.sigs", "MoAs")
   df <- df[rows, cols]
-  # If na.rm = TRUE, remove rows with NAs in all fields but original.names.
-  if (na.rm) df <- df[rowSums(is.na(df[, -1])) != ncol(df) - 1, ]
+  # If na.rm = TRUE, remove rows with NAs in "preferred.drug.names" and "drugs" 
+  # fields.
+  if (na.rm) df <- df[rowSums(is.na(df[, 3:4])) < 2, ]
   return(df)
 }

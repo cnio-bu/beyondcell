@@ -11,8 +11,8 @@ FindDrugs(bc, x, na.rm = TRUE)
 
 \item{x}{A character vector with drug names and/or sig IDs.}
 
-\item{na.rm}{Logical. Should \code{x} entries with no available information
-be removed from the final output?}
+\item{na.rm}{Logical. Should \code{x} entries with no available drug 
+information be removed from the final output?}
 }
 \value{
 A \code{data.frame}.

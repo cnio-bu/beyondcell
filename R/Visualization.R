@@ -402,9 +402,11 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
     }
     merged.symbol <- ifelse(test = merged == "direct", yes = " + ", no = " - ")
     merged.sigs <- paste0(sigs, collapse = merged.symbol)
+    rm.NA <- FALSE
   } else {
     merged.symbol <- ""
     merged.sigs <- sigs
+    rm.NA <- TRUE
   }
   # Check blend.
   if (length(blend) != 1 | !is.logical(blend)) {
@@ -436,7 +438,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
   } else {
     # Get info about drugs (their corresponding name in bc, the preferred name
     # used by beyondcell and the MoA).
-    info <- tryCatch(suppressWarnings(FindDrugs(bc, x = sigs)),
+    info <- tryCatch(suppressWarnings(FindDrugs(bc, x = sigs, na.rm = rm.NA)),
                      error = function(cond) data.frame())
     ### If we want to merge signatures, we must recompute the bc object using
     ### the added or substracted bc@normalized BCS.
@@ -638,13 +640,14 @@ bcCellCycle <- function(bc, signatures) {
 #' @param lvl Character vector with the \code{idents}' level(s) of interest. If
 #' \code{lvl = NULL}, all levels will be plotted.
 #' @param top Number of top drugs per quadrant to be labelled.
-#' @param topnames Character vector with additional interesting drugs to be
-#' labelled (either their names or sig IDs).
+#' @param topnames Character vector with additional interesting drugs or 
+#' pathways to be labeled (either their names or sig IDs).
 #' @param force (From \code{\link[ggrepel]{ggrepel}}) Force of repulsion between
 #' overlapping text labels. Defaults to 1.
 #' @param alpha Transparency level between 1 (not transparent) and 0 (fully
 #' transparent).
 #' @param pt.size Point size.
+#' @param ... Other arguments passed to \code{\link[ggrepel]{geom_text_repel}}.
 #' @details This function returns a list of \code{\link[ggplot2]{ggplot2}}
 #' objects, one per each \code{lvl}. Note that residuals' means are different
 #' for each level while swicth points are signature-specific. So, x axis will
@@ -653,8 +656,8 @@ bcCellCycle <- function(bc, signatures) {
 #' @examples
 #' @export
 
-bc4Squares <- function(bc, idents, lvl = NULL, top = 3,
-                       topnames = NULL, force = 1, alpha = 0.7, pt.size = 3) {
+bc4Squares <- function(bc, idents, lvl = NULL, top = 3, topnames = NULL, 
+                       force = 1, alpha = 0.7, pt.size = 3, ...) {
   # --- Checks ---
   # Check that bc is a beyondcell object.
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
@@ -684,11 +687,9 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3,
   }
   # Check topnames.
   if (!is.null(topnames)) {
-    not.paths <- which(!(toupper(rownames(bc@normalized)) %in%
-                           toupper(names(pathways))))
     in.topnames <- toupper(topnames) %in% drugInfo$drugs |
       tolower(topnames) %in% drugInfo$IDs |
-      toupper(topnames) %in% toupper(rownames(bc@normalized)[not.paths])
+      toupper(topnames) %in% toupper(rownames(bc@normalized))
     if (all(!in.topnames)) {
       warning('None of the specified topname drugs were found in bc.')
     } else if (any(!in.topnames)) {
@@ -713,7 +714,7 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3,
   # --- Code ---
   # Get info about drugs (their corresponding name in bc, the preferred name
   # used by beyondcell and the MoA).
-  info <- FindDrugs(bc, x = rownames(bc@scaled))
+  info <- FindDrugs(bc, x = rownames(bc@scaled), na.rm = FALSE)
   # Switch points.
   sp <- data.frame(switch.point = bc@switch.point[info$bc.names],
                    row.names = info$bc.names)
@@ -742,7 +743,7 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3,
     df$annotation[sp_higher_04 & sp_lower_06 &
                     res_higher_90] <- "TOP-Differential-HighSensitivityDrugs"
     ### Drug labels.
-    df$labels <- rep("", times = nrow(df))
+    df$labels <- rep(NA, times = nrow(df))
     decreasing_order <- c("TOP-Differential-HighSensitivityDrugs",
                           "TOP-HighSensitivityDrugs")
     unique.annotations <- unique(df$annotation[df$annotation != "no"])
@@ -761,7 +762,7 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3,
                                                               info$bc.names)]
     ### Topnames.
     if(length(topnames[in.topnames]) > 0) {
-      topnames <- FindDrugs(bc, x = topnames[in.topnames])
+      topnames <- FindDrugs(bc, x = topnames[in.topnames], na.rm = FALSE)
       df[match(topnames$bc.names,
                table = rownames(df)), "labels"] <- topnames$preferred.and.sigs
     }
@@ -792,9 +793,10 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3,
       geom_hline(yintercept = 0.6, linetype = "dotted") + ylim(0, 1) +
       labs(title = paste(idents, "=", lvl),
            caption = paste0("x cut-offs: first and last deciles; y cut-offs:",
-                            " 0.1, 0.4, 0.6 and 0.9")) + xlab("Residuals' Mean") +
-      ylab("Switch Point") +
-      ggrepel::geom_text_repel(label = df$labels, force = force) +
+                            " 0.1, 0.4, 0.6 and 0.9")) + 
+      xlab("Residuals' Mean") + ylab("Switch Point") +
+      ggrepel::geom_text_repel(label = df$labels, force = force, na.rm = TRUE,
+                               ...) +
       guides(fill = guide_legend(title = "Drug Annotation"), color = FALSE) +
       cowplot::theme_cowplot() + theme(plot.title = element_text(hjust = 0.5))
     return(p)

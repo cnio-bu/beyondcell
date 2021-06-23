@@ -12,7 +12,8 @@ bc4Squares(
   topnames = NULL,
   force = 1,
   alpha = 0.7,
-  pt.size = 3
+  pt.size = 3,
+  ...
 )
 }
 \arguments{
@@ -25,8 +26,8 @@ bc4Squares(
 
 \item{top}{Number of top drugs per quadrant to be labelled.}
 
-\item{topnames}{Character vector with additional interesting drugs to be
-labelled (either their names or sig IDs).}
+\item{topnames}{Character vector with additional interesting drugs or 
+pathways to be labeled (either their names or sig IDs).}
 
 \item{force}{(From \code{\link[ggrepel]{ggrepel}}) Force of repulsion between
 overlapping text labels. Defaults to 1.}
@@ -35,6 +36,8 @@ overlapping text labels. Defaults to 1.}
 transparent).}
 
 \item{pt.size}{Point size.}
+
+\item{...}{Other arguments passed to \code{\link[ggrepel]{geom_text_repel}}.}
 }
 \value{
 A list of \code{ggplot2} objects, one per \code{lvl}.
