@@ -1,3 +1,5 @@
+# [1.2.1] - 2021-06-29
+* **Fixed** an issue (#14) where bcSignatures would fail when used with pathways
 # [1.2.0] - 2021-06-8
 * **Fixed** an issue where bcMerge would fail if the background matrix was empty. 
 # [1.1.1] - 2021-05-20
