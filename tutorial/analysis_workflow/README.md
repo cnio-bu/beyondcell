@@ -60,13 +60,12 @@ Beyondcell includes two drug signature collections that are ready to use:
 
  * **Drug Perturbation Signatures collection (PSc):** Captures the 
  transcriptional changes induced by a drug.
- * **Drug Sensitivity Signatures collection (SSc):** Captures the drug 
- sensitivity to a given drug.
+ * **Drug Sensitivity Signatures collection (SSc):** Captures the sensitivity to a given drug.
 
 A small collection of functional pathways will be included by default in your 
 `geneset` object. These pathways are related to the regulation of the 
 epithelial-mesenchymal transition (EMT), cell cycle, proliferation, senescence 
-and apoptosis.
+and apoptosis. PSc and SSc can also be filtered according to several values. 
 
 ```r
 # Generate geneset object with one of the ready to use signature collections.
@@ -75,10 +74,17 @@ gs <- GenerateGenesets(PSc)
 nopath <- GenerateGenesets(PSc, include.pathways = FALSE)
 ```
 
-PSc and SSc can also be filtered according to several values. Moreover, 
-Beyondcell allows the user to input a GMT file containing the functional 
-pathways/signatures of interest or a numeric matrix (containing a ranking 
-criteria such as the t-statistic or logFoldChange). 
+Moreover, Beyondcell allows the user to input a GMT file containing the functional 
+pathways/signatures of interest as well as numeric matrices containing a ranking 
+criteria such as the t-statistic or logFoldChange. If x is a path to a GMT file, all gene sets must end in "_UP" or "_DOWN" to indicate the mode of each one. When x is a pre-loaded matrix, comparison is set automatically.
+
+```r
+# Generate geneset object with a custom GMT file. For direct comparisons:
+gs <- GenerateGenesets(x = "path_to_gmt", comparison = "treated_vs_control")
+# For indirect comparisons (the signatures will be reversed):
+gs <- GenerateGenesets(x = "path_to_gmt", comparison = "sensitive_vs_resistant")
+```
+
 <!-- For further information please check [GenerateGenesets](https://gitlab.com/bu_cnio/Beyondcell/-/tree/master/tutorial/GenerateGenesets) tutorial. -->
 
 #### Compute the BCS
