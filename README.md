@@ -42,8 +42,11 @@ running the installation via conda:
 conda create -n beyondcell 
 # Activate the environment.
 conda activate beyondcell
+# Install mamba and downgrade python to 3.6 (in order to use umap-learn).
+conda install -c conda-forge mamba
+mamba install python=3.6
 # Install Beyondcell package and dependencies.
-conda install -c bu_cnio r-beyondcell
+mamba install -c bu_cnio r-beyondcell
 ```
 
 ## Results
