@@ -96,6 +96,33 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE) {
       out <- GetStatistics(bc = sub.bc, signatures = sigs, cells = group.cells,
                            pb = pb, total = total, i = i, n.rows = n.rows,
                            extended = extended)
+      ### Add 4squares group annotation.
+      # Get info about drugs (their corresponding name in bc, the preferred name
+      # used by beyondcell and the MoA).
+      info <- FindDrugs(sub.bc, x = rownames(sub.bc@scaled), na.rm = FALSE)
+      # Get dataset switch points.
+      sp <- data.frame(switch.point = bc@switch.point[info$bc.names],
+                       row.names = info$bc.names)
+      # Subset residuals' means and switch points.
+      res <- out[, "residuals.mean", drop = FALSE]
+      df <- transform(merge(res, sp, by = 0), row.names = Row.names, Row.names = NULL)
+      # Residual's deciles.
+      res.decil <- quantile(as.numeric(out$residuals.mean), 
+                            prob = seq(from = 0, to = 1, length = 11))
+      # Group annotation.
+      sp_lower_01 <- as.numeric(df$switch.point) < 0.1
+      sp_lower_06 <- as.numeric(df$switch.point) < 0.6
+      sp_higher_04 <- as.numeric(df$switch.point) > 0.4
+      sp_higher_09 <- as.numeric(df$switch.point) > 0.9
+      res_lower_10 <- as.numeric(df$residuals.mean) < res.decil[["10%"]]
+      res_higher_90 <- as.numeric(df$residuals.mean) > res.decil[["90%"]]
+      df$group <- rep("", times = nrow(df))
+      df$group[sp_lower_01 & res_higher_90] <- "TOP-HighSensitivity"
+      df$group[sp_higher_09 & res_lower_10] <- "TOP-LowSensitivity"
+      df$group[sp_higher_04 & sp_lower_06 & res_lower_10] <- "TOP-Differential-LowSensitivity"
+      df$group[sp_higher_04 & sp_lower_06 & res_higher_90] <- "TOP-Differential-HighSensitivity"
+      # Add to dataframe.
+      out$group <- df$group
       ### Add rank.
       sig.order <- order(-1 * out$switch.point, out$mean, decreasing = TRUE)
       out$rank[sig.order] <- 1:nrow(out)
