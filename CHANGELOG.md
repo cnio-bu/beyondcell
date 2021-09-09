@@ -1,3 +1,5 @@
+# [1.3.1] - 2021-09-9
+* **Added** group annotation to rank tables: high/low/differential sensitivity are now defined for each tested drug.
 # [1.2.1] - 2021-06-29
 * **Fixed** an issue (#14) where bcSignatures would fail when used with pathways
 # [1.2.0] - 2021-06-8
