@@ -93,9 +93,20 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
   }))
   rownames(below.thres) <- names(gs@genelist)
   below.thres <- below.thres[, colnames(expr.matrix)]
+  # If all cells are below the threshold, remove that signature and raise a
+  # warning
+  nan.rows.idx <- which(rowSums(below.thres) == ncol(below.thres))
+  if (length(nan.rows.idx) > 0) {
+    warning(paste0("The following signatures have no cells that pass the ", 
+                   "expr.thres and will be removed: ", 
+                   paste0(rownames(below.thres)[nan.rows.idx], collapse = ", "), 
+                   "."))
+    below.thres <- below.thres[-nan.rows.idx, ]
+    gs@genelist <- gs@genelist[-nan.rows.idx]
+  }
   # BCS.
   bcs <- lapply(seq_along(gs@mode), function(j) {
-    score <- t(sapply(1:len.gs, function(k) {
+    score <- t(sapply(1:length(gs@genelist), function(k) {
       ### Common genes between the expr.marix and each signature.
       common.genes <- unique(intersect(genes, gs@genelist[[k]][[gs@mode[j]]]))
       ### Subset expr.matrix with common.genes.
@@ -109,7 +120,7 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
       ### Normalized BCS.
       norm.score <- raw * ((sum.expr - sig.stdev)/(raw + sig.stdev))
       ### Update the progress bar.
-      step <- len.gs + (j - 1) * len.gs + k
+      step <- len.gs + (j - 1) * len.gs + k + length(nan.rows.idx)
       if (step%%bins == 0 | step == total) {
         Sys.sleep(0.1)
         setTxtProgressBar(pb, value = step)
