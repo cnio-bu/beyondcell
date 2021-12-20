@@ -1,3 +1,6 @@
+# [1.3.2] - 2021-21-20
+* **Fixed** an issue (#17) where if  all the cells have a number of expressed genes < expr.thres, 
+all the values for that signature will be NaNs and so will be the switch point. 
 # [1.3.1] - 2021-09-9
 * **Added** group annotation to rank tables: high/low/differential sensitivity are now defined for each tested drug.
 # [1.2.1] - 2021-06-29
