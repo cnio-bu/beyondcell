@@ -10,17 +10,24 @@
 #' @param UMAP UMAP reduction to plot. Either \code{"beyondcell"}, computed
 #' using \code{\link[beyondcell]{bcUMAP}}, or \code{"Seurat"}, obtained using
 #' \code{Seurat}'s functions.
+#' @param spatial Logical indicating if a \code{\link[Seurat]{SpatialPlot}}
+#' should be drawn. If \code{spatial = TRUE}, the \code{UMAP} value will be 
+#' ignored.
 #' @param factor.col Logical indicating if \code{idents} column is a factor or
 #' not. Set \code{factor.col = FALSE} if \code{idents} is a numeric column (such
 #' as \code{percent.mt} or \code{nFeature_RNA}).
-#' @param ... Other arguments passed to \code{\link[Seurat]{DimPlot}}.
+#' @param ... Other arguments passed to 
+#' \code{\link[Seurat]{DimPlot}}/\code{\link[Seurat]{SpatialDimPlot}} if 
+#' \code{factor.col = TRUE} or 
+#' \code{\link[Seurat]{FeaturePlot}}/\code{\link[Seurat]{SpatialFeaturePlot}} if 
+#' \code{factor.col = FALSE}.
 #' @return A \code{ggplot2} object with the UMAP reduction coloured by
 #' \code{idents}.
 #' @examples
 #' @export
 
-bcClusters <- function(bc, idents, UMAP = "beyondcell", factor.col = TRUE,
-                       ...) {
+bcClusters <- function(bc, idents, UMAP = "beyondcell", spatial = FALSE, 
+                       factor.col = TRUE, ...) {
   # --- Checks ---
   # Check that bc is a beyondcell object.
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
@@ -35,19 +42,29 @@ bcClusters <- function(bc, idents, UMAP = "beyondcell", factor.col = TRUE,
   }
   # Check UMAP.
   if (UMAP == "beyondcell") {
-    if (length(bc@reductions) == 0) {
+    if (length(bc@reductions) == 0 & !spatial) {
       stop('You must precompute beyondcell\'s UMAP projection using bcUMAP().')
     }
     sc <- Seurat::CreateSeuratObject(bc@scaled)
     reduction <- bc@reductions
   } else if (UMAP == "Seurat") {
-    if (length(bc@SeuratInfo$reductions) == 0) {
+    if (length(bc@SeuratInfo$reductions) == 0 & !spatial) {
       stop('No UMAP projection available for your Seurat\'s object.')
     }
     sc <- Seurat::CreateSeuratObject(bc@expr.matrix[, colnames(bc@scaled)])
     reduction <- bc@SeuratInfo$reductions
   } else {
     stop('Incorrect UMAP argument. Please use either "Seurat" or "beyondcell".')
+  }
+  # Check spatial
+  if (spatial) {
+    if (bc@SeuratInfo$assays == "RNA") {
+      stop("bc wasn't created from spatial data.")
+    } else {
+      if (length(bc@SeuratInfo$images) == 0) {
+        stop("Image not found.")
+      }
+    }
   }
   # Check factor.col.
   if (length(factor.col) != 1 | !is.logical(factor.col)) {
@@ -58,14 +75,29 @@ bcClusters <- function(bc, idents, UMAP = "beyondcell", factor.col = TRUE,
   sc <- Seurat::AddMetaData(sc, metadata = meta)
   # Add reductions.
   sc@reductions <- reduction
+  # Add images.
+  sc@images <- bc@SeuratInfo$images
   # Plot.
   if (factor.col) {
     # Set Idents.
     Seurat::Idents(sc) <- idents
-    p <- Seurat::DimPlot(sc, reduction = "umap", ...) + ggplot2::theme_minimal()
+    if (spatial) {
+      p <- Seurat::SpatialDimPlot(sc, ...) + ggplot2::theme_minimal() +
+        ggplot2::theme(legend.title = element_blank(), 
+                       axis.title = element_blank(), 
+                       axis.text = element_blank())
+    } else {
+      p <- Seurat::DimPlot(sc, reduction = "umap", ...) + 
+        ggplot2::theme_minimal()
+    }
   } else {
-    p <- Seurat::FeaturePlot(sc, reduction = "umap", features = idents, ...) +
-      ggplot2::theme_minimal() + ggplot2::labs(title = NULL)
+    if (spatial) {
+      p <- Seurat::SpatialFeaturePlot(sc, features = idents, ...) + 
+        ggplot2:: theme(legend.position = "right")
+    } else {
+      p <- Seurat::FeaturePlot(sc, reduction = "umap", features = idents, ...) +
+        ggplot2::theme_minimal() + ggplot2::labs(title = NULL)
+    }
   }
   return(p)
 }
