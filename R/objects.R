@@ -34,7 +34,7 @@ geneset <- setClass("geneset", slots = list(genelist = "list",
 #' (including the therapeutic clusters and \code{\link[Seurat]{Seurat}}'s
 #' \code{@@meta.data}).
 #' @slot SeuratInfo List with information about the input \code{Seurat} object,
-#' including the \code{@@reductions}.
+#' including the \code{@@reductions} and \code{@@images}.
 #' @slot background (Subsetted and/or regressed) normalized BCS obtained using
 #' DSS signatures. Useful to compute \code{beyondcell}'s UMAP reduction and the
 #' therapeutic clusters when the number of drug signatures is low.
