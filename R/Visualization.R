@@ -227,6 +227,9 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
 #' @param UMAP UMAP reduction to plot. Either \code{"beyondcell"}, computed
 #' using \code{\link[beyondcell]{bcUMAP}}, or \code{"Seurat"}, obtained using
 #' \code{Seurat}'s functions.
+#' @param spatial Logical indicating if a \code{\link[Seurat]{SpatialPlot}}
+#' should be drawn. If \code{spatial = TRUE}, the \code{UMAP} and \code{blend} 
+#' values will be ignored.
 #' @param signatures List with plot parameters to colour the UMAP by BCS:
 #' \itemize{
 #' \item{\code{values}:} {Vector with the names of the signatures of interest.
@@ -264,12 +267,14 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
 #' \code{merged = "indirect"}, the signatures are assumed to have an indirect
 #' relationship and their BCS will be substracted.
 #' @param blend (From \code{\link[Seurat]{FeaturePlot}}) Scale and blend
-#' expression values to visualise co-expression of two genes.
+#' expression values to visualise co-expression of two genes. If 
+#' \code{spatial = TRUE}, \code{blend} is set to \code{FALSE}.
 #' @param mfrow Numeric vector of the form \code{c(nr, nc)}. \code{nr}
 #' corresponds to the number of rows and \code{nc} to the number of columns of
 #' the grid in which the plots will be drawn. If you want to draw the plots
 #' individually, set \code{mfrow = c(1, 1)}.
-#' @param ... Other arguments passed to \code{FeaturePlot}.
+#' @param ... Other arguments passed to 
+#' \code{\link[Seurat]{FeaturePlot}}/\code{\link[Seurat]{SpatialFeaturePlot}}.
 #' @details When \code{genes[["limits"]] = c(NA, NA)}, \code{bcSignatures}
 #' computes the limits automatically. You can make all plots share the same
 #' limits by specifying \code{genes[["share.limits"]] = TRUE}, or make the
@@ -284,7 +289,7 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
 #' @examples
 #' @export
 
-bcSignatures <- function(bc, UMAP = "beyondcell",
+bcSignatures <- function(bc, UMAP = "beyondcell", spatial = FALSE,
                          signatures = list(values = NULL, colorscale = NULL,
                                            alpha = 0.7, na.value = "grey50",
                                            limits = c(0, 1), center = NULL,
@@ -297,20 +302,30 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
   # Check UMAP.
   if (UMAP == "beyondcell") {
-    if (length(bc@reductions) == 0) {
+    if (length(bc@reductions) == 0 & !spatial) {
       stop('You must precompute beyondcell\'s UMAP projection using bcUMAP().')
     }
     reduction <- bc@reductions
     cells <- subset(rownames(bc@meta.data),
                     subset = rownames(bc@meta.data) %in% colnames(bc@normalized))
   } else if (UMAP == "Seurat") {
-    if (length(bc@SeuratInfo$reductions) == 0) {
+    if (length(bc@SeuratInfo$reductions) == 0 & !spatial) {
       stop('No UMAP projection available for your Seurat\'s object.')
     }
     reduction <- bc@SeuratInfo$reductions
     cells <- rownames(bc@meta.data)
   } else {
     stop('Incorrect UMAP argument. Please use either "Seurat" or "beyondcell".')
+  }
+  # Check spatial
+  if (spatial) {
+    if (bc@SeuratInfo$assays == "RNA") {
+      stop("bc wasn't created from spatial data.")
+    } else {
+      if (length(bc@SeuratInfo$images) == 0) {
+        stop("Image not found.")
+      } else blend <- FALSE
+    }
   }
   # Check signatures' list values.
   default.sigs <- list(values = NULL, colorscale = NULL, alpha = 0.7,
@@ -465,7 +480,8 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
     sc@reductions <- reduction
     ### Plot.
     p <- suppressMessages(
-      Seurat::FeaturePlot(sc, features = gene, blend = TRUE, combine = FALSE))
+      Seurat::FeaturePlot(sc, features = gene, blend = TRUE, combine = FALSE, 
+                          ...))
     # Else...
   } else {
     # Get info about drugs (their corresponding name in bc, the preferred name
@@ -506,8 +522,13 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
         genes[["limits"]][na.limits.genes] <- c(min(range.genes),
                                                 max(range.genes))[na.limits.genes]
       }
-      colors.genes <- ggplot2::scale_colour_gradient(low = "lightgrey", high = "blue",
-                                                     limits = genes[["limits"]])
+      if (spatial) {
+        colors.genes <- ggplot2::scale_fill_continuous(limits = genes[["limits"]])
+      } else {
+        colors.genes <- ggplot2::scale_colour_gradient(low = "lightgrey", 
+                                                       high = "blue",
+                                                       limits = genes[["limits"]])
+      }
     } else {
       colors.genes <- NULL
     }
@@ -515,6 +536,8 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
     sc <- Seurat::CreateSeuratObject(full.matrix)
     ### Add reductions.
     sc@reductions <- reduction
+    # Add images.
+    sc@images <- bc@SeuratInfo$images
     ### Plot for each signtature/gene...
     p <- lapply(features, function(y) {
       ### Merged.
@@ -540,6 +563,8 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
       }
       ### Colours (depending on wether y is a signature or a gene).
       if (all(ids %in% sigs)) {
+        if (spatial) aesthetics <-"fill"
+        else aesthetics <-"colour"
         ### Binned colorscale centred around the switch point or the specified
         ### center.
         colors <- center_scale_colour_stepsn(full.matrix[y, ],
@@ -548,16 +573,27 @@ bcSignatures <- function(bc, UMAP = "beyondcell",
                                              na.value = signatures[["na.value"]],
                                              limits = signatures[["limits"]],
                                              center = center.sigs[y],
-                                             breaks = signatures[["breaks"]])
+                                             breaks = signatures[["breaks"]],
+                                             aesthetics = aesthetics)
       } else {
         ### Continuous colorscale with default Seurat colours.
         colors <- colors.genes
       }
       ### Plot.
-      fp <- suppressMessages(
-        Seurat::FeaturePlot(sc, features = gsub(pattern = "_", replacement = "-",
-                                                x = y), combine = FALSE, ...)[[1]] +
-          colors + ggplot2::labs(title = drug.and.MoA[1], subtitle = drug.and.MoA[2]))
+      if (spatial) {
+        fp <- suppressMessages(
+          Seurat::SpatialFeaturePlot(sc, combine = FALSE,
+                                     features = gsub(pattern = "_", replacement = "-",
+                                                     x = y), ...)[[1]]) + 
+          ggplot2:: theme(legend.position = "right")
+      } else {
+        fp <- suppressMessages(
+          Seurat::FeaturePlot(sc, combine = FALSE,
+                              features = gsub(pattern = "_", replacement = "-",
+                                              x = y), ...)[[1]])
+      }
+      fp <- suppressMessages(fp + colors + 
+        ggplot2::labs(title = drug.and.MoA[1], subtitle = drug.and.MoA[2]))
       return(fp)
     })
   }

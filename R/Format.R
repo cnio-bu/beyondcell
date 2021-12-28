@@ -98,6 +98,12 @@ get_colour_steps <- function(colorscale = NULL) {
 #' @param breaks A single number indicating the break size of the
 #' \code{colorscale}. Alternatively, it can be a vector with the desired breaks
 #' (which don't have to be symmetric or equally distributed).
+#' @param aesthetics (\code{\link[ggplot2]{scale_colour_stepsn}}'s 
+#' \code{aesthetics}) Character string or vector of character strings listing 
+#' the name(s) of the aesthetic(s) that this scale works with. This can be 
+#' useful, for example, to apply colour settings to the \code{colour} and 
+#' \code{fill} aesthetics at the same time, via \code{aesthetics = c("colour", 
+#' "fill")}.
 #' @return A centred sequential binned colour gradient that can be used to
 #' colour \code{\link[ggplot2]{ggplot2}} objects.
 #' @examples
@@ -105,7 +111,8 @@ get_colour_steps <- function(colorscale = NULL) {
 
 center_scale_colour_stepsn <- function(x, colorscale, alpha = 0.7,
                                        na.value = "grey50", limits = c(NA, NA),
-                                       center = NULL, breaks = 0.1) {
+                                       center = NULL, breaks = 0.1, 
+                                       aesthetics = "colour") {
   # --- Checks ---
   # Check x.
   if (!is.numeric(x)) {
@@ -272,7 +279,8 @@ center_scale_colour_stepsn <- function(x, colorscale, alpha = 0.7,
                              breaks = final.breaks, labels = brk.labels,
                              values = scales::rescale(final.breaks, to = c(0, 1)),
                              na.value = scales::alpha(na.value, alpha = alpha),
-                             limits = limits, guide = guide)
+                             limits = limits, guide = guide, 
+                             aesthetics = aesthetics)
   return(out)
 }
 
