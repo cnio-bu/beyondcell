@@ -19,7 +19,7 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
   if ("Seurat"%in% class(sc)) {
     input <- "Seurat object"
     default <- Seurat::DefaultAssay(sc)
-    if(default %in% c("RNA", "SCT")) {
+    if(default %in% c("RNA", "SCT", "Spatial")) {
       if("data" %in% slotNames(sc@assays[[default]])) {
         message(paste0('Using ', default, ' assay as input.'))
         expr.matrix <- as.matrix(Seurat::GetAssayData(sc, slot = "data",
@@ -28,7 +28,7 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
         stop('Default assay must include a normalized data (@data) slot.')
       }
     } else {
-      stop('Seurat default assay must be either RNA or SCT.')
+      stop('Seurat default assay must be either RNA, Spatial or SCT.')
     }
   } else if ("matrix" %in% class(sc) & is.numeric(sc)) {
     input <- "expression matrix"
@@ -55,7 +55,8 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
   # --- Code ---
   # Create beyondcell object.
   bc <- beyondcell(expr.matrix = expr.matrix, meta.data = sc@meta.data,
-                   SeuratInfo = list(reductions = sc@reductions),
+                   SeuratInfo = list(assays = default, images = sc@images,
+                                     reductions = sc@reductions),
                    regression = list(order = rep("", 2), vars = NULL,
                                      order.background = rep("", 2)),
                    n.genes = gs@n.genes, mode = gs@mode, thres = expr.thres)

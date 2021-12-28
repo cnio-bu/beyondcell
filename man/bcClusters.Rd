@@ -4,7 +4,14 @@
 \alias{bcClusters}
 \title{Plots a UMAP reduction coloured by metadata information}
 \usage{
-bcClusters(bc, idents, UMAP = "beyondcell", factor.col = TRUE, ...)
+bcClusters(
+  bc,
+  idents,
+  UMAP = "beyondcell",
+  spatial = FALSE,
+  factor.col = TRUE,
+  ...
+)
 }
 \arguments{
 \item{bc}{\code{\link[beyondcell]{beyondcell}} object.}
@@ -15,11 +22,19 @@ bcClusters(bc, idents, UMAP = "beyondcell", factor.col = TRUE, ...)
 using \code{\link[beyondcell]{bcUMAP}}, or \code{"Seurat"}, obtained using
 \code{Seurat}'s functions.}
 
+\item{spatial}{Logical indicating if a \code{\link[Seurat]{SpatialPlot}}
+should be drawn. If \code{spatial = TRUE}, the \code{UMAP} value will be 
+ignored.}
+
 \item{factor.col}{Logical indicating if \code{idents} column is a factor or
 not. Set \code{factor.col = FALSE} if \code{idents} is a numeric column (such
 as \code{percent.mt} or \code{nFeature_RNA}).}
 
-\item{...}{Other arguments passed to \code{\link[Seurat]{DimPlot}}.}
+\item{...}{Other arguments passed to 
+\code{\link[Seurat]{DimPlot}}/\code{\link[Seurat]{SpatialDimPlot}} if 
+\code{factor.col = TRUE} or 
+\code{\link[Seurat]{FeaturePlot}}/\code{\link[Seurat]{SpatialFeaturePlot}} if 
+\code{factor.col = FALSE}.}
 }
 \value{
 A \code{ggplot2} object with the UMAP reduction coloured by
