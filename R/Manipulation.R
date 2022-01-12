@@ -349,7 +349,7 @@ bcRecompute <- function(bc, slot = "data") {
     # bc@normalized = bc@data.
     bc@normalized <- bc@data
   } else if (slot == "normalized") {
-    bc@normalized <- round(bc@normalized, digits = 2)
+    bc@data <- bc@normalized <- round(bc@normalized, digits = 2)
   }
   # Recompute scaled BCS.
   scaled <- round(t(apply(bc@normalized, 1, scales::rescale, to = c(0, 1))),
