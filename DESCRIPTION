@@ -39,4 +39,4 @@ Imports:
   useful (>= 1.2.6),
   viridis (>= 0.5.1)
 BugReports: https://gitlab.com/bu_cnio/beyondcell/-/issues
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.2
