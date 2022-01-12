@@ -2,7 +2,7 @@ Package: beyondcell
 Type: Package
 Title: A Tool for the Analysis of Tumour Therapeutic Heterogeneity in 
   single-cell RNA-seq
-Version: 1.2.1
+Version: 1.3.3
 Authors@R: c(person("Coral", "Fustero-Torre", email = "cfustero@cnio.es", 
   role = "aut"), person("Maria Jose", "Jimenez-Santos", 
   email = "mjjimenez@cnio.es", role = c("aut", "cre")), person("Santiago",
