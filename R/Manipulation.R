@@ -153,12 +153,20 @@ bcSubset <- function(bc, signatures = NULL, bg.signatures = NULL, cells = NULL,
                  sort(colnames(bc@normalized), decreasing = FALSE)) |
       !identical(sort(final.cells, decreasing = FALSE),
                  sort(colnames(bc@background), decreasing = FALSE))) {
-    bc@normalized <- round(bc@normalized[final.sigs, final.cells,
-                                         drop = FALSE], digits = 2)
-    bc <- bcRecompute(bc, slot = "normalized")
+    if (length(final.sigs) == 0) stop("No signature met all filter criteria.")
+    else if (length(final.cells) == 0) stop("No cell met all filter criteria.")
+    else {
+      bc@normalized <- round(bc@normalized[final.sigs, final.cells,
+                                           drop = FALSE], digits = 2)
+      bc <- bcRecompute(bc, slot = "normalized")
+    }
     if (any(dim(bc@background) != 0)) {
-      bc@background <- bc@background[final.sigs.bg, final.cells, drop = FALSE]
-      bc@regression$order.background <- bc@regression$order
+      if (length(final.sigs.bg) == 0) {
+        stop("No background signature met all filter criteria.")
+      } else {
+        bc@background <- bc@background[final.sigs.bg, final.cells, drop = FALSE]
+        bc@regression$order.background <- bc@regression$order
+      }
     }
   } else {
     warning('bc was not subsetted.')
