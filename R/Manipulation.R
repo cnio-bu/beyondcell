@@ -92,18 +92,16 @@ bcSubset <- function(bc, signatures = NULL, bg.signatures = NULL, cells = NULL,
     stop('nan.sigs must be a positive number between 0 and 1.')
   }
   pass.nan.sigs <- rownames(bc@scaled)[apply(bc@scaled, 1, function(x) {
-    sum(is.na(x)) < ncol(bc@scaled) * nan.sigs
+    sum(is.na(x)) <= ncol(bc@scaled) * nan.sigs
   })]
   pass.nan.sigs.bg <- rownames(bc@background)[apply(bc@background, 1,
-                                                    function(y) {
-                                                      sum(is.na(y)) < ncol(bc@background) * nan.sigs
-                                                    })]
+    function(y) sum(is.na(y)) <= ncol(bc@background) * nan.sigs)]
   # Check nan.cells.
   if (length(nan.cells) != 1 | nan.cells[1] < 0 | nan.cells[1] > 1) {
     stop('nan.cells must be a positive number between 0 and 1.')
   }
   pass.nan.cells <- colnames(bc@scaled)[apply(bc@scaled, 2, function(y) {
-    sum(is.na(y)) < nrow(bc@scaled) * nan.cells
+    sum(is.na(y)) <= nrow(bc@scaled) * nan.cells
   })]
   # Check regression and subset order.
   reg.order <- bc@regression$order
