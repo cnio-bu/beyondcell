@@ -1,4 +1,6 @@
-# [1.3.2] - 2021-21-20
+# [1.3.3] - 2022-01-12
+* **Fixed** an error in `bcSubset` when filtering by the proportion of `NaN` values. Previously, the beyondcell object wasn't subset when using `nan.sigs` or `nan.cells`. Now those signatures/cells below or equal to the `NaN` threshold are kept. Related to issue #21.
+# [1.3.2] - 2021-12-20
 * **Fixed** an issue (#17) where if  all the cells have a number of expressed genes < expr.thres, 
 all the values for that signature will be NaNs and so will be the switch point. 
 # [1.3.1] - 2021-09-9
