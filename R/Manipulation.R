@@ -179,7 +179,7 @@ bcSubset <- function(bc, signatures = NULL, bg.signatures = NULL, cells = NULL,
 #' @description This function regresses out unwanted effects from normalized
 #' beyondcell scores (BCS).
 #' @name bcRegressOut
-#' @importFrom bnstruct knn.impute
+#' @importFrom DMwR knnImputation
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
 #' @param vars.to.regress Vector of metadata columns to regress out the BCS.
 #' @return Returns a \code{beyondcell} object with regressed normalized BCS,
@@ -258,7 +258,8 @@ bcRegressOut <- function(bc, vars.to.regress) {
   latent.data <- bc@meta.data[colnames(bc@normalized), vars, drop = FALSE]
   # Impute normalized BCS matrix
   message('Imputing normalized BCS...')
-  bc@normalized <- bnstruct::knn.impute(bc@normalized)
+  bc@normalized <- DMwR::knnImputation(bc@normalized, k = 10, scale = FALSE,
+                                       meth = "weighAvg")
   # Limma formula.
   fmla <- as.formula(object = paste('bcscore ~', paste(vars, collapse = '+')))
   # Compute regression and save it in bc@normalized.
@@ -291,7 +292,8 @@ bcRegressOut <- function(bc, vars.to.regress) {
   # Regress the background, if needed.
   if (any(dim(bc@background) != 0)) {
     message('Imputing background BCS...')
-    bc@background <- bnstruct::knn.impute(bc@background)
+    bc@background <- DMwR::knnImputation(bc@background, k = 10, scale = FALSE,
+                                         meth = "weighAvg")
     message('Regressing background BCS...')
     total.bg <- nrow(bc@background)
     pb.bg <- txtProgressBar(min = 0, max = total.bg, style = 3)
