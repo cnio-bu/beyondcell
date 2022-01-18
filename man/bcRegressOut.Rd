@@ -4,12 +4,15 @@
 \alias{bcRegressOut}
 \title{Regresses out unwanted effects from BCS}
 \usage{
-bcRegressOut(bc, vars.to.regress)
+bcRegressOut(bc, vars.to.regress, k.neighbors = 10)
 }
 \arguments{
 \item{bc}{\code{\link[beyondcell]{beyondcell}} object.}
 
 \item{vars.to.regress}{Vector of metadata columns to regress out the BCS.}
+
+\item{k.neighbors}{(\code{\link[DMwR]{knnImputation}}'s \code{k}) Number of 
+nearest neighbors to use.}
 }
 \value{
 Returns a \code{beyondcell} object with regressed normalized BCS,

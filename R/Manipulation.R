@@ -182,12 +182,14 @@ bcSubset <- function(bc, signatures = NULL, bg.signatures = NULL, cells = NULL,
 #' @importFrom DMwR knnImputation
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
 #' @param vars.to.regress Vector of metadata columns to regress out the BCS.
+#' @param k.neighbors (\code{\link[DMwR]{knnImputation}}'s \code{k}) Number of 
+#' nearest neighbors to use.
 #' @return Returns a \code{beyondcell} object with regressed normalized BCS,
 #' regressed scaled BCS and regressed switch points.
 #' @examples
 #' @export
 
-bcRegressOut <- function(bc, vars.to.regress) {
+bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10) {
   # --- Checks ---
   # Check that bc is a beyondcell object.
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
@@ -258,8 +260,8 @@ bcRegressOut <- function(bc, vars.to.regress) {
   latent.data <- bc@meta.data[colnames(bc@normalized), vars, drop = FALSE]
   # Impute normalized BCS matrix
   message('Imputing normalized BCS...')
-  bc@normalized <- DMwR::knnImputation(bc@normalized, k = 10, scale = FALSE,
-                                       meth = "weighAvg")
+  bc@normalized <- DMwR::knnImputation(bc@normalized, k = k.neighbors, 
+                                       scale = FALSE, meth = "weighAvg")
   # Limma formula.
   fmla <- as.formula(object = paste('bcscore ~', paste(vars, collapse = '+')))
   # Compute regression and save it in bc@normalized.
@@ -292,8 +294,8 @@ bcRegressOut <- function(bc, vars.to.regress) {
   # Regress the background, if needed.
   if (any(dim(bc@background) != 0)) {
     message('Imputing background BCS...')
-    bc@background <- DMwR::knnImputation(bc@background, k = 10, scale = FALSE,
-                                         meth = "weighAvg")
+    bc@background <- DMwR::knnImputation(bc@background, k = k.neighbors, 
+                                         scale = FALSE, meth = "weighAvg")
     message('Regressing background BCS...')
     total.bg <- nrow(bc@background)
     pb.bg <- txtProgressBar(min = 0, max = total.bg, style = 3)
