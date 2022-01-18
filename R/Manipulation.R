@@ -215,6 +215,7 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
   # Check regression and subset order.
   reg.order <- bc@regression$order
   reg.order.bg <- bc@regression$order.background
+  reg.vars <- bc@regression$vars
   if (any(!(reg.order %in% c("regression", "subset", ""))) |
       reg.order[1] == "" & reg.order[2] != "" | length(reg.order) != 2 |
       (identical(reg.order[1], reg.order[2]) & reg.order[1] != "") |
@@ -225,6 +226,8 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
     bc@background <- matrix(ncol = 0, nrow = 0)
     bc@regression <- list(order = c("regression", ""), vars = vars,
                           order.background = rep("", 2))
+    reg.order <- rep("", 2)
+    reg.vars <- NULL
   } else {
     ### If bc was previously regressed and then subsetted, raise an error.
     if (identical(reg.order, c("regression", "subset"))) {
@@ -239,7 +242,7 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
       ### Else if the last step in reg.order is "regression", raise a warning.
     } else if (tail(reg.order[which(reg.order != "")], n = 1) == "regression") {
       warning('bc is an already regressed object.')
-      vars <- unique(c(vars, bc@regression$vars))
+      vars <- unique(c(vars, reg.vars))
       sigs <- rownames(bc@scaled)
       bg.sigs <- rownames(bc@background)
       cells <- colnames(bc@scaled)
@@ -261,6 +264,7 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
                    cells = cells))
       }
       bc@regression <- list(order = reg.order, order.background = reg.order)
+      reg.order[reg.order == "regression"] <- ""
     }
   }
   # Check add.DSS.
@@ -302,26 +306,26 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
       background@meta.data <- background@meta.data[, -c(1:ncol(background@meta.data))]
       background <- bcAddMetadata(background, metadata = bc@meta.data)
       ### Subset and regress (if needed).
-      if (bc@regression$order[1] == "subset") {
+      if (reg.order[1] == "subset") {
         background <- bcSubset(background, cells = cells)
-      } else if (bc@regression$order[1] == "regression") {
+      } else if (reg.order[1] == "regression") {
         message('Regressing background BCS...')
         background <- suppressMessages(
-          bcRegressOut(background, vars.to.regress = bc@regression[["vars"]],
+          bcRegressOut(background, vars.to.regress = reg.vars, 
                        k.neighbors = k.neighbors, add.DSS = FALSE))
       }
-      if (bc@regression$order[2] == "subset") {
+      if (reg.order[2] == "subset") {
         background <- bcSubset(background, cells = cells)
-      } else if (bc@regression$order[2] == "regression") {
+      } else if (reg.order[2] == "regression") {
         message('Regressing background BCS...')
         background <- suppressMessages(
-          bcRegressOut(background, vars.to.regress = bc@regression[["vars"]],
+          bcRegressOut(background, vars.to.regress = reg.vars,
                        k.neighbors = k.neighbors, add.DSS = FALSE))
       }
       ### Add background@normalized to bc@background.
       bc@background <- background@normalized
       ### Add order.background to bc@regression.
-      bc@regression[["order.background"]] <- bc@regression[["order"]]
+      bc@regression[["order.background"]] <- reg.order
     } else {
       message('Background BCS already computed. Skipping this step.')
     }
