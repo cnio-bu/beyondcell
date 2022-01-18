@@ -16,7 +16,7 @@
 bcScore <- function(sc, gs, expr.thres = 0.1) {
   # --- Checks ---
   # Check if sc is a Seurat object or an expression matrix.
-  if ("Seurat"%in% class(sc)) {
+  if ("Seurat" %in% class(sc)) {
     input <- "Seurat object"
     default <- Seurat::DefaultAssay(sc)
     if(default %in% c("RNA", "SCT", "Spatial")) {
@@ -32,6 +32,7 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
     }
   } else if ("matrix" %in% class(sc) & is.numeric(sc)) {
     input <- "expression matrix"
+    default <- list()
     warning(paste('Using count matrix as input. Please, check that this matrix',
                   'is normalized and unscaled.'))
     expr.matrix <- sc
