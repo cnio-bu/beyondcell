@@ -341,11 +341,15 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
   }
   # Latent data.
   latent.data <- bc@meta.data[cells, vars, drop = FALSE]
-  # Impute normalized BCS matrix
-  message('Imputing normalized BCS...')
-  imputation <- DMwR::knnImputation(bc.merged@normalized, k = k.neighbors, 
-                                    scale = FALSE, meth = "weighAvg")
-  bc@normalized <- round(imputation[drugs, cells], digits = 2)
+  # Impute normalized BCS matrix if necessary
+  if (!all(complete.cases(bc.merged@normalized))) {
+    message('Imputing normalized BCS...')
+    imputation <- DMwR::knnImputation(bc.merged@normalized, k = k.neighbors, 
+                                      scale = FALSE, meth = "weighAvg")
+    bc@normalized <- round(imputation[drugs, cells], digits = 2)
+  } else {
+    message('No NaN values were found in bc@normalized. No imputation needed.')
+  }
   # Limma formula.
   fmla <- as.formula(object = paste('bcscore ~', paste(vars, collapse = '+')))
   # Compute regression and save it in bc@normalized.
@@ -377,10 +381,14 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
   bc@regression$vars <- vars
   # Regress the background, if needed.
   if (any(dim(bc@background) != 0)) {
-    message('Imputing background BCS...')
-    imputation.bg <- DMwR::knnImputation(bc@background, k = k.neighbors,
-                                         scale = FALSE, meth = "weighAvg")
-    bc@background <- round(imputation.bg[, cells], digits = 2)
+    if (!all(complete.cases(bc@background))) {
+      message('Imputing background BCS...')
+      imputation.bg <- DMwR::knnImputation(bc@background, k = k.neighbors, 
+                                           scale = FALSE, meth = "weighAvg")
+      bc@background <- round(imputation.bg[, cells], digits = 2)
+    } else {
+      message('No NaN values were found in bc@background. No imputation needed.')
+    }
     message('Regressing background BCS...')
     total.bg <- nrow(bc@background)
     pb.bg <- txtProgressBar(min = 0, max = total.bg, style = 3)
