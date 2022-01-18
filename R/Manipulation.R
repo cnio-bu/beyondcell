@@ -236,7 +236,7 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
     } else if (identical(reg.order, rep("", 2)) |
                identical(reg.order, c("subset", ""))) {
       bc@regression$order[match("", reg.order)] <- "regression"
-      ### Else if the last step in reg.order is "subset", raise a warning.
+      ### Else if the last step in reg.order is "regression", raise a warning.
     } else if (tail(reg.order[which(reg.order != "")], n = 1) == "regression") {
       warning('bc is an already regressed object.')
       vars <- unique(c(vars, bc@regression$vars))
