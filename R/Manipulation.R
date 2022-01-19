@@ -373,7 +373,7 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
                           ### Return residues.
                           return(resid)
                         }))
-  bc@normalized <- round(rbind(bc@normalized[names(pathways), ], 
+  bc@normalized <- round(rbind(bc@normalized[!not.paths, ], 
                                normalized.regressed)[sigs, cells], digits = 2)
   # Close the progress bar.
   Sys.sleep(0.1)
