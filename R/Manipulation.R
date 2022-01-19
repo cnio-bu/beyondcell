@@ -272,6 +272,7 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
   # Check add.DSS.
   sigs <- rownames(bc@normalized)
   not.paths <- !(sigs %in% names(pathways))
+  drugs <- sigs[not.paths]
   n.drugs <- sum(not.paths)
   if (length(add.DSS) != 1 | !is.logical(add.DSS)) {
     stop('add.DSS must be TRUE or FALSE.')
@@ -331,14 +332,14 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
       message('Background BCS already computed. Skipping this step.')
     }
     ### Add background to bc.
-    all.rows <- unique(c(sigs, rownames(bc@background)))
+    all.rows <- unique(c(drugs, rownames(bc@background)))
     merged.score <- rbind(bc@normalized, bc@background[, cells])[all.rows, ]
     bc.merged <- beyondcell(normalized = merged.score)
   } else {
     ### No background BCS.
     message(paste('DSS background not computed. The imputation will be', 
                   'computed just with the drugs (not pathways) in bc object.'))
-    bc.merged <- bc
+    bc.merged <- beyondcell(normalized = bc@normalized[drugs, ])
   }
   # Latent data.
   latent.data <- bc@meta.data[cells, vars, drop = FALSE]
@@ -347,32 +348,33 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
     message('Imputing normalized BCS...')
     imputation <- DMwR::knnImputation(bc.merged@normalized, k = k.neighbors, 
                                       scale = FALSE, meth = "weighAvg")
-    bc@normalized <- round(imputation[sigs, cells], digits = 2)
   } else {
     message('No NaN values were found in bc@normalized. No imputation needed.')
+    imputation <- bc.merged@normalized
   }
   # Limma formula.
   fmla <- as.formula(object = paste('bcscore ~', paste(vars, collapse = '+')))
   # Compute regression and save it in bc@normalized.
   message('Regressing scores...')
-  total <- nrow(bc@normalized)
+  total <- nrow(imputation)
   pb <- txtProgressBar(min = 0, max = total, style = 3)
   bins <- ceiling(total / 100)
-  normalized.regressed <- t(apply(cbind(seq_len(nrow(bc@normalized)),
-                                        bc@normalized), 1, function(x) {
-                                          regression.mat <- cbind(latent.data, x[-1])
-                                          colnames(regression.mat) <- c(colnames(latent.data), "bcscore")
-                                          qr <- lm(fmla, data = regression.mat, qr = TRUE, na.action = na.exclude)$qr
-                                          resid <- qr.resid(qr = qr, y = x[-1])
-                                          ### Update the progress bar.
-                                          if (x[1]%%bins == 0 | x[1] == total) {
-                                            Sys.sleep(0.1)
-                                            setTxtProgressBar(pb, value = x[1])
-                                          }
-                                          ### Return residues.
-                                          return(resid)
-                                        }))
-  bc@normalized <- round(normalized.regressed, digits = 2)
+  normalized.regressed <- t(apply(cbind(seq_len(nrow(imputation)),
+                                        imputation), 1, function(x) {
+                            regression.mat <- cbind(latent.data, x[-1])
+                            colnames(regression.mat) <- c(colnames(latent.data), "bcscore")
+                            qr <- lm(fmla, data = regression.mat, qr = TRUE, na.action = na.exclude)$qr
+                            resid <- qr.resid(qr = qr, y = x[-1])
+                            ### Update the progress bar.
+                            if (x[1]%%bins == 0 | x[1] == total) {
+                              Sys.sleep(0.1)
+                              setTxtProgressBar(pb, value = x[1])
+                            }
+                          ### Return residues.
+                          return(resid)
+                        }))
+  bc@normalized <- round(rbind(bc@normalized[names(pathways), ], 
+                               normalized.regressed)[sigs, cells], digits = 2)
   # Close the progress bar.
   Sys.sleep(0.1)
   close(pb)
@@ -386,29 +388,29 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
       message('Imputing background BCS...')
       imputation.bg <- DMwR::knnImputation(bc@background, k = k.neighbors, 
                                            scale = FALSE, meth = "weighAvg")
-      bc@background <- round(imputation.bg[sigs, cells], digits = 2)
     } else {
       message('No NaN values were found in bc@background. No imputation needed.')
+      imputation.bg <- bc@background
     }
     message('Regressing background BCS...')
-    total.bg <- nrow(bc@background)
+    total.bg <- nrow(imputation.bg)
     pb.bg <- txtProgressBar(min = 0, max = total.bg, style = 3)
     bins.bg <- ceiling(total.bg / 100)
-    background.regressed <- t(apply(cbind(seq_len(nrow(bc@background)),
-                                          bc@background), 1, function(y) {
-                                            regression.mat <- cbind(latent.data, y[-1])
-                                            colnames(regression.mat) <- c(colnames(latent.data), "bcscore")
-                                            qr <- lm(fmla, data = regression.mat, qr = TRUE, na.action = na.exclude)$qr
-                                            resid <- qr.resid(qr = qr, y = y[-1])
-                                            ### Update the progress bar.
-                                            if (y[1]%%bins == 0 | y[1] == total.bg) {
-                                              Sys.sleep(0.1)
-                                              setTxtProgressBar(pb.bg, value = y[1])
-                                            }
-                                            ### Return residues.
-                                            return(resid)
-                                          }))
-    bc@background <- round(background.regressed, digits = 2)
+    background.regressed <- t(apply(cbind(seq_len(nrow(imputation.bg)),
+                                          imputation.bg), 1, function(y) {
+                                regression.mat <- cbind(latent.data, y[-1])
+                                colnames(regression.mat) <- c(colnames(latent.data), "bcscore")
+                                qr <- lm(fmla, data = regression.mat, qr = TRUE, na.action = na.exclude)$qr
+                                resid <- qr.resid(qr = qr, y = y[-1])
+                                ### Update the progress bar.
+                                if (y[1]%%bins == 0 | y[1] == total.bg) {
+                                  Sys.sleep(0.1)
+                                  setTxtProgressBar(pb.bg, value = y[1])
+                                }
+                              ### Return residues.
+                              return(resid)
+                              }))
+    bc@background <- round(background.regressed[, cells], digits = 2)
     bc@regression$order.background <- bc@regression$order
     # Close the background progress bar.
     Sys.sleep(0.1)
