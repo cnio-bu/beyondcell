@@ -243,9 +243,6 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
     } else if (tail(reg.order[which(reg.order != "")], n = 1) == "regression") {
       warning('bc is an already regressed object.')
       vars <- unique(c(vars, reg.vars))
-      sigs <- rownames(bc@scaled)
-      bg.sigs <- rownames(bc@background)
-      cells <- colnames(bc@scaled)
       bc <- bcRecompute(bc, slot = "data")
       bc@regression <- list(order = rep("", 2),  vars = NULL,
                             order.background = rep("", 2))
@@ -260,8 +257,9 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
       }
       if ("subset" %in% reg.order) {
         bc <- suppressWarnings(
-          bcSubset(bc, signatures = sigs, bg.signatures = bg.sigs,
-                   cells = cells))
+          bcSubset(bc, signatures = rownames(bc@normalized), 
+                   bg.signatures = rownames(bc@background),
+                   cells = colnames(bc@normalized)))
       }
       bc@regression <- list(order = reg.order, order.background = reg.order)
       reg.order[reg.order == "regression"] <- ""
@@ -272,8 +270,8 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
     stop('k.neighbors must be a positive integer.')
   }
   # Check add.DSS.
-  drugs <- rownames(bc@normalized)
-  not.paths <- !(drugs %in% names(pathways))
+  sigs <- rownames(bc@normalized)
+  not.paths <- !(sigs %in% names(pathways))
   n.drugs <- sum(not.paths)
   if (length(add.DSS) != 1 | !is.logical(add.DSS)) {
     stop('add.DSS must be TRUE or FALSE.')
@@ -290,7 +288,6 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
   # --- Code ---
   # Cells in bc.
   cells <- colnames(bc@normalized)
-  # 
   if (add.DSS) {
     ### DSS (background) BCS.
     if (!identical(sort(rownames(bc@background), decreasing = FALSE),
@@ -334,7 +331,7 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
       message('Background BCS already computed. Skipping this step.')
     }
     ### Add background to bc.
-    all.rows <- unique(c(drugs, rownames(bc@background)))
+    all.rows <- unique(c(sigs, rownames(bc@background)))
     merged.score <- rbind(bc@normalized, bc@background[, cells])[all.rows, ]
     bc.merged <- beyondcell(normalized = merged.score)
   } else {
@@ -350,7 +347,7 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
     message('Imputing normalized BCS...')
     imputation <- DMwR::knnImputation(bc.merged@normalized, k = k.neighbors, 
                                       scale = FALSE, meth = "weighAvg")
-    bc@normalized <- round(imputation[drugs, cells], digits = 2)
+    bc@normalized <- round(imputation[sigs, cells], digits = 2)
   } else {
     message('No NaN values were found in bc@normalized. No imputation needed.')
   }
@@ -389,7 +386,7 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
       message('Imputing background BCS...')
       imputation.bg <- DMwR::knnImputation(bc@background, k = k.neighbors, 
                                            scale = FALSE, meth = "weighAvg")
-      bc@background <- round(imputation.bg[, cells], digits = 2)
+      bc@background <- round(imputation.bg[sigs, cells], digits = 2)
     } else {
       message('No NaN values were found in bc@background. No imputation needed.')
     }
