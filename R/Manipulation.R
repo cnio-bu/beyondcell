@@ -267,6 +267,10 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
       reg.order[reg.order == "regression"] <- ""
     }
   }
+  # Check k.neighbors
+  if (length(k.neighbors) != 1 | k.neighbors < 1) {
+    stop('k.neighbors must be a positive integer.')
+  }
   # Check add.DSS.
   drugs <- rownames(bc@normalized)
   not.paths <- !(drugs %in% names(pathways))
