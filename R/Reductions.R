@@ -175,13 +175,12 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
   }
   sc <- Seurat::CreateSeuratObject(bc.merged@scaled[not.paths, , drop = FALSE])
   # PCA.
-  n.dims <- min(50, n.drugs)
   sc <- Seurat::ScaleData(sc, features = rownames(sc), do.scale = FALSE,
                           do.center = FALSE)
   sc <- Seurat::RunPCA(sc, features = rownames(sc), npcs = 100, maxit = 100000,
                        nfeatures.print = min(30, n.drugs/2))
   # Elbow plot.
-  elbowplot <- Seurat::ElbowPlot(sc, ndims = n.dims - 1) +
+  elbowplot <- Seurat::ElbowPlot(sc, ndims = min(50, n.drugs - 1)) +
     ggplot2::theme(legend.position = "bottom")
   if (is.null(elbow.path)) {
     message('Printing elbow plot...')
