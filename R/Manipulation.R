@@ -347,7 +347,7 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
   if (!all(complete.cases(bc.merged@normalized))) {
     message('Imputing normalized BCS...')
     imputation <- DMwR::knnImputation(bc.merged@normalized, k = k.neighbors, 
-                                      scale = FALSE, meth = "weighAvg")
+                                      scale = FALSE, meth = "median")
   } else {
     message('No NaN values were found in bc@normalized. No imputation needed.')
     imputation <- bc.merged@normalized
@@ -387,7 +387,7 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
     if (!all(complete.cases(bc@background))) {
       message('Imputing background BCS...')
       imputation.bg <- DMwR::knnImputation(bc@background, k = k.neighbors, 
-                                           scale = FALSE, meth = "weighAvg")
+                                           scale = FALSE, meth = "median")
     } else {
       message('No NaN values were found in bc@background. No imputation needed.')
       imputation.bg <- bc@background
