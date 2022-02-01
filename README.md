@@ -2,6 +2,9 @@
 
 [Package status](https://gitlab.com/bu_cnio/Beyondcell/commits/master)
 
+> **News:** Beyondcell 1.3.3 has been added to bioconda and from now on 
+it will be updated exclusively in that channel.
+
 ## Introduction
 **Beyondcell** is a methodology for the identification of drug vulnerabilities 
 in single-cell RNA-seq (scRNA-seq) data. To this end, Beyondcell focuses on the 
