@@ -63,3 +63,27 @@ names(pathways) <- allsigs
 
 # Save
 usethis::use_data(pathways, internal = TRUE, overwrite = TRUE)
+
+# --- Functions ---
+readSig <- function(x) {
+  sig <- unique(read.table(x, sep = "\t", header = TRUE)$GeneName)
+  return(sig)
+}
+
+# --- Code ---
+# List files
+files <- list.files("data-raw/CancerSEA", full.names = TRUE, pattern = ".txt")
+
+# Create pathways list (all genes are upregulated)
+paths <- lapply(files, FUN = function(y) list(up = readSig(y)))
+
+# Add names
+names_paths <- paste0("sig_", tolower(gsub(".txt", "", x = basename(files))),
+                      "_CancerSEA")
+names(paths) <- gsub("dna", "DNA", gsub("emt", "EMT", names_paths))
+
+# Merge pathways and paths
+pathways <- c(pathways, pathways)
+
+# Save
+usethis::use_data(pathways, internal = TRUE, overwrite = TRUE)
