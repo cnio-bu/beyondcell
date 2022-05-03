@@ -83,7 +83,7 @@ names_paths <- paste0("sig_", tolower(gsub(".txt", "", x = basename(files))),
 names(paths) <- gsub("dna", "DNA", gsub("emt", "EMT", names_paths))
 
 # Merge pathways and paths
-pathways <- c(pathways, pathways)
+pathways <- c(pathways, paths)
 
 # Save
 usethis::use_data(pathways, internal = TRUE, overwrite = TRUE)
