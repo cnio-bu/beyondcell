@@ -338,7 +338,8 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
   } else {
     ### No background BCS.
     message(paste('DSS background not computed. The imputation will be', 
-                  'computed just with the drugs (not pathways) in bc object.'))
+                  'computed with just the drugs (not pathways) in the', 
+                  'beyondcell object.'))
     bc.merged <- beyondcell(normalized = bc@normalized[drugs, ])
   }
   # Latent data.
