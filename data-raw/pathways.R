@@ -6,8 +6,14 @@ readSig <- function(x) {
   return(sig)
 }
 
+readCancerSEA <- function(x) {
+  sig <- unique(read.table(x, sep = "\t", header = TRUE)$GeneName)
+  return(sig)
+}
+
 # --- Code ---
-# Apoptosis
+# MSigDB signatures
+## Apoptosis
 apoptosis_up <- unique(c(readSig("data-raw/MSigDB/HERNANDEZ_MITOTIC_ARREST_BY_DOCETAXEL_1_UP.txt"),
                          readSig("data-raw/MSigDB/HERNANDEZ_MITOTIC_ARREST_BY_DOCETAXEL_2_UP.txt")))
 apoptosis_down <- unique(c(readSig("data-raw/MSigDB/HERNANDEZ_MITOTIC_ARREST_BY_DOCETAXEL_1_DN.txt"),
@@ -15,12 +21,12 @@ apoptosis_down <- unique(c(readSig("data-raw/MSigDB/HERNANDEZ_MITOTIC_ARREST_BY_
 
 sig_apoptosis_HERNANDEZ <- list(up = apoptosis_up, down = apoptosis_down)
 
-# Senescence
+## Senescence
 senescence <- "data-raw/MSigDB/FRIDMAN_SENESCENCE_"
 sig_senescence_FRIDMAN <- list(up = readSig(paste0(senescence, "UP.txt")),
                                down = readSig(paste0(senescence, "DN.txt")))
 
-# Cell cycle
+## Cell cycle
 ccycle <- c(proliferation = "data-raw/MSigDB/WHITFIELD_CELL_CYCLE_LITERATURE.txt",
             G1S = "data-raw/MSigDB/WHITFIELD_CELL_CYCLE_G1_S.txt",
             G2M = "data-raw/MSigDB/WHITFIELD_CELL_CYCLE_G2_M.txt",
@@ -35,7 +41,7 @@ sig_G2_WHITFIELD <- list(up = readSig(ccycle["G2"]))
 sig_MG1_WHITFIELD <- list(up = readSig(ccycle["MG1"]))
 sig_S_WHITFIELD <- list(up = readSig(ccycle["S"]))
 
-# EMT
+## EMT
 EMT <- c(Alonso = "data-raw/MSigDB/ALONSO_METASTASIS_EMT_",
          Hallmarks = "data-raw/MSigDB/HALLMARK_EPITHELIAL_MESENCHYMAL_TRANSITION.txt",
          GO = "data-raw/MSigDB/GOBP_EPITHELIAL_TO_MESENCHYMAL_TRANSITION.txt",
@@ -56,28 +62,19 @@ Groger_up <- unique(scan(paste0(EMT["Groger"], "UP.txt"), what = character()))
 Groger_down <- unique(scan(paste0(EMT["Groger"], "DN.txt"), what = character()))
 sig_EMT_GROGER_2012 <- list(up = Groger_up, down = Groger_down)
 
-# All signatures
+## All MSigDB signatures
 allsigs <- ls(pattern = "^sig_*")
 pathways <- lapply(allsigs, get)
 names(pathways) <- allsigs
 
-# Save
-usethis::use_data(pathways, internal = TRUE, overwrite = TRUE)
-
-# --- Functions ---
-readSig <- function(x) {
-  sig <- unique(read.table(x, sep = "\t", header = TRUE)$GeneName)
-  return(sig)
-}
-
-# --- Code ---
-# List files
+# CancerSEA
+## List CancerSEA files
 files <- list.files("data-raw/CancerSEA", full.names = TRUE, pattern = ".txt")
 
-# Create pathways list (all genes are upregulated)
-paths <- lapply(files, FUN = function(y) list(up = readSig(y)))
+## Create paths list (all genes are upregulated)
+paths <- lapply(files, FUN = function(y) list(up = readCancerSEA(y)))
 
-# Add names
+## Add names
 names_paths <- paste0("sig_", tolower(gsub(".txt", "", x = basename(files))),
                       "_CancerSEA")
 names(paths) <- gsub("dna", "DNA", gsub("emt", "EMT", names_paths))
