@@ -76,7 +76,7 @@ bcClusters <- function(bc, idents, UMAP = "beyondcell", spatial = FALSE,
   # Add reductions.
   sc@reductions <- reduction
   # Add images.
-  sc@images <- bc@SeuratInfo$images
+  if (spatial) sc@images <- bc@SeuratInfo$images
   # Plot.
   if (factor.col) {
     # Set Idents.
@@ -537,7 +537,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell", spatial = FALSE,
     ### Add reductions.
     sc@reductions <- reduction
     # Add images.
-    sc@images <- bc@SeuratInfo$images
+    if (spatial) sc@images <- bc@SeuratInfo$images
     ### Plot for each signtature/gene...
     p <- lapply(features, function(y) {
       ### Merged.
