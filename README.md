@@ -1,6 +1,6 @@
 <img src="./.img/beyondcell.png" width="500">
 
-[Package status](https://gitlab.com/bu_cnio/Beyondcell/commits/master)
+[Package status](https://github.com/cnio-bu/beyondcell/commits/master)
 
 > **News:** Beyondcell 1.3.3 has been added to bioconda and from now on 
 it will be updated exclusively in that channel.
@@ -67,8 +67,8 @@ treatment with bortezomib (right).
 
 
 ## How to run
-For general instructions on running Beyondcell, check out the [analysis workflow](https://gitlab.com/bu_cnio/Beyondcell/-/tree/master/tutorial/analysis_workflow) and [visualization](https://gitlab.com/bu_cnio/Beyondcell/-/tree/master/tutorial/visualization) tutorials.
-For more information about how Beyondcell normalization works, please refer to [this vignette](https://gitlab.com/bu_cnio/Beyondcell/-/tree/master/tutorial/BCS_normalization/README.md). 
+For general instructions on running Beyondcell, check out the [analysis workflow](https://github.com/cnio-bu/beyondcell/blob/master/tutorial/analysis_workflow/README.md) and [visualization](https://github.com/cnio-bu/beyondcell/blob/master/tutorial/visualization/README.md) tutorials.
+For more information about how Beyondcell normalization works, please refer to [this vignette](https://github.com/cnio-bu/beyondcell/blob/master/tutorial/BCS_normalization/README.md). 
 
 
 ## Authors
@@ -87,4 +87,4 @@ For more information about how Beyondcell normalization works, please refer to [
 Fustero-Torre, C., Jiménez-Santos, M.J., García-Martín, S. et al. Beyondcell: targeting cancer therapeutic heterogeneity in single-cell RNA-seq data. Genome Med 13, 187 (2021). https://doi.org/10.1186/s13073-021-01001-x
 
 ## Support
-If you have any question regarding the use of Beyondcell, feel free to submit an [issue](https://gitlab.com/bu_cnio/Beyondcell/issues).
+If you have any question regarding the use of Beyondcell, feel free to submit an [issue](https://github.com/cnio-bu/beyondcell/issues).
