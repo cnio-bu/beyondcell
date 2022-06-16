@@ -21,7 +21,7 @@ For a correct analysis with **Beyondcell**, users should follow these steps:
     * Regress out unwanted sources of variation
     * Recompute the UMAP reduction
  4. Compute ranks
- 5. [Visualize](https://gitlab.com/bu_cnio/Beyondcell/-/tree/master/tutorial/visualization) 
+ 5. [Visualize](https://github.com/cnio-bu/beyondcell/blob/master/tutorial/visualization/README.md) 
  the results
 
 ### 1. Read a single-cell expression object
@@ -208,7 +208,7 @@ may be interested in the specific drugs that are most/least effective against a
 particular cluster. In the later scenario, we recommend prioritizing drugs 
 taking into account both the SP and residuals' mean. In order to facilitate the 
 computation and visualization of this kind of rank, we have included the 
-function `bc4Squares` in Beyondcell (see [visualization](https://gitlab.com/bu_cnio/Beyondcell/-/tree/master/tutorial/visualization) 
+function `bc4Squares` in Beyondcell (see [visualization](https://github.com/cnio-bu/beyondcell/blob/master/tutorial/visualization/README.md) 
 for more information).
 
 > Concerning the SP: It is the scaled value where normalized negative scores 
@@ -225,4 +225,4 @@ susceptible and non-susceptible cells.
 
 ## Support
 Additional information can be found in the package's documentation. If you have 
-any question regarding the use of **Beyondcell**, feel free to submit an [issue](https://gitlab.com/bu_cnio/Beyondcell/issues).
+any question regarding the use of **Beyondcell**, feel free to submit an [issue](https://github.com/cnio-bu/beyondcell/issues).
