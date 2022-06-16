@@ -174,6 +174,10 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
   slot(bc, "switch.point") <- switch.point
   # Close the progress bar.
   close(pb)
+  # Report the number of complete cases in the BCS matrix.
+  complete <- sum(complete.cases(t(bc@normalized)))
+  message(paste0("There are ", complete, "/", ncol(bc@normalized), 
+                 " cells without missing values in your beyondcell object."))
   return(bc)
 }
 

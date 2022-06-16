@@ -338,7 +338,8 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
   } else {
     ### No background BCS.
     message(paste('DSS background not computed. The imputation will be', 
-                  'computed just with the drugs (not pathways) in bc object.'))
+                  'computed with just the drugs (not pathways) in the', 
+                  'beyondcell object.'))
     bc.merged <- beyondcell(normalized = bc@normalized[drugs, ])
   }
   # Latent data.
@@ -346,8 +347,9 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
   # Impute normalized BCS matrix if necessary
   if (!all(complete.cases(bc.merged@normalized))) {
     message('Imputing normalized BCS...')
-    imputation <- DMwR::knnImputation(bc.merged@normalized, k = k.neighbors, 
-                                      scale = FALSE, meth = "median")
+    imputation <- t(DMwR::knnImputation(t(bc.merged@normalized), 
+                                        k = k.neighbors, scale = FALSE, 
+                                        meth = "weighAvg"))
   } else {
     message('No NaN values were found in bc@normalized. No imputation needed.')
     imputation <- bc.merged@normalized
@@ -386,8 +388,8 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
   if (any(dim(bc@background) != 0)) {
     if (!all(complete.cases(bc@background))) {
       message('Imputing background BCS...')
-      imputation.bg <- DMwR::knnImputation(bc@background, k = k.neighbors, 
-                                           scale = FALSE, meth = "median")
+      imputation.bg <- t(DMwR::knnImputation(t(bc@background), k = k.neighbors,
+                                             scale = FALSE, meth = "weighAvg"))
     } else {
       message('No NaN values were found in bc@background. No imputation needed.')
       imputation.bg <- bc@background
