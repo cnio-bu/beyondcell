@@ -161,9 +161,9 @@ bcSubset <- function(bc, signatures = NULL, bg.signatures = NULL, cells = NULL,
       bc <- bcRecompute(bc, slot = "normalized")
 
       ## If there is spatial info. then subset the cells too in the slices
-      is_spatial <- exists(x = "images", where = bc@SeuratInfo)
+      is.spatial <- exists(x = "images", where = bc@SeuratInfo)
 
-      if(is_spatial) {
+      if(is.spatial) {
         slices <- names(bc@SeuratInfo$images)
         ## maybe lapply is better here but I'll loop for clarity
         for (sl in slices){
