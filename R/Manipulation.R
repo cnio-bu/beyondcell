@@ -171,13 +171,12 @@ bcSubset <- function(bc, signatures = NULL, bg.signatures = NULL, cells = NULL,
           cells.to.keep <- intersect(slice.cells, final.cells)
 
           if (length(cells.to.keep) == 0) {
-            stop(paste("Missmatched cells",
+            warning(paste("Missmatched cells",
                        "for slice",
                        sl,
                        "after cell filtering."))
-          else {
-            bc@SeuratInfo$images$sl@coordinates <- bc@SeuratInfo$images$sl$coordinates[cells.to.keep, ]
           }
+          bc@SeuratInfo$images$sl@coordinates <- bc@SeuratInfo$images$sl$coordinates[cells.to.keep, ]
         }
       }
     }
