@@ -543,7 +543,7 @@ bcMerge <- function(bc1, bc2) {
   duplicated.sigs <- intersect(rownames(bc1@data), rownames(bc2@data))
   if (length(duplicated.sigs) > 0) {
     identical.sigs <- sapply(duplicated.sigs, function(x) {
-      identical(bc1@data[x, ], bc2@data[x, ])
+      identical(bc1@data[x, , drop = FALSE], bc2@data[x, , drop = FALSE])
     })
     if (any(!identical.sigs)) {
       stop(paste0('Duplicated signatures: ',
@@ -569,11 +569,14 @@ bcMerge <- function(bc1, bc2) {
                    n.genes = unique(c(bc1@n.genes, bc2@n.genes)),
                    mode = unique(c(bc1@mode, bc2@mode)), thres = bc1@thres)
   # rbind scaled BCS.
-  bc@scaled <- unique(rbind(bc1@scaled, bc2@scaled[, cells]))[, cells]
+  bc@scaled <- rbind(bc1@scaled, bc2@scaled[, cells, drop = FALSE])
+  bc@scaled <- unique(bc@scaled)[, cells, drop = FALSE]
   # rbind normalized BCS.
-  bc@normalized <- unique(rbind(bc1@normalized, bc2@normalized[, cells]))[, cells]
+  bc@normalized <- rbind(bc1@normalized, bc2@normalized[, cells, drop = FALSE])
+  bc@normalized <- unique(bc@normalized)[, cells, drop = FALSE]
   # rbind data.
-  bc@data <- unique(rbind(bc1@data, bc2@data[, colnames(bc1@data)]))[, colnames(bc1@data)]
+  bc@data <- rbind(bc1@data, bc2@data[, colnames(bc1@data), drop = FALSE])
+  bc@data <- unique(bc@data)[, colnames(bc1@data), drop = FALSE]
   # Merge switch.points.
   bc@switch.point <- c(bc1@switch.point, bc2@switch.point)[rownames(bc@scaled)]
   # Merge meta.data.
@@ -592,7 +595,7 @@ bcMerge <- function(bc1, bc2) {
   }else{
     background <- as.matrix(do.call("rbind", bg[!is.empty.bg]))
     rownames(background) <- gsub("bc[1|2]\\.", "", rownames(background))
-    bc@background <- background[unique(rownames(background)), ]
+    bc@background <- background[unique(rownames(background)), , drop = FALSE]
   } 
   return(bc)
 }
