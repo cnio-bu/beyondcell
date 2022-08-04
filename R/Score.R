@@ -94,7 +94,7 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
     return(n.expr.genes < (length(all.genes) * expr.thres))
   }))
   rownames(below.thres) <- names(gs@genelist)
-  below.thres <- below.thres[, colnames(expr.matrix)]
+  below.thres <- below.thres[, colnames(expr.matrix), drop = FALSE]
   # If all cells are below the threshold, remove that signature and raise a
   # warning
   nan.rows.idx <- which(rowSums(below.thres) == ncol(below.thres))
@@ -103,7 +103,7 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
                    "expr.thres and will be removed: ", 
                    paste0(rownames(below.thres)[nan.rows.idx], collapse = ", "), 
                    "."))
-    below.thres <- below.thres[-nan.rows.idx, ]
+    below.thres <- below.thres[-nan.rows.idx, , drop = FALSE]
     gs@genelist <- gs@genelist[-nan.rows.idx]
   }
   # BCS.
