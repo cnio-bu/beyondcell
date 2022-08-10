@@ -82,18 +82,22 @@ bcClusters <- function(bc, idents, UMAP = "beyondcell", spatial = FALSE,
     # Set Idents.
     Seurat::Idents(sc) <- idents
     if (spatial) {
-      p <- Seurat::SpatialDimPlot(sc, ...) + ggplot2::theme_minimal() +
+      p <- lapply(seq_along(bc@SeuratInfo$images), function(i) {
+        Seurat::SpatialDimPlot(sc, ...)[[i]] + ggplot2::theme_minimal() +
         ggplot2::theme(legend.title = element_blank(), 
                        axis.title = element_blank(), 
                        axis.text = element_blank())
+      })
     } else {
       p <- Seurat::DimPlot(sc, reduction = "umap", ...) + 
         ggplot2::theme_minimal()
     }
   } else {
     if (spatial) {
-      p <- Seurat::SpatialFeaturePlot(sc, features = idents, ...) + 
+      p <- lapply(seq_along(bc@SeuratInfo$images), function(i) {
+        Seurat::SpatialFeaturePlot(sc, features = idents, ...)[[i]] + 
         ggplot2:: theme(legend.position = "right")
+      })
     } else {
       p <- Seurat::FeaturePlot(sc, reduction = "umap", features = idents, ...) +
         ggplot2::theme_minimal() + ggplot2::labs(title = NULL)
@@ -581,38 +585,21 @@ bcSignatures <- function(bc, UMAP = "beyondcell", spatial = FALSE,
       }
       ### Plot.
       if (spatial) {
-		  # If there is more than one tissue slide
-		  if(length(bc@SeuratInfo$images) > 1){
-			  fp <- lapply(seq_along(bc@SeuratInfo$images), function(i){
-			              suppressMessages(
-			                Seurat::SpatialFeaturePlot(sc, combine = FALSE,
-			                                           features = gsub(pattern = "_", replacement = "-", 
-			                                                           x = y), ...)[[i]]) + 
-			                ggplot2:: theme(legend.position = "right")
-			              })
-			} else {
-				fp <- suppressMessages(Seurat::SpatialFeaturePlot(sc, combine = FALSE,
-					features = gsub(pattern = "_", replacement = "-", x = y), ...)[[1]]) + 
-				            ggplot2:: theme(legend.position = "right")
-					  	
-			}
+        fp <- lapply(seq_along(bc@SeuratInfo$images), function(i) {
+          suppressMessages(
+            Seurat::SpatialFeaturePlot(sc, combine = FALSE,
+                                       features = gsub(pattern = "_", replacement = "-", 
+                                                       x = y), ...)[[i]] + 
+            ggplot2:: theme(legend.position = "right") + colors + 
+            ggplot2::labs(title = drug.and.MoA[1], subtitle = drug.and.MoA[2]))
+        })
       } else {
         fp <- suppressMessages(
           Seurat::FeaturePlot(sc, combine = FALSE,
                               features = gsub(pattern = "_", replacement = "-",
-                                              x = y), ...)[[1]])
+                                              x = y), ...)[[1]] + colors + 
+            ggplot2::labs(title = drug.and.MoA[1], subtitle = drug.and.MoA[2]))
       }
-	  # If there is more than one tissue slide
-	  if(length(bc@SeuratInfo$images) > 1){
-	          fp <- lapply(seq_along(fp), function(f){
-	            fp[[f]] + colors + 
-	              ggplot2::labs(title = drug.and.MoA[1], subtitle = drug.and.MoA[2]) 
-	          })
-        
-	        }else {
-	          fp <- suppressMessages(fp + colors + 
-	                                   ggplot2::labs(title = drug.and.MoA[1], subtitle = drug.and.MoA[2])) 
-	        }
     })
   }
   # If mfrow = c(1, 1), return a list ggplots.
