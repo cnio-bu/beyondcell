@@ -160,24 +160,13 @@ bcSubset <- function(bc, signatures = NULL, bg.signatures = NULL, cells = NULL,
                                            drop = FALSE], digits = 2)
       bc <- bcRecompute(bc, slot = "normalized")
 
-      ## If there is spatial info. then subset the cells too in the slices
+      ## If there is spatial info, then subset the cells in the slices too
       is.spatial <- exists(x = "images", where = bc@SeuratInfo)
-
-      if(is.spatial) {
-        slices <- names(bc@SeuratInfo$images)
-        ## maybe lapply is better here but I'll loop for clarity
-        for (sl in slices){
-          slice.cells <- rownames(bc@SeuratInfo$images$sl@coordinates)
-          cells.to.keep <- intersect(slice.cells, final.cells)
-
-          if (length(cells.to.keep) == 0) {
-            warning(paste("Missmatched cells",
-                       "for slice",
-                       sl,
-                       "after cell filtering."))
-          }
-          bc@SeuratInfo$images$sl@coordinates <- bc@SeuratInfo$images$sl$coordinates[cells.to.keep, ]
-        }
+      if (is.spatial) {
+        bc@SeuratInfo$images <- lapply(bc@SeuratInfo$images, FUN = function(x) {
+          x@coordinates <- x@coordinates[final.cells, , drop = FALSE]
+          return(x)
+        })
       }
     }
     if (any(dim(bc@background) != 0)) {
