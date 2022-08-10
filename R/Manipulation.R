@@ -82,10 +82,25 @@ bcSubset <- function(bc, signatures = NULL, bg.signatures = NULL, cells = NULL,
     if (all(!in.cells)) {
       stop('None of the specified cells were found.')
     } else if (any(!in.cells)) {
-      warning(paste0('These cells were not found in bc: ',
+      warning(paste0('These cells were not found in bc matrices: ',
                      paste0(unique(cells[!in.cells]), collapse = ", "), '.'))
     }
     pass.cells <- unique(cells[in.cells])
+  }
+  # If there is spatial info, check cells in the slices too.
+  is.spatial <- exists(x = "images", where = bc@SeuratInfo)
+  if (is.spatial) {
+    spots <- lapply(bc@SeuratInfo$images, FUN = function(x) {
+      return(rownames(x@coordinates))
+    })
+    spots <- unique(unlist(spots))
+    in.pass.cells <- pass.cells %in% spots
+    if (all(!in.pass.cells)) {
+      stop('None of the specified cells were found in the image slices.')
+    } else if (any(!in.pass.cells)) {
+      warning(paste0('These cells were not found in the image slices: ',
+                     paste0(pass.cells[!in.pass.cells], collapse = ", "), '.'))
+    }
   }
   # Check nan.sigs.
   if (length(nan.sigs) != 1 | nan.sigs[1] < 0 | nan.sigs[1] > 1) {
@@ -160,11 +175,12 @@ bcSubset <- function(bc, signatures = NULL, bg.signatures = NULL, cells = NULL,
                                            drop = FALSE], digits = 2)
       bc <- bcRecompute(bc, slot = "normalized")
 
-      ## If there is spatial info, then subset the cells in the slices too
-      is.spatial <- exists(x = "images", where = bc@SeuratInfo)
+      ### If there is spatial info, then subset the cells in the slices too
       if (is.spatial) {
         bc@SeuratInfo$images <- lapply(bc@SeuratInfo$images, FUN = function(x) {
-          x@coordinates <- x@coordinates[final.cells, , drop = FALSE]
+          slice.cells <- rownames(x@coordinates)
+          final.slice.cells <- intersect(slice.cells, final.cells)
+          x@coordinates <- x@coordinates[final.slice.cells, , drop = FALSE]
           return(x)
         })
       }
