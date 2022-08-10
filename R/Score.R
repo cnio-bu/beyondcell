@@ -56,11 +56,13 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
   # --- Code ---
   # Create beyondcell object.
   bc <- beyondcell(expr.matrix = expr.matrix, meta.data = sc@meta.data,
-                   SeuratInfo = list(assays = default, images = sc@images,
-                                     reductions = sc@reductions),
+                   SeuratInfo = list(assays = default, reductions = sc@reductions),
                    regression = list(order = rep("", 2), vars = NULL,
                                      order.background = rep("", 2)),
                    n.genes = gs@n.genes, mode = gs@mode, thres = expr.thres)
+  # Add images if it is a spatial object.
+  is.spatial <- "images" %in% slotNames(sc)
+  if (is.spatial) bc@SeuratInfo$images <- sc@images
   # Convert genes in expr.matrix and gs to lowercase.
   rownames(expr.matrix) <- tolower(rownames(expr.matrix))
   gs@genelist <- lapply(gs@genelist, function(x) {
