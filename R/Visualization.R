@@ -590,14 +590,20 @@ bcSignatures <- function(bc, UMAP = "beyondcell", spatial = FALSE,
             Seurat::SpatialFeaturePlot(sc, combine = FALSE,
                                        features = gsub(pattern = "_", replacement = "-", 
                                                        x = y), ...)[[i]] + 
-            ggplot2:: theme(legend.position = "right") + colors + 
-            ggplot2::labs(title = drug.and.MoA[1], subtitle = drug.and.MoA[2]))
+            ggplot2:: theme(legend.position = "right", 
+                            legend.text = element_text(size = 8, face = "bold", 
+                                                       vjust = 0.5),
+                            legend.key.height = unit(1, "cm")) + colors + 
+              ggplot2::labs(title = drug.and.MoA[1], subtitle = drug.and.MoA[2]))
         })
       } else {
         fp <- suppressMessages(
           Seurat::FeaturePlot(sc, combine = FALSE,
                               features = gsub(pattern = "_", replacement = "-",
-                                              x = y), ...)[[1]] + colors + 
+                                              x = y), ...)[[1]] +
+            ggplot2:: theme(legend.text = element_text(size = 8, face = "bold", 
+                                                       vjust = 0.5),
+                            legend.key.height = unit(1, "cm")) + colors + 
             ggplot2::labs(title = drug.and.MoA[1], subtitle = drug.and.MoA[2]))
       }
     })
