@@ -565,6 +565,11 @@ bcSignatures <- function(bc, UMAP = "beyondcell", spatial = FALSE,
         ### Empty subtitle.
         drug.and.MoA <- c(paste0(ids, collapse = merged.symbol), "")
       }
+      ### Switch point.
+      sp <- bc@switch.point[y]
+      if (!is.na(sp)) {
+        switchpoint <- ggplot2::labs(caption = paste("Switch point =", sp))
+      } else switchpoint <- ggplot2::labs(caption = "")
       ### Colours (depending on wether y is a signature or a gene).
       if (all(ids %in% sigs)) {
         if (spatial) aesthetics <-"fill"
@@ -589,11 +594,12 @@ bcSignatures <- function(bc, UMAP = "beyondcell", spatial = FALSE,
           suppressMessages(
             Seurat::SpatialFeaturePlot(sc, combine = FALSE,
                                        features = gsub(pattern = "_", replacement = "-", 
-                                                       x = y), ...)[[i]] + 
-            ggplot2:: theme(legend.position = "right", 
-                            legend.text = element_text(size = 8, face = "bold"),
-                            legend.key.height = unit(1, "cm")) + colors + 
-              ggplot2::labs(title = drug.and.MoA[1], subtitle = drug.and.MoA[2]))
+                                                       x = y), ...)[[i]] +
+              ggplot2:: theme(legend.text = element_text(size = 8, face = "bold"),
+                              legend.key.height = unit(1, "cm"), 
+                              legend.position = "right") + 
+              ggplot2::labs(title = drug.and.MoA[1], subtitle = drug.and.MoA[2]) +
+              colors + switchpoint)
         })
       } else {
         fp <- suppressMessages(
@@ -601,8 +607,9 @@ bcSignatures <- function(bc, UMAP = "beyondcell", spatial = FALSE,
                               features = gsub(pattern = "_", replacement = "-",
                                               x = y), ...)[[1]] +
             ggplot2:: theme(legend.text = element_text(size = 8, face = "bold"),
-                            legend.key.height = unit(1, "cm")) + colors + 
-            ggplot2::labs(title = drug.and.MoA[1], subtitle = drug.and.MoA[2]))
+                            legend.key.height = unit(1, "cm")) + 
+            ggplot2::labs(title = drug.and.MoA[1], subtitle = drug.and.MoA[2]) +
+            colors + switchpoint)
       }
     })
   }
