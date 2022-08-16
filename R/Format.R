@@ -242,20 +242,25 @@ center_scale_colour_stepsn <- function(x, colorscale, alpha = 0.7,
   }
   # Colours.
   # The colour of the center and its limits is the same (so these three values 
-  # form a single colour break).
-  rampcol.mid <- rep(colorscale[3], times = 3)
+  # form a single colour break). If the center is the limit, two values form the 
+  # colour break.
+  if (center %in% limits.center) times <- 2
+  else times <- 3
+  rampcol.mid <- rep(colorscale[3], times = times)
   # If brk.low is more than just the lower limit, get a different colour for 
   # each break.
-  if (length(brk.low) > 1) {
+  if (length(brk.low) > 2) {
     rampcol.low <- colorRampPalette(colors = colorscale[1:2],
                                     space = "Lab")(length(brk.low)-1)
-  } else rampcol.low <- character(0)
-  # If brk.high is  more than just the upper limit, get a different colour for 
+  } else if (length(brk.low) == 2) rampcol.low <- "#1D61F2"
+  else rampcol.low <- character(0)
+  # If brk.high is more than just the upper limit, get a different colour for 
   # each break.
-  if (length(brk.high) > 1) {
+  if (length(brk.high) > 2) {
     rampcol.high <- colorRampPalette(colors = colorscale[4:5],
                                      space = "Lab")(length(brk.high)-1)
-  } else rampcol.high <- character(0)
+  } else if (length(brk.high) == 2) rampcol.high <- "#DA0078"
+  else rampcol.high <- character(0)
   # Rampcolors is the vector with the final colours.
   rampcolors <- c(rampcol.low, rampcol.mid, rampcol.high)
   # Guide argument.
