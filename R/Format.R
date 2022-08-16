@@ -109,7 +109,7 @@ get_colour_steps <- function(colorscale = NULL) {
 #' @examples
 #' @export
 
-center_scale_colour_stepsn <- function(x, colorscale, alpha = 0.7,
+center_scale_colour_stepsn <- function(x, colorscale, alpha = 0,
                                        na.value = "grey50", limits = c(NA, NA),
                                        center = NULL, breaks = 0.1, 
                                        aesthetics = "colour") {
