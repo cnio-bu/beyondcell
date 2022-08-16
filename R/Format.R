@@ -219,9 +219,10 @@ center_scale_colour_stepsn <- function(x, colorscale, alpha = 0.7,
     idx.center <- which(brk.labels == center)
     idx.limits <- which(brk.labels %in% limits)
     brk.labels[-c(idx.center, idx.limits)] <- ""
-    ### If the center is too close to one limit, don't print its label.
-    if (limits.center[1] == limits[1] | 
-        limits.center[2] == limits[2]) brk.labels[idx.center] <- ""
+    ### If the center is too close to one limit but it is not the limit, don't 
+    ### print its label.
+    if ((limits.center[1] == limits[1] | limits.center[2] == limits[2]) &
+        !center %in% limits.center) brk.labels[idx.center] <- ""
     ### If breaks is a vector...
   } else {
     ### Add limits to breaks.
