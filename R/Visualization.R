@@ -484,7 +484,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell", spatial = FALSE,
     sc@reductions <- reduction
     ### Plot.
     p <- suppressMessages(
-      Seurat::FeaturePlot(sc, features = gene, blend = TRUE, combine = FALSE, 
+      Seurat::FeaturePlot(sc, features = gene, blend = TRUE, combine = TRUE, 
                           ...))
     # Else...
   } else {
