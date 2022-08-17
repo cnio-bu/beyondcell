@@ -555,15 +555,16 @@ bcSignatures <- function(bc, UMAP = "beyondcell", spatial = FALSE,
         ### When merged != NULL...
         if (nrow(drug.and.MoA) > 1) {
           ### Paste both drug names and MoAs. If MoAs are the same, just print
-          ### them one time
-          drug.and.MoA <- as.data.frame(t(apply(drug.and.MoA, 2, FUN = function(z) {
-            paste0(unique(z), collapse = merged.symbol)
-          })))
+          ### them one time.
+          title <- paste0(unique(drug.and.MoA[, 1]), collapse = merged.symbol)
+          subtitle <- paste0(unique(na.omit(drug.and.MoA[, 2])), collapse = merged.symbol)
+          if (is.na(subtitle)) subtitle <- ""
         }
-        drug.and.MoA[, 2] <- BreakString(drug.and.MoA[, 2]) ### Format subtitle.
+        subtitle <- BreakString(subtitle) ### Format subtitle.
       } else {
         ### Empty subtitle.
-        drug.and.MoA <- c(paste0(ids, collapse = merged.symbol), "")
+        title <- paste0(ids, collapse = merged.symbol)
+        subtitle <- ""
       }
       ### Switch point.
       sp <- bc@switch.point[y]
@@ -598,7 +599,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell", spatial = FALSE,
               ggplot2:: theme(legend.text = element_text(size = 8, face = "bold"),
                               legend.key.height = unit(1, "cm"), 
                               legend.position = "right") + 
-              ggplot2::labs(title = drug.and.MoA[1], subtitle = drug.and.MoA[2]) +
+              ggplot2::labs(title = title, subtitle = subtitle) +
               colors + switchpoint)
         })
       } else {
@@ -608,7 +609,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell", spatial = FALSE,
                                               x = y), ...)[[1]] +
             ggplot2:: theme(legend.text = element_text(size = 8, face = "bold"),
                             legend.key.height = unit(1, "cm")) + 
-            ggplot2::labs(title = drug.and.MoA[1], subtitle = drug.and.MoA[2]) +
+            ggplot2::labs(title = title, subtitle = subtitle) +
             colors + switchpoint)
       }
     })
