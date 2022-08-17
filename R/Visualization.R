@@ -5,6 +5,7 @@
 #' @import Seurat
 #' @import ggplot2
 #' @import scales
+#' @importFrom patchwork wrap_plots
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
 #' @param idents Name of the metadata column to colour by.
 #' @param UMAP UMAP reduction to plot. Either \code{"beyondcell"}, computed
@@ -16,6 +17,10 @@
 #' @param factor.col Logical indicating if \code{idents} column is a factor or
 #' not. Set \code{factor.col = FALSE} if \code{idents} is a numeric column (such
 #' as \code{percent.mt} or \code{nFeature_RNA}).
+#' @param mfrow Numeric vector of the form \code{c(nr, nc)}. \code{nr}
+#' corresponds to the number of rows and \code{nc} to the number of columns of
+#' the grid in which the plots will be drawn. If you want to draw the plots
+#' individually, set \code{mfrow = c(1, 1)}.
 #' @param ... Other arguments passed to 
 #' \code{\link[Seurat]{DimPlot}}/\code{\link[Seurat]{SpatialDimPlot}} if 
 #' \code{factor.col = TRUE} or 
@@ -27,7 +32,7 @@
 #' @export
 
 bcClusters <- function(bc, idents, UMAP = "beyondcell", spatial = FALSE, 
-                       factor.col = TRUE, ...) {
+                       factor.col = TRUE, mfrow = c(1, 1), ...) {
   # --- Checks ---
   # Check that bc is a beyondcell object.
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
@@ -103,7 +108,22 @@ bcClusters <- function(bc, idents, UMAP = "beyondcell", spatial = FALSE,
         ggplot2::theme_minimal() + ggplot2::labs(title = NULL)
     }
   }
-  return(p)
+  # If mfrow = c(1, 1), return a list ggplots.
+  if (identical(mfrow, c(1, 1))) {
+    final.p <- p
+    # Else, wrap plots according to mfrow and return a list of patchworks.
+  } else {
+    ncol.nrow <- mfrow[1] * mfrow[2]
+    final.p <- lapply(1:ceiling(length(p)/ncol.nrow), function(i) {
+      ### Range.
+      start <- ((i - 1) * ncol.nrow) + 1
+      end <- min(i * ncol.nrow, length(p))
+      sub.p <- patchwork::wrap_plots(p[start:end], nrow = mfrow[1],
+                                     ncol = mfrow[2])
+      return(sub.p)
+    })
+  }
+  return(final.p)
 }
 
 #' @title Plots a histogram with the BCS of the signature of interest
