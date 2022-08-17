@@ -230,6 +230,7 @@ center_scale_colour_stepsn <- function(x, colorscale, alpha = 0,
     ### Define center's limits (closer upper and lower breaks).
     idx.lower.than.center <- max(which(breaks <= center))
     idx.bigger.than.center <- min(which(breaks >= center))
+    limits.center <- c(breaks[idx.lower.than.center], breaks[idx.bigger.than.center])
     ### Compute brk.low (from the global lower limit to the center's lower 
     ### limit.
     brk.low <- breaks[1:idx.lower.than.center]
