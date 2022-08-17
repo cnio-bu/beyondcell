@@ -10,6 +10,7 @@ bcClusters(
   UMAP = "beyondcell",
   spatial = FALSE,
   factor.col = TRUE,
+  mfrow = c(1, 1),
   ...
 )
 }
@@ -29,6 +30,11 @@ ignored.}
 \item{factor.col}{Logical indicating if \code{idents} column is a factor or
 not. Set \code{factor.col = FALSE} if \code{idents} is a numeric column (such
 as \code{percent.mt} or \code{nFeature_RNA}).}
+
+\item{mfrow}{Numeric vector of the form \code{c(nr, nc)}. \code{nr}
+corresponds to the number of rows and \code{nc} to the number of columns of
+the grid in which the plots will be drawn. If you want to draw the plots
+individually, set \code{mfrow = c(1, 1)}.}
 
 \item{...}{Other arguments passed to 
 \code{\link[Seurat]{DimPlot}}/\code{\link[Seurat]{SpatialDimPlot}} if 
