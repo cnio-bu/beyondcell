@@ -626,14 +626,14 @@ bcSignatures <- function(bc, UMAP = "beyondcell", spatial = FALSE,
               colors + switchpoint)
         })
       } else {
-        fp <- suppressMessages(
+        fp <- list(suppressMessages(
           Seurat::FeaturePlot(sc, combine = FALSE,
                               features = gsub(pattern = "_", replacement = "-",
                                               x = y), ...)[[1]] +
             ggplot2:: theme(legend.text = element_text(size = 8, face = "bold"),
                             legend.key.height = unit(1, "cm")) + 
             ggplot2::labs(title = title, subtitle = subtitle) +
-            colors + switchpoint)
+            colors + switchpoint))
       }
     }), recursive = FALSE)
   }
