@@ -563,7 +563,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell", spatial = FALSE,
     # Add images.
     if (spatial) sc@images <- bc@SeuratInfo$images
     ### Plot for each signtature/gene...
-    p <- lapply(features, function(y) {
+    p <- unlist(lapply(features, function(y) {
       ### Merged.
       if (!is.null(merged)) {
         ids <- unlist(strsplit(y, split = merged.symbol, fixed = TRUE))
@@ -635,7 +635,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell", spatial = FALSE,
             ggplot2::labs(title = title, subtitle = subtitle) +
             colors + switchpoint)
       }
-    })
+    }), recursive = FALSE)
   }
   # If mfrow = c(1, 1), return a list ggplots.
   if (identical(mfrow, c(1, 1))) {
