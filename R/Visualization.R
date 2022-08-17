@@ -579,6 +579,9 @@ bcSignatures <- function(bc, UMAP = "beyondcell", spatial = FALSE,
           title <- paste0(unique(drug.and.MoA[, 1]), collapse = merged.symbol)
           subtitle <- paste0(unique(na.omit(drug.and.MoA[, 2])), collapse = merged.symbol)
           if (is.na(subtitle)) subtitle <- ""
+        } else {
+          title <- drug.and.MoA[, 1]
+          subtitle <- drug.and.MoA[, 2]
         }
         subtitle <- BreakString(subtitle) ### Format subtitle.
       } else {
