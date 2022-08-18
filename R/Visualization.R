@@ -5,6 +5,8 @@
 #' @import Seurat
 #' @import ggplot2
 #' @import scales
+#' @importFrom RColorBrewer brewer.pal
+#' @importFrom grDevices colorRampPalette
 #' @importFrom patchwork wrap_plots
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
 #' @param idents Name of the metadata column to colour by.
@@ -87,11 +89,14 @@ bcClusters <- function(bc, idents, UMAP = "beyondcell", spatial = FALSE,
     # Set Idents.
     Seurat::Idents(sc) <- idents
     if (spatial) {
+      if (identical(mfrow, c(1, 1))) scale <- NULL
+      else scale <- ggplot2::scale_fill_discrete(drop = FALSE)
       p <- lapply(seq_along(bc@SeuratInfo$images), function(i) {
-        Seurat::SpatialDimPlot(sc, ...)[[i]] + ggplot2::theme_minimal() +
-        ggplot2::theme(legend.title = element_blank(), 
-                       axis.title = element_blank(), 
-                       axis.text = element_blank())
+        suppressMessages(Seurat::SpatialDimPlot(sc, ...)[[i]] + 
+                           ggplot2::theme_minimal() +
+                           ggplot2::theme(legend.title = element_blank(), 
+                                          axis.title = element_blank(), 
+                                          axis.text = element_blank()) + scale)
       })
     } else {
       p <- Seurat::DimPlot(sc, reduction = "umap", ...) + 
@@ -99,9 +104,17 @@ bcClusters <- function(bc, idents, UMAP = "beyondcell", spatial = FALSE,
     }
   } else {
     if (spatial) {
+      if (identical(mfrow, c(1, 1))) scale <- NULL
+      else {
+        values <- bc@meta.data[[idents]]
+        SpatialColors <- grDevices::colorRampPalette(
+          rev(x = RColorBrewer::brewer.pal(n = 11, name = "Spectral")))
+        scale <- ggplot2::scale_fill_gradientn(colours = SpatialColors(n = 100),
+                                               limits = c(min(values), max(values)))
+      }
       p <- lapply(seq_along(bc@SeuratInfo$images), function(i) {
-        Seurat::SpatialFeaturePlot(sc, features = idents, ...)[[i]] + 
-        ggplot2:: theme(legend.position = "right")
+        suppressMessages(Seurat::SpatialFeaturePlot(sc, features = idents, ...)[[i]] + 
+                           ggplot2:: theme(legend.position = "right") + scale)
       })
     } else {
       p <- Seurat::FeaturePlot(sc, reduction = "umap", features = idents, ...) +
@@ -119,7 +132,7 @@ bcClusters <- function(bc, idents, UMAP = "beyondcell", spatial = FALSE,
       start <- ((i - 1) * ncol.nrow) + 1
       end <- min(i * ncol.nrow, length(p))
       sub.p <- patchwork::wrap_plots(p[start:end], nrow = mfrow[1],
-                                     ncol = mfrow[2])
+                                     ncol = mfrow[2], guides = "collect")
       return(sub.p)
     })
   }
