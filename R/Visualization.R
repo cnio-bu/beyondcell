@@ -968,7 +968,7 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3, topnames = NULL,
       xlab("Residuals' Mean") + ylab("Switch Point") +
       ggrepel::geom_text_repel(label = df$labels, force = force, na.rm = TRUE,
                                ...) +
-      guides(fill = guide_legend(title = "Drug Annotation"), color = FALSE) +
+      guides(fill = guide_legend(title = "Drug Annotation"), color = "none") +
       cowplot::theme_cowplot() + theme(plot.title = element_text(hjust = 0.5))
     return(p)
   })
