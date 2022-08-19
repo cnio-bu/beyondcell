@@ -25,7 +25,7 @@ drug names, MoAs, target genes and data sources (LINCS, CTRP, GDSC or CCLE).
 This slot is only filled if \code{GenerateGenesets}' input is a pre-loaded
 matrix.}
 
-\item{\code{comparison}}{Argument passed to \code{GenerateGenesets}. Either
-\code{"treated_vs_control"} or \code{"control_vs_treated"}.}
+\item{\code{inverse.score}}{Wether to inverse or not the sign of the computed BCS. 
+Only applicable to PSc and DDS drug signatures.}
 }}
 

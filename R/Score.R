@@ -155,9 +155,8 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
       scoring.matrix <- -1 * scoring.matrix[, , drop = FALSE]
     }
   }
-  # If genesets were obtained in a TREATED vs CONTROL comparison, invert BCS
-  # sign (exclude pathways).
-  if (gs@comparison == "treated_vs_control") {
+  # Invert the sign of BCS if necessary (exclude pathways).
+  if (gs@inverse.score) {
     not.paths <- which(!(rownames(scoring.matrix) %in% names(pathways)))
     paths <- which(rownames(scoring.matrix) %in% names(pathways))
     if (length(paths) > 0) {
