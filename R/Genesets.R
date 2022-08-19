@@ -148,6 +148,7 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
       info <- subset(drugInfo, subset = drugInfo$IDs %in% DSS[[1]]$sig_id)
       x <- PSc # DSS is a subset of PSc
     }
+    ### Filters.
     if (length(selected.filters) == 0) {
       ids <- unique(info$IDs)
     } else {
@@ -177,6 +178,7 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
                       paste0("   - ", warnings, " ", collapse = "")))
       }
     }
+    ### Genes.
     genes <- lapply(ids, function(sig) {
       l <- list(up = x[["up"]][1:n.genes, sig], down = x[["down"]][1:n.genes, sig])
       return(l)
@@ -186,6 +188,7 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
   } else if (type == "gmt") {
     ### Comparison.
     comparison <- "control_vs_treated"
+    ### Genes.
     unique.gene.sets <- unique(gsub(pattern = "_UP$|_DOWN$", replacement = "",
                                     x = names(gmt.file), ignore.case = TRUE))
     genes <- setNames(lapply(unique.gene.sets, function(sig) {
