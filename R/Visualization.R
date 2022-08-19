@@ -768,6 +768,8 @@ bcCellCycle <- function(bc, signatures) {
 #' @param alpha Transparency level between 1 (not transparent) and 0 (fully
 #' transparent).
 #' @param pt.size Point size.
+#' @param x.cutoff Numeric vector with the 2 desired cut-offs for x axis.
+#' @param y.cutoff Numeric vector with the 4 desired cut-offs for y axis.
 #' @param ... Other arguments passed to \code{\link[ggrepel]{geom_text_repel}}.
 #' @details This function returns a list of \code{\link[ggplot2]{ggplot2}}
 #' objects, one per each \code{lvl}. Note that residuals' means are different
@@ -778,7 +780,8 @@ bcCellCycle <- function(bc, signatures) {
 #' @export
 
 bc4Squares <- function(bc, idents, lvl = NULL, top = 3, topnames = NULL, 
-                       force = 1, alpha = 0.7, pt.size = 3, ...) {
+                       force = 1, alpha = 0.7, pt.size = 3, 
+                       x.cutoff = NULL, y.cutoff = NULL, ...) {
   # --- Checks ---
   # Check that bc is a beyondcell object.
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
@@ -832,6 +835,33 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3, topnames = NULL,
   if (length(pt.size) != 1 | !is.numeric(pt.size)) {
     stop('pt.size must be a single number.')
   }
+  # Check x.cutoff.
+  if (!is.null(x.cutoff)) {
+    if (length(x.cutoff) != 2 | !is.numeric(x.cutoff)) {
+      stop('x.cutoff must be a numeric vector of length 2.')
+    }
+    if (x.cutoff[2] < x.cutoff[1]) {
+      warning(paste('Upper x cut-off is smaller than lower x cut-off.',
+                    'Sorting x cut-offs in increasing order.'))
+      x.cutoff <- sort(x.cutoff, decreasing = FALSE)
+    }
+  }
+  # Check y.cutoff.
+  if (!is.null(y.cutoff)) {
+    if (length(y.cutoff) != 4 | !is.numeric(y.cutoff)) {
+      stop('y.cutoff must be a numeric vector of length 4.')
+    }
+    if (any(y.cutoff < 0 | y.cutoff > 1)) {
+      stop('y.cutoff must contain 4 switch point values between 0 and 1.')
+    }
+    sorted.y.cutoff <- sort(y.cutoff, decreasing = FALSE)
+    if (!identical(y.cutoff, sorted.y.cutoff)) {
+      warning(paste('Sorting y cut-offs in increasing order.'))
+      y.cutoff <- sorted.y.cutoff
+    }
+  } else {
+    y.cutoff <- c(0.1, 0.4, 0.6, 0.9)
+  }
   # --- Code ---
   # Get info about drugs (their corresponding name in bc, the preferred name
   # used by beyondcell and the MoA).
@@ -846,23 +876,43 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3, topnames = NULL,
                               paste0("residuals.mean.", l), drop = FALSE]
     colnames(res) <- "residuals.mean"
     df <- transform(merge(res, sp, by = 0), row.names = Row.names, Row.names = NULL)
-    ### Residual's deciles.
-    res.decil <- quantile(as.numeric(res$residuals.mean),
-                          prob = seq(from = 0, to = 1, length = 11))
+    if (is.null(x.cutoff)) {
+      ### Residual's deciles.
+      res.decil <- quantile(as.numeric(res$residuals.mean),
+                            prob = seq(from = 0, to = 1, length = 11))
+      x.cutoff <- c(res.decil[["10%"]], res.decil[["90%"]])
+      x.cutoff.caption <- "first and last deciles"
+    } else {
+      residuals.limits <- c(min(res$residuals.mean), max(res$residuals.mean))
+      if (x.cutoff[1] < residuals.limits[1]) {
+        x.cutoff[1] <- residuals.limits[1]
+        warning(paste0('For lvl = ', l, ': Lower x cut-off is outside of range.',
+                       'Setting it equal to the minimum residual\'s mean.'))
+      }
+      if (x.cutoff[2] > max(res$residuals.mean)) {
+        x.cutoff[2] <- residuals.limits[2]
+        warning(paste0('For lvl = ', l, ': Upper x cut-off is outside of range.',
+                       'Setting it equal to the maximum residual\'s mean.'))
+      }
+      x.cutoff.caption <- paste0(x.cutoff, collapse = " and ")
+    }
+    ### y cut-off caption.
+    y.cutoff.caption <- paste(paste0(y.cutoff[1:3], collapse = ", "), "and",
+                              y.cutoff[4])
     ### Drug annotation.
-    sp_lower_01 <- as.numeric(df$switch.point) < 0.1
-    sp_lower_06 <- as.numeric(df$switch.point) < 0.6
-    sp_higher_04 <- as.numeric(df$switch.point) > 0.4
-    sp_higher_09 <- as.numeric(df$switch.point) > 0.9
-    res_lower_10 <- as.numeric(df$residuals.mean) < res.decil[["10%"]]
-    res_higher_90 <- as.numeric(df$residuals.mean) > res.decil[["90%"]]
+    sp_cutoff1 <- as.numeric(df$switch.point) < y.cutoff[1]
+    sp_cutoff2 <- as.numeric(df$switch.point) > y.cutoff[2]
+    sp_cutoff3 <- as.numeric(df$switch.point) < y.cutoff[3]
+    sp_cutoff4 <- as.numeric(df$switch.point) > y.cutoff[4]
+    res_cutoff1 <- as.numeric(df$residuals.mean) < x.cutoff[1]
+    res_cutoff2 <- as.numeric(df$residuals.mean) > x.cutoff[2]
     df$annotation <- rep("no", times = nrow(df))
-    df$annotation[sp_lower_01 & res_higher_90] <- "TOP-HighSensitivityDrugs"
-    df$annotation[sp_higher_09 & res_lower_10] <- "TOP-LowSensitivityDrugs"
-    df$annotation[sp_higher_04 & sp_lower_06 &
-                    res_lower_10] <- "TOP-Differential-LowSensitivityDrugs"
-    df$annotation[sp_higher_04 & sp_lower_06 &
-                    res_higher_90] <- "TOP-Differential-HighSensitivityDrugs"
+    df$annotation[sp_cutoff1 & res_cutoff2] <- "TOP-HighSensitivityDrugs"
+    df$annotation[sp_cutoff4 & res_cutoff1] <- "TOP-LowSensitivityDrugs"
+    df$annotation[sp_cutoff2 & sp_cutoff3 &
+                    res_cutoff1] <- "TOP-Differential-LowSensitivityDrugs"
+    df$annotation[sp_cutoff2 & sp_cutoff3 &
+                    res_cutoff2] <- "TOP-Differential-HighSensitivityDrugs"
     ### Drug labels.
     df$labels <- rep(NA, times = nrow(df))
     decreasing_order <- c("TOP-Differential-HighSensitivityDrugs",
@@ -906,15 +956,15 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3, topnames = NULL,
       scale_color_manual(values = setNames(colors, names)) +
       scale_fill_manual(values = setNames(colors, names), breaks = names[1:4],
                         drop = FALSE) + theme_classic() +
-      geom_vline(xintercept = res.decil["10%"], linetype = "dotted") +
-      geom_vline(xintercept = res.decil["90%"], linetype = "dotted") +
-      geom_hline(yintercept = 0.9, linetype = "dotted") +
-      geom_hline(yintercept = 0.1, linetype = "dotted") +
-      geom_hline(yintercept = 0.4, linetype = "dotted") +
-      geom_hline(yintercept = 0.6, linetype = "dotted") + ylim(0, 1) +
+      geom_vline(xintercept = x.cutoff[1], linetype = "dotted") +
+      geom_vline(xintercept = x.cutoff[2], linetype = "dotted") +
+      geom_hline(yintercept = y.cutoff[4], linetype = "dotted") +
+      geom_hline(yintercept = y.cutoff[1], linetype = "dotted") +
+      geom_hline(yintercept = y.cutoff[2], linetype = "dotted") +
+      geom_hline(yintercept = y.cutoff[3], linetype = "dotted") + ylim(0, 1) +
       labs(title = paste(idents, "=", lvl),
-           caption = paste0("x cut-offs: first and last deciles; y cut-offs:",
-                            " 0.1, 0.4, 0.6 and 0.9")) + 
+           caption = paste0("x cut-offs: ", x.cutoff.caption, "; y cut-offs: ",
+                            y.cutoff.caption)) + 
       xlab("Residuals' Mean") + ylab("Switch Point") +
       ggrepel::geom_text_repel(label = df$labels, force = force, na.rm = TRUE,
                                ...) +
