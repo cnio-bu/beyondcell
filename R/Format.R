@@ -14,7 +14,7 @@
 
 get_colour_steps <- function(colorscale = NULL) {
   # --- Checks and Code ---
-  default <- c("#1D61F2", "#98B9FF", "#F7F7F7", "#FF9CBB", "#DA0078")
+  default <- c("#1D61F2", "#83A8F7", "#F7F7F7", "#FF9CBB", "#DA0078")
   # Check colorscale and get its value.
   if (is.null(colorscale)) {
     colors <- default
@@ -109,7 +109,7 @@ get_colour_steps <- function(colorscale = NULL) {
 #' @examples
 #' @export
 
-center_scale_colour_stepsn <- function(x, colorscale, alpha = 0.7,
+center_scale_colour_stepsn <- function(x, colorscale, alpha = 0,
                                        na.value = "grey50", limits = c(NA, NA),
                                        center = NULL, breaks = 0.1, 
                                        aesthetics = "colour") {
@@ -190,90 +190,83 @@ center_scale_colour_stepsn <- function(x, colorscale, alpha = 0.7,
   # --- Code ---
   # If breaks is not a vector...
   if (length(breaks) == 1) {
-    ### Set a new center = center - breaks/2. The new center has to be at a
-    ### minimum distance of breaks/2 from the limits or be the upper limit
-    ### itself.
-    if (center < (limits[1] + (breaks/2))) {
-      original.center <- center
-      center <- limits[1] + (breaks/2)
-    } else if (center > (limits[2] - (breaks/2))) {
-      original.center <- center
-      center <- limits[2]
-    }
-    center <- center - (breaks/2)
-    ### Compute brk.low (from the lower limit to the new center, by breaks).
-    if (limits[1] < center) {
-      brk.low <- c(limits[1], seq(from = center, to = limits[1], by = -breaks))
+    ### Define center's limits at a maximum distance of breaks/2.
+    limits.center <- c(max(limits[1], center - (breaks/2)), 
+                       min(limits[2], center + (breaks/2)))
+    ### Compute brk.low (from the global lower limit to the center's lower 
+    ### limit, by breaks).
+    if (limits.center[1] == limits[1]) brk.low <-limits[1]
+    else {
+      brk.low <- c(limits[1], 
+                   seq(from = limits.center[1], to = limits[1], by = -breaks))
       brk.low <- sort(unique(brk.low[which(brk.low >= limits[1])]),
                       decreasing = FALSE)
-    } else {
-      brk.low <- center
     }
-    ### Compute brk.high (from the new center to the upper limit, by breaks).
-    if (limits[2] > center) {
-      brk.high <- c(limits[2], seq(from = center, to = limits[2], by = breaks))
+    ### Compute brk.high (from the center's upper limit to the global upper 
+    ### limit, by breaks).
+    if (limits.center[2] == limits[2]) brk.high <- limits[2]
+    else {
+      brk.high <- c(limits[2], 
+                    seq(from = limits.center[2], to = limits[2], by = breaks))
       brk.high <- sort(unique(brk.high[which(brk.high <= limits[2])]),
                        decreasing = FALSE)
-    } else {
-      brk.high <- center
     }
-    ### pseudo.center: the new center + breaks/2.
-    pseudo.center <- tail(brk.low, n = 1) + breaks/2
     ### Final breaks.
-    final.breaks <- brk.labels <- sort(unique(c(brk.low, pseudo.center, brk.high)),
-                                       decreasing = FALSE)
-    ### Remove all labels but the limits and the pseudo.center.
-    brk.labels[which(!(brk.labels %in% c(pseudo.center, limits)))] <- ""
-    idx.pseudo.center <- which(brk.labels == pseudo.center)
-    ### If the original.center was at a distance < breaks/2 from the limits,
-    ### modify the labels and the pseudo.center.
-    if (exists("original.center")) {
-      brk.labels[idx.pseudo.center] <- pseudo.center <- original.center
-    }
-    ### If the pseudo.center == limit, remove the limits from the labels.
-    if (pseudo.center %in% limits) brk.labels[-c(1, length(brk.labels))] <- ""
+    final.breaks <- 
+      brk.labels <- sort(unique(na.omit(c(brk.low, center, brk.high))),
+                         decreasing = FALSE)
+    ### Remove all labels but the limits and the center.
+    idx.center <- which(brk.labels == center)
+    idx.limits <- which(brk.labels %in% limits)
+    brk.labels[-c(idx.center, idx.limits)] <- ""
+    ### If the center is too close to one limit but it is not the limit, don't 
+    ### print its label.
+    if ((limits.center[1] == limits[1] | limits.center[2] == limits[2]) &
+        !center %in% limits.center) brk.labels[idx.center] <- ""
     ### If breaks is a vector...
   } else {
     ### Add limits to breaks.
     breaks <- sort(unique(c(limits, breaks)), decreasing = FALSE)
-    ### The pseudo.center = center.
-    pseudo.center <- center
-    ### Check which breaks element is the minimum value that is >= center.
-    idx.bigger.than.center <- which(cumsum(breaks >= center) == 1)
-    ### Set the new center to the previous element (or to the 1st element if
-    ### idx.bigger.than.center == 1).
-    if (idx.bigger.than.center > 1) center <- breaks[idx.bigger.than.center - 1]
-    else center <- breaks[idx.bigger.than.center]
-    ### brk.low (from the lower limit to the new center).
-    brk.low <- breaks[1:which(breaks == center)]
-    ### brk.high (from the new center + 1 to the upper limit).
-    brk.high <- breaks[(which(breaks == center) + 1):length(breaks)]
+    ### Define center's limits (closer upper and lower breaks).
+    idx.lower.than.center <- max(which(breaks <= center))
+    idx.bigger.than.center <- min(which(breaks >= center))
+    limits.center <- c(breaks[idx.lower.than.center], breaks[idx.bigger.than.center])
+    ### Compute brk.low (from the global lower limit to the center's lower 
+    ### limit.
+    brk.low <- breaks[1:idx.lower.than.center]
+    ### Compute brk.high (from the center's upper limit to the global upper 
+    ### limit.
+    brk.high <- breaks[idx.bigger.than.center:length(breaks)]
     ### Final breaks and labels.
-    final.breaks <- brk.labels <- sort(unique(c(brk.low, pseudo.center, brk.high)),
+    final.breaks <- brk.labels <- sort(unique(c(brk.low, center, brk.high)),
                                        decreasing = FALSE)
   }
   # Colours.
-  # The colour of the center (last break of brk.low and first break of brk.high)
-  # and the pseudo.center is the same (so these three values form a single
-  # colour break).
-  rampcol.mid <- rep(colorscale[3], times = 3)
-  # If brk.low is more than just the center, get a different colour for each
-  # break.
-  if (length(brk.low) > 1) {
+  # The colour of the center and its limits is the same (so these three values 
+  # form a single colour break). If the center is the limit, two values form the 
+  # colour break.
+  if (center %in% limits.center) times <- 2
+  else times <- 3
+  rampcol.mid <- rep(colorscale[3], times = times)
+  # If brk.low is more than just the lower limit, get a different colour for 
+  # each break.
+  if (length(brk.low) > 2) {
     rampcol.low <- colorRampPalette(colors = colorscale[1:2],
                                     space = "Lab")(length(brk.low)-1)
-  } else rampcol.low <- character(0)
-  # If brk.high is more than just the center and the limits[2], get a different
-  # colour for each break.
+  } else if (length(brk.low) == 2) rampcol.low <- "#1D61F2"
+  else rampcol.low <- character(0)
+  # If brk.high is more than just the upper limit, get a different colour for 
+  # each break.
   if (length(brk.high) > 2) {
     rampcol.high <- colorRampPalette(colors = colorscale[4:5],
                                      space = "Lab")(length(brk.high)-1)
-  } else rampcol.high <- character(0)
+  } else if (length(brk.high) == 2) rampcol.high <- "#DA0078"
+  else rampcol.high <- character(0)
   # Rampcolors is the vector with the final colours.
   rampcolors <- c(rampcol.low, rampcol.mid, rampcol.high)
   # Guide argument.
   guide <- ggplot2::guide_coloursteps(even.steps = FALSE, show.limits = FALSE,
-                                      title = "Beyondcell")
+                                      title = "BCS", label.vjust = 0.5)
   # Output: ggplot2 colour scale.
   out <- scale_colour_stepsn(colours = scales::alpha(rampcolors, alpha = alpha),
                              breaks = final.breaks, labels = brk.labels,

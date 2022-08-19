@@ -13,6 +13,8 @@ bc4Squares(
   force = 1,
   alpha = 0.7,
   pt.size = 3,
+  x.cutoff = NULL,
+  y.cutoff = NULL,
   ...
 )
 }
@@ -36,6 +38,10 @@ overlapping text labels. Defaults to 1.}
 transparent).}
 
 \item{pt.size}{Point size.}
+
+\item{x.cutoff}{Numeric vector with the 2 desired cut-offs for x axis.}
+
+\item{y.cutoff}{Numeric vector with the 4 desired cut-offs for y axis.}
 
 \item{...}{Other arguments passed to \code{\link[ggrepel]{geom_text_repel}}.}
 }
