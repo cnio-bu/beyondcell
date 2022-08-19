@@ -9,13 +9,12 @@ GenerateGenesets(
   n.genes = 250,
   mode = c("up", "down"),
   filters = list(drugs = NULL, IDs = NULL, MoAs = NULL, targets = NULL, sources = NULL),
-  comparison = NULL,
   include.pathways = TRUE
 )
 }
 \arguments{
-\item{x}{A pre-loaded matrix, a ranked matrix or a path to a GMT file with
-custom gene sets. See Details for more information.}
+\item{x}{A pre-loaded matrix or a path to a GMT file with custom gene sets. 
+See Details for more information.}
 
 \item{n.genes}{Number of up and/or down-regulated genes used to compute each
 signature.}
@@ -31,9 +30,6 @@ are interested in (cap insensitive). You can call
 these filters. The signatures that pass \strong{ANY} of them are included in
 the output.}
 
-\item{comparison}{\code{"treated_vs_control"} or
-\code{"sensitive_vs_resistant"}. See Details for more information.}
-
 \item{include.pathways}{Logical. Return \code{beyoncell}'s pre-computed
 signatures for functional pathways?}
 }
@@ -48,9 +44,6 @@ object.
 \code{x} can be:
 \itemize{
 \item{A pre-loaded matrix:} {Either \code{PSc}, \code{SSc} or \code{DSS}.}
-\item{A ranked matrix:} {A matrix with genes as rows and signatures as
-columns that contains some type of numeric value such a t-stat or a LFC to
-rank the genes accordingly.}
 \item{A path to a GMT file:} {A file that contains custom gene sets. Each
 gene set must have an "_UP" or "_DOWN" suffix.}
 }
@@ -66,15 +59,4 @@ down-regulated genes.}
 If \code{x} is a path to a GMT file, \code{mode} is deprecated and the names
 of all gene sets must end in "_UP" or "_DOWN" to indicate the \code{mode} of
 each one.
-
-Finally, \code{comparison} can be:
-\itemize{
-\item{\code{"treated_vs_control"}:} {(\code{PSc} and \code{DSS} like) When
-the numeric values or the gene sets in the GMT file were obtained from a
-comparison between drug treated and untreated cells.}
-\item{\code{"sensitive_vs_resistant"}:} {(\code{SSc} like) When the numeric
-values or the gene sets in the GMT file were obtained from a comparison
-between drug sensitive and resistant cells.}
-}
-When \code{x} is a pre-loaded matrix, \code{comparison} is set automatically.
 }

@@ -4,8 +4,8 @@
 #' @name GenerateGenesets
 #' @importFrom qusage read.gmt
 #' @importFrom gdata trim
-#' @param x A pre-loaded matrix, a ranked matrix or a path to a GMT file with
-#' custom gene sets. See Details for more information.
+#' @param x A pre-loaded matrix or a path to a GMT file with custom gene sets. 
+#' See Details for more information.
 #' @param n.genes Number of up and/or down-regulated genes used to compute each
 #' signature.
 #' @param mode Whether the output \code{geneset} must contain up and/or
@@ -17,16 +17,11 @@
 #' \code{\link[beyondcell]{ListFilters}} to check all the available values for
 #' these filters. The signatures that pass \strong{ANY} of them are included in
 #' the output.
-#' @param comparison \code{"treated_vs_control"} or
-#' \code{"sensitive_vs_resistant"}. See Details for more information.
 #' @param include.pathways Logical. Return \code{beyoncell}'s pre-computed
 #' signatures for functional pathways?
 #' @details \code{x} can be:
 #' \itemize{
 #' \item{A pre-loaded matrix:} {Either \code{PSc}, \code{SSc} or \code{DSS}.}
-#' \item{A ranked matrix:} {A matrix with genes as rows and signatures as
-#' columns that contains some type of numeric value such a t-stat or a LFC to
-#' rank the genes accordingly.}
 #' \item{A path to a GMT file:} {A file that contains custom gene sets. Each
 #' gene set must have an "_UP" or "_DOWN" suffix.}
 #' }
@@ -42,17 +37,6 @@
 #' If \code{x} is a path to a GMT file, \code{mode} is deprecated and the names
 #' of all gene sets must end in "_UP" or "_DOWN" to indicate the \code{mode} of
 #' each one.
-#'
-#' Finally, \code{comparison} can be:
-#' \itemize{
-#' \item{\code{"treated_vs_control"}:} {(\code{PSc} and \code{DSS} like) When
-#' the numeric values or the gene sets in the GMT file were obtained from a
-#' comparison between drug treated and untreated cells.}
-#' \item{\code{"sensitive_vs_resistant"}:} {(\code{SSc} like) When the numeric
-#' values or the gene sets in the GMT file were obtained from a comparison
-#' between drug sensitive and resistant cells.}
-#' }
-#' When \code{x} is a pre-loaded matrix, \code{comparison} is set automatically.
 #' @return A \code{geneset} object.
 #' @examples
 #' @export
@@ -60,34 +44,14 @@
 GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
                              filters = list(drugs = NULL, IDs = NULL, MoAs = NULL,
                                             targets = NULL, sources = NULL),
-                             comparison = NULL, include.pathways = TRUE) {
+                             include.pathways = TRUE) {
   # --- Global Checks ---
-  # Check if x is a pre-loaded matrix, a ranked matrix or a path to a GMT file.
+  # Check if x is a pre-loaded matrix or a path to a GMT file.
   is.D <- c(identical(x, PSc), identical(x, SSc), identical(x, DSS))
   if (any(is.D)) {
     type <- "pre-loaded matrix"
     message(paste('Reading', c("PSc", "SSc", "DSS")[is.D], 'signatures...'))
     n.max <- 500
-  } else if (is.matrix(x) | is.data.frame(x)) {
-    type <- "matrix"
-    message('Reading input matrix...')
-    ### Check if x is numeric.
-    if (!is.numeric(x)) stop('x must be a numeric matrix.')
-    x <- as.matrix(x)
-    ### Check if there are missing values.
-    if (sum(is.na(x)) > 0) {
-      warning('x contains NAs that will not be used to compute the geneset object.')
-    }
-    ### Check if there are duplicated values in the same column.
-    dup.values <- apply(x, 2, FUN = function(y) any(duplicated(na.omit(y))))
-    if (is.null(colnames(x))) colnames(x) <- 1:ncol(x)
-    if(is.null(rownames(x))) rownames(x) <- 1:nrow(x)
-    if (any(dup.values)) {
-      warning(paste0('The following columns contain duplicated values:',
-                     paste0(colnames(x)[dup.values], collapse = ", "), '.'))
-
-    }
-    n.max <- max(apply(x, 2, FUN = function(z) length(na.omit(z))))
   } else {
     type <- "gmt"
     message('Reading gmt file...')
@@ -148,27 +112,16 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
       }
     }
   }
-  # Check filters and comparison.
+  # Check filters.
   filters.names <- c("drugs", "IDs", "MoAs", "targets", "sources")
   selected.filters <- names(filters)
   if (any(!(selected.filters %in% filters.names))) stop('Invalid names in filters.')
   if (type != "pre-loaded matrix") {
-    ### Filters.
     filters_class <- sapply(filters, is.null)
     if (any(!filters_class)) {
       warning('x is not a pre-loaded matrix, filters is deprecated.')
     }
-    ### Comparison.
-    if (is.null(comparison)) {
-      stop(paste('Comparison must be either "treated_vs_control" or',
-                 '"control_vs_treated".'))
-    } else if (length(comparison) != 1 |
-               !(comparison[1] %in% c("treated_vs_control", "control_vs_treated"))) {
-      stop(paste('Comparison must be either "treated_vs_control" or',
-                 '"control_vs_treated".'))
-    }
   } else {
-    ### Filters.
     filters_class <- sapply(filters, is.null) | sapply(filters, is.character)
     if (any(!filters_class)) {
       stop(paste0('Incorrect value for filter\'s entry: "',
@@ -176,24 +129,6 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
                   '". You must provide a character vector.'))
     }
     selected.filters <- selected.filters[!sapply(filters, is.null)]
-    ### Comparison.
-    if (is.null(comparison)) {
-      if(is.D[2]) comparison <- "control_vs_treated"
-      else comparison <- "treated_vs_control"
-    } else {
-      if (length(comparison) != 1 |
-          !(comparison[1] %in% c("treated_vs_control", "control_vs_treated"))) {
-        stop('Incorrect comparison.')
-      }
-      if (is.D[2] & comparison != "control_vs_treated") {
-        comparison <- "control_vs_treated"
-        warning('x = SSc, comparison changed to "control_vs_treated".')
-      } else if (!is.D[2] & comparison != "treated_vs_control") {
-        comparison <- "treated_vs_control"
-        warning(paste0('x = ', c("PSc", "SSc", "DSS")[is.D], ', comparison ',
-                       'changed to "treated_vs_control".'))
-      }
-    }
   }
   # Check include.pathways.
   if (length(include.pathways) != 1 | !is.logical(include.pathways)) {
@@ -202,15 +137,18 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
   # --- Code ---
   # If x is a pre-loaded matrix...
   if (type == "pre-loaded matrix") {
-    ### sig IDs.
+    ### sig IDs and comparison.
+    comparison <- "treated_vs_control"
     if (is.D[1]) {
       info <- subset(drugInfo, subset = drugInfo$sources == "LINCS")
     } else if (is.D[2]) {
       info <- subset(drugInfo, subset = drugInfo$sources != "LINCS")
+      comparison <- "control_vs_treated"
     } else if (is.D[3]) {
       info <- subset(drugInfo, subset = drugInfo$IDs %in% DSS[[1]]$sig_id)
       x <- PSc # DSS is a subset of PSc
     }
+    ### Filters.
     if (length(selected.filters) == 0) {
       ids <- unique(info$IDs)
     } else {
@@ -240,29 +178,17 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
                       paste0("   - ", warnings, " ", collapse = "")))
       }
     }
+    ### Genes.
     genes <- lapply(ids, function(sig) {
       l <- list(up = x[["up"]][1:n.genes, sig], down = x[["down"]][1:n.genes, sig])
       return(l)
     })
     names(genes) <- ids
-    # Else if x is a ranked matrix...
-  } else if (type == "matrix") {
-    genes <- apply(x, 2, FUN = function(sig) {
-      l <- list()
-      if ("up" %in% mode) {
-        up <- na.omit(rownames(x)[order(sig, decreasing = TRUE,
-                                        na.last = NA)[1:n.genes]])
-        l <- c(l, list(up = up))
-      }
-      if ("down" %in% mode) {
-        down <- na.omit(rownames(x)[order(sig, decreasing = FALSE,
-                                          na.last = NA)[1:n.genes]])
-        l <- c(l, list(down = down))
-      }
-      return(l)
-    })
-    # Else if x is a GMT file.
+    # Else if x is a GMT file...
   } else if (type == "gmt") {
+    ### Comparison.
+    comparison <- "control_vs_treated"
+    ### Genes.
     unique.gene.sets <- unique(gsub(pattern = "_UP$|_DOWN$", replacement = "",
                                     x = names(gmt.file), ignore.case = TRUE))
     genes <- setNames(lapply(unique.gene.sets, function(sig) {
