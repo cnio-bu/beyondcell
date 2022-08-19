@@ -136,6 +136,8 @@ bcClusters <- function(bc, idents, UMAP = "beyondcell", spatial = FALSE,
       return(sub.p)
     })
   }
+  # If final.p has only one plot, don't return a list.
+  if (length(final.p) == 1) final.p <- final.p[[1]]
   return(final.p)
 }
 
@@ -248,6 +250,8 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
                  linetype = "dashed")
     return(hist)
   })
+  # If p has only one plot, don't return a list.
+  if (length(p) == 1) p <- p[[1]]
   return(p)
 }
 
@@ -665,6 +669,8 @@ bcSignatures <- function(bc, UMAP = "beyondcell", spatial = FALSE,
       return(sub.p)
     })
   }
+  # If final.p has only one plot, don't return a list.
+  if (length(final.p) == 1) final.p <- final.p[[1]]
   return(final.p)
 }
 
@@ -737,6 +743,8 @@ bcCellCycle <- function(bc, signatures) {
       labs(title = drug.and.MoA[1], subtitle = drug.and.MoA[2])
     return(violindot)
   })
+  # If p has only one plot, don't return a list.
+  if (length(p) == 1) p <- p[[1]]
   return(p)
 }
 
@@ -972,5 +980,7 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3, topnames = NULL,
       cowplot::theme_cowplot() + theme(plot.title = element_text(hjust = 0.5))
     return(p)
   })
+  # If p4s has only one plot, don't return a list.
+  if (length(p4s) == 1) p4s <- p4s[[1]]
   return(p4s)
 }
