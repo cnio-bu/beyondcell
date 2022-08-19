@@ -4,8 +4,8 @@
 #' @name GenerateGenesets
 #' @importFrom qusage read.gmt
 #' @importFrom gdata trim
-#' @param x A pre-loaded matrix, a ranked matrix or a path to a GMT file with
-#' custom gene sets. See Details for more information.
+#' @param x A pre-loaded matrix or a path to a GMT file with custom gene sets. 
+#' See Details for more information.
 #' @param n.genes Number of up and/or down-regulated genes used to compute each
 #' signature.
 #' @param mode Whether the output \code{geneset} must contain up and/or
@@ -24,9 +24,6 @@
 #' @details \code{x} can be:
 #' \itemize{
 #' \item{A pre-loaded matrix:} {Either \code{PSc}, \code{SSc} or \code{DSS}.}
-#' \item{A ranked matrix:} {A matrix with genes as rows and signatures as
-#' columns that contains some type of numeric value such a t-stat or a LFC to
-#' rank the genes accordingly.}
 #' \item{A path to a GMT file:} {A file that contains custom gene sets. Each
 #' gene set must have an "_UP" or "_DOWN" suffix.}
 #' }
@@ -62,32 +59,12 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
                                             targets = NULL, sources = NULL),
                              comparison = NULL, include.pathways = TRUE) {
   # --- Global Checks ---
-  # Check if x is a pre-loaded matrix, a ranked matrix or a path to a GMT file.
+  # Check if x is a pre-loaded matrix or a path to a GMT file.
   is.D <- c(identical(x, PSc), identical(x, SSc), identical(x, DSS))
   if (any(is.D)) {
     type <- "pre-loaded matrix"
     message(paste('Reading', c("PSc", "SSc", "DSS")[is.D], 'signatures...'))
     n.max <- 500
-  } else if (is.matrix(x) | is.data.frame(x)) {
-    type <- "matrix"
-    message('Reading input matrix...')
-    ### Check if x is numeric.
-    if (!is.numeric(x)) stop('x must be a numeric matrix.')
-    x <- as.matrix(x)
-    ### Check if there are missing values.
-    if (sum(is.na(x)) > 0) {
-      warning('x contains NAs that will not be used to compute the geneset object.')
-    }
-    ### Check if there are duplicated values in the same column.
-    dup.values <- apply(x, 2, FUN = function(y) any(duplicated(na.omit(y))))
-    if (is.null(colnames(x))) colnames(x) <- 1:ncol(x)
-    if(is.null(rownames(x))) rownames(x) <- 1:nrow(x)
-    if (any(dup.values)) {
-      warning(paste0('The following columns contain duplicated values:',
-                     paste0(colnames(x)[dup.values], collapse = ", "), '.'))
-
-    }
-    n.max <- max(apply(x, 2, FUN = function(z) length(na.omit(z))))
   } else {
     type <- "gmt"
     message('Reading gmt file...')
@@ -245,23 +222,7 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
       return(l)
     })
     names(genes) <- ids
-    # Else if x is a ranked matrix...
-  } else if (type == "matrix") {
-    genes <- apply(x, 2, FUN = function(sig) {
-      l <- list()
-      if ("up" %in% mode) {
-        up <- na.omit(rownames(x)[order(sig, decreasing = TRUE,
-                                        na.last = NA)[1:n.genes]])
-        l <- c(l, list(up = up))
-      }
-      if ("down" %in% mode) {
-        down <- na.omit(rownames(x)[order(sig, decreasing = FALSE,
-                                          na.last = NA)[1:n.genes]])
-        l <- c(l, list(down = down))
-      }
-      return(l)
-    })
-    # Else if x is a GMT file.
+    # Else if x is a GMT file...
   } else if (type == "gmt") {
     unique.gene.sets <- unique(gsub(pattern = "_UP$|_DOWN$", replacement = "",
                                     x = names(gmt.file), ignore.case = TRUE))

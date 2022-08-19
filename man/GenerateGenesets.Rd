@@ -14,8 +14,8 @@ GenerateGenesets(
 )
 }
 \arguments{
-\item{x}{A pre-loaded matrix, a ranked matrix or a path to a GMT file with
-custom gene sets. See Details for more information.}
+\item{x}{A pre-loaded matrix or a path to a GMT file with custom gene sets. 
+See Details for more information.}
 
 \item{n.genes}{Number of up and/or down-regulated genes used to compute each
 signature.}
@@ -48,9 +48,6 @@ object.
 \code{x} can be:
 \itemize{
 \item{A pre-loaded matrix:} {Either \code{PSc}, \code{SSc} or \code{DSS}.}
-\item{A ranked matrix:} {A matrix with genes as rows and signatures as
-columns that contains some type of numeric value such a t-stat or a LFC to
-rank the genes accordingly.}
 \item{A path to a GMT file:} {A file that contains custom gene sets. Each
 gene set must have an "_UP" or "_DOWN" suffix.}
 }
