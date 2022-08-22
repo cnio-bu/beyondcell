@@ -565,9 +565,11 @@ bcMerge <- function(bc1, bc2) {
   }
   # Check for duplicated signatures.
   duplicated.sigs <- intersect(rownames(bc1@data), rownames(bc2@data))
+  common.cells <- intersect(colnames(bc1@data), colnames(bc2@data))
   if (length(duplicated.sigs) > 0) {
     identical.sigs <- sapply(duplicated.sigs, function(x) {
-      identical(bc1@data[x, , drop = FALSE], bc2@data[x, , drop = FALSE])
+      identical(bc1@data[x, common.cells, drop = FALSE], 
+                bc2@data[x, common.cells, drop = FALSE])
     })
     if (any(!identical.sigs)) {
       stop(paste0('Duplicated signatures: ',
