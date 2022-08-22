@@ -560,8 +560,7 @@ bcMerge <- function(bc1, bc2) {
     stop('bc objects weren\'t obtained using the same expression threshold.')
   }
   # Check both Seurat experiments.
-  if (!identical(bc1@expr.matrix, bc2@expr.matrix) |
-      !identical(bc1@SeuratInfo, bc2@SeuratInfo)) {
+  if (!identical(bc1@expr.matrix, bc2@expr.matrix)) {
     stop('bc objects weren\'t obtained from the same single-cell experiment.')
   }
   # Check for duplicated signatures.
