@@ -137,13 +137,13 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
   # --- Code ---
   # If x is a pre-loaded matrix...
   if (type == "pre-loaded matrix") {
-    ### sig IDs and comparison.
-    comparison <- "treated_vs_control"
+    ### sig IDs and inverse.score.
+    inverse.score <- TRUE # When using PSc/DDS, inverse the sign of the BCS.
     if (is.D[1]) {
       info <- subset(drugInfo, subset = drugInfo$sources == "LINCS")
     } else if (is.D[2]) {
       info <- subset(drugInfo, subset = drugInfo$sources != "LINCS")
-      comparison <- "control_vs_treated"
+      inverse.score <- FALSE
     } else if (is.D[3]) {
       info <- subset(drugInfo, subset = drugInfo$IDs %in% DSS[[1]]$sig_id)
       x <- PSc # DSS is a subset of PSc
@@ -186,8 +186,8 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
     names(genes) <- ids
     # Else if x is a GMT file...
   } else if (type == "gmt") {
-    ### Comparison.
-    comparison <- "control_vs_treated"
+    ### inverse.score.
+    inverse.score <- FALSE
     ### Genes.
     unique.gene.sets <- unique(gsub(pattern = "_UP$|_DOWN$", replacement = "",
                                     x = names(gmt.file), ignore.case = TRUE))
@@ -222,7 +222,7 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
   }
   # Output.
   return(geneset(genelist = c(genes, paths), n.genes = n.genes,
-                 mode = mode, info = info, comparison = comparison))
+                 mode = mode, info = info, inverse.score = inverse.score))
 }
 
 #' @title Returns all the possible values for the specified filter

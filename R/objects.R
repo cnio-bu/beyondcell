@@ -10,14 +10,14 @@
 #' drug names, MoAs, target genes and data sources (LINCS, CTRP, GDSC or CCLE).
 #' This slot is only filled if \code{GenerateGenesets}' input is a pre-loaded
 #' matrix.
-#' @slot comparison Argument passed to \code{GenerateGenesets}. Either
-#' \code{"treated_vs_control"} or \code{"control_vs_treated"}.
+#' @slot inverse.score Wether to inverse or not the sign of the computed BCS. 
+#' Only applicable to PSc and DDS drug signatures.
 
 geneset <- setClass("geneset", slots = list(genelist = "list",
                                             n.genes = "numeric",
                                             mode = "character",
                                             info = "data.frame",
-                                            comparison = "character"))
+                                            inverse.score = "logical"))
 
 #' @title Beyondcell class
 #' @description An object to represent the beyondcell scores (BCS) for each cell and
