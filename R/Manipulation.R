@@ -541,10 +541,13 @@ bcAddMetadata <- function(bc, metadata) {
 #' @description This function merges two \code{\link[beyondcell]{beyondcell}}
 #' objects obtained from the same single-cell matrix using the same
 #' \code{expr.thres} (see \code{\link[beyondcell]{bcScore}} for more
-#' information). It binds signatures, not cells.
+#' information). It binds signatures, not cells. If \code{bc1} is a subset of 
+#' \code{bc2}, the resulting \code{beyondcell} object will contain just the 
+#' subsetted cells and the \code{SeuratInfo} stored in \code{bc1}.
 #' @name bcMerge
 #' @importFrom plyr join
-#' @param bc1 First \code{beyondcell} object to merge.
+#' @param bc1 First \code{beyondcell} object to merge. Can be a subset of 
+#' \code{bc2}.
 #' @param bc2 Second \code{beyondcell} object to merge.
 #' @return A merged \code{beyondcell} object.
 #' @examples
@@ -560,15 +563,22 @@ bcMerge <- function(bc1, bc2) {
     stop('bc objects weren\'t obtained using the same expression threshold.')
   }
   # Check both Seurat experiments.
-  if (!identical(bc1@expr.matrix, bc2@expr.matrix) |
-      !identical(bc1@SeuratInfo, bc2@SeuratInfo)) {
+  if (!identical(bc1@expr.matrix, bc2@expr.matrix)) {
     stop('bc objects weren\'t obtained from the same single-cell experiment.')
+  }
+  # Check subsetted cells.
+  common.cells <- intersect(colnames(bc1@data), colnames(bc2@data))
+  if (length(common.cells) == 0) {
+    stop('bc1 and bc2 do not contain the same cells.')
+  } else if (!all(common.cells %in% colnames(bc1@data))) {
+    stop('bc1 is not a subset of bc2.')
   }
   # Check for duplicated signatures.
   duplicated.sigs <- intersect(rownames(bc1@data), rownames(bc2@data))
   if (length(duplicated.sigs) > 0) {
     identical.sigs <- sapply(duplicated.sigs, function(x) {
-      identical(bc1@data[x, , drop = FALSE], bc2@data[x, , drop = FALSE])
+      identical(bc1@data[x, common.cells, drop = FALSE], 
+                bc2@data[x, common.cells, drop = FALSE])
     })
     if (any(!identical.sigs)) {
       stop(paste0('Duplicated signatures: ',
@@ -577,36 +587,36 @@ bcMerge <- function(bc1, bc2) {
     }
   }
   # Check regression steps.
-  if (!identical(bc1@regression, bc2@regression)) {
-    stop(paste('The two objects were not subsetted and/or regressed in the same',
-               'order and with the same variables.'))
-  }
-  # Check subsetted cells.
-  if (!identical(colnames(bc1@normalized), colnames(bc2@normalized))) {
-    stop('bc1 and bc2 do not contain the same cells.')
+  if (!identical(bc1@regression, bc2@regression) & 
+      (!identical(bc1@regression$order, c("subset", "")) & 
+       !identical(bc2@regression$order, rep("", 2)))) {
+    stop(paste('The two objects must be subsetted and/or regressed in the same',
+               'order and with the same variales. Alternatively, bc1 can be a', 
+               'subset of bc2 (with no regression).'))
   }
   # --- Code ---
-  # Cells
-  cells <- colnames(bc1@normalized)
+  # Suset bc2
+  bc2 <- suppressWarnings(suppressMessages(bcSubset(bc2, cells = common.cells)))
   # Create a new beyondcell object.
   bc <- beyondcell(expr.matrix = bc1@expr.matrix, SeuratInfo = bc1@SeuratInfo,
                    regression = bc1@regression,
                    n.genes = unique(c(bc1@n.genes, bc2@n.genes)),
                    mode = unique(c(bc1@mode, bc2@mode)), thres = bc1@thres)
   # rbind scaled BCS.
-  bc@scaled <- rbind(bc1@scaled, bc2@scaled[, cells, drop = FALSE])
-  bc@scaled <- unique(bc@scaled)[, cells, drop = FALSE]
+  bc@scaled <- unique(rbind(bc1@scaled[, common.cells, drop = FALSE], 
+                            bc2@scaled[, common.cells, drop = FALSE]))
   # rbind normalized BCS.
-  bc@normalized <- rbind(bc1@normalized, bc2@normalized[, cells, drop = FALSE])
-  bc@normalized <- unique(bc@normalized)[, cells, drop = FALSE]
+  bc@normalized <- unique(rbind(bc1@normalized[, common.cells, drop = FALSE], 
+                                bc2@normalized[, common.cells, drop = FALSE]))
   # rbind data.
-  bc@data <- rbind(bc1@data, bc2@data[, colnames(bc1@data), drop = FALSE])
-  bc@data <- unique(bc@data)[, colnames(bc1@data), drop = FALSE]
+  bc@data <- unique(rbind(bc1@data[, common.cells, drop = FALSE], 
+                          bc2@data[, common.cells, drop = FALSE]))
   # Merge switch.points.
   bc@switch.point <- c(bc1@switch.point, bc2@switch.point)[rownames(bc@scaled)]
   # Merge meta.data.
-  bc@meta.data <- suppressMessages(plyr::join(bc1@meta.data, bc2@meta.data))
-  rownames(bc@meta.data) <- rownames(bc1@meta.data)
+  bc@meta.data <- suppressMessages(plyr::join(bc1@meta.data[common.cells, , drop = FALSE], 
+                                              bc2@meta.data[common.cells, , drop = FALSE]))
+  rownames(bc@meta.data) <- common.cells
   # Remove therapeutic clusters from bc@meta.data.
   therapeutic.clusters <- grep(pattern = "bc_clusters_res.", x = colnames(bc@meta.data))
   if (length(therapeutic.clusters) > 0) {
@@ -615,9 +625,10 @@ bcMerge <- function(bc1, bc2) {
   # Merge backgrounds.
   bg <- list(bc1 = as.data.frame(bc1@background), bc2 = as.data.frame(bc2@background))
   is.empty.bg <- sapply(bg, FUN = function(x) dim(x)[2] == 0)
-  if(all(is.empty.bg)) {
+  if (all(is.empty.bg)) {
     bc@background <- matrix(ncol = 0, nrow = 0)
-  }else{
+  } else {
+    bg <- lapply(bg, FUN = function(y) y[, common.cells, drop = FALSE])
     background <- as.matrix(do.call("rbind", bg[!is.empty.bg]))
     rownames(background) <- gsub("bc[1|2]\\.", "", rownames(background))
     bc@background <- background[unique(rownames(background)), , drop = FALSE]
