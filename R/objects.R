@@ -33,6 +33,8 @@ geneset <- setClass("geneset", slots = list(genelist = "list",
 #' @slot meta.data Dataframe that contains information about each cell
 #' (including the therapeutic clusters and \code{\link[Seurat]{Seurat}}'s
 #' \code{@@meta.data}).
+#' @slot sig.data Dataframe that contains information about each signature
+#' (at least whether it is a drug and/or a functional signature).
 #' @slot SeuratInfo List with information about the input \code{Seurat} object,
 #' including the \code{@@assays} used to compute the \code{beyondcell} object, 
 #' its \code{@@reductions} and tissue \code{@@images} for spatial data.
@@ -55,7 +57,8 @@ beyondcell <- setClass("beyondcell",
                        slots = list(scaled = "matrix", normalized = "matrix",
                                     data = "matrix", switch.point = "numeric",
                                     ranks = "list", expr.matrix = "matrix",
-                                    meta.data = "data.frame", SeuratInfo = "list",
-                                    background = "matrix", reductions = "list",
-                                    regression = "list", n.genes = "numeric",
-                                    mode = "character", thres = "numeric"))
+                                    meta.data = "data.frame", sig.data = "data.frame",
+                                    SeuratInfo = "list", background = "matrix", 
+                                    reductions = "list", regression = "list", 
+                                    n.genes = "numeric", mode = "character", 
+                                    thres = "numeric"))

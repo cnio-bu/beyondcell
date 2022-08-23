@@ -30,6 +30,9 @@ by \code{\link[beyondcell]{bcRanks}}.}
 (including the therapeutic clusters and \code{\link[Seurat]{Seurat}}'s
 \code{@meta.data}).}
 
+\item{\code{sig.data}}{Dataframe that contains information about each signature
+(at least whether it is a drug and/or a functional signature).}
+
 \item{\code{SeuratInfo}}{List with information about the input \code{Seurat} object,
 including the \code{@assays} used to compute the \code{beyondcell} object, 
 its \code{@reductions} and tissue \code{@images} for spatial data.}
