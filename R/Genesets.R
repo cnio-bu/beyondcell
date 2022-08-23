@@ -4,6 +4,7 @@
 #' @name GenerateGenesets
 #' @importFrom qusage read.gmt
 #' @importFrom gdata trim
+#' @importFrom dplyr bind_rows
 #' @param x A pre-loaded matrix or a path to a GMT file with custom gene sets. 
 #' See Details for more information.
 #' @param n.genes Number of up and/or down-regulated genes used to compute each
@@ -211,12 +212,17 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
       paste(na.omit(unique(rw)), collapse = ", ")
     })
     info <- info[order(info$IDs, decreasing = FALSE), ]
+    info$is.drug <- rep(TRUE, nrow(info))
   } else {
     info <- data.frame()
   }
   # Pathways.
   if (include.pathways) {
     paths <- lapply(pathways, function(p) p[names(p)[mode %in% names(p)]])
+    paths.info <- data.frame(IDs = names(paths), 
+                             is.drug = rep(FALSE, length(paths)))
+    info <- dplyr::bind_rows(info, paths.info)
+    #info <-
   } else {
     paths <- list()
   }
