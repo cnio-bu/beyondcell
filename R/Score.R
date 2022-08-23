@@ -59,7 +59,8 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
                    SeuratInfo = list(assays = default, reductions = sc@reductions),
                    regression = list(order = rep("", 2), vars = NULL,
                                      order.background = rep("", 2)),
-                   n.genes = gs@n.genes, mode = gs@mode, thres = expr.thres)
+                   sig.data = gs@info, n.genes = gs@n.genes, mode = gs@mode, 
+                   thres = expr.thres)
   # Add images if it is a spatial object.
   is.spatial <- "images" %in% slotNames(sc)
   if (is.spatial) bc@SeuratInfo$images <- sc@images
