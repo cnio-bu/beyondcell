@@ -549,15 +549,22 @@ bcAddMetadata <- function(bc, metadata) {
 #' @param bc1 First \code{beyondcell} object to merge. Can be a subset of 
 #' \code{bc2}.
 #' @param bc2 Second \code{beyondcell} object to merge.
+#' @param keep.bc.clusters Whether to keep \code{bc1} reductions or not. 
+#' Choose \code{keep.bc.clusters = TRUE} when \code{bc2} is formed by functional
+#' pathways and \code{bc1} is a drug-containing \code{beyondcell} object.
 #' @return A merged \code{beyondcell} object.
 #' @examples
 #' @export
 
-bcMerge <- function(bc1, bc2) {
+bcMerge <- function(bc1, bc2, keep.bc.clusters = TRUE) {
   # --- Checks ---
   # Check that bc1 and bc2 are beyondcell objects.
   if (class(bc1) != "beyondcell") stop('bc1 must be a beyondcell object.')
   if (class(bc2) != "beyondcell") stop('bc2 must be a beyondcell object.')
+  # Check keep.bc.clusters.
+  if (length(keep.bc.clusters) != 1 | !is.logical(keep.bc.clusters[1])) {
+    stop('keep.bc.clusters must be TRUE or FALSE.')
+  }
   # Check both thres.
   if (!identical(bc1@thres, bc2@thres)) {
     stop('bc objects weren\'t obtained using the same expression threshold.')
@@ -617,10 +624,15 @@ bcMerge <- function(bc1, bc2) {
   bc@meta.data <- suppressMessages(plyr::join(bc1@meta.data[common.cells, , drop = FALSE], 
                                               bc2@meta.data[common.cells, , drop = FALSE]))
   rownames(bc@meta.data) <- common.cells
-  # Remove therapeutic clusters from bc@meta.data.
-  therapeutic.clusters <- grep(pattern = "bc_clusters_res.", x = colnames(bc@meta.data))
-  if (length(therapeutic.clusters) > 0) {
-    bc@meta.data <- bc@meta.data[, -c(therapeutic.clusters), drop = FALSE]
+  # If keep.bc.clusters, keep bc1 reductions.
+  if (keep.bc.clusters) {
+    bc@reductions <- bc1@reductions
+  # Else, remove the therapeutic clusters from bc@meta.data.
+  } else {
+    therapeutic.clusters <- grep(pattern = "bc_clusters_res.", x = colnames(bc@meta.data))
+    if (length(therapeutic.clusters) > 0) {
+      bc@meta.data <- bc@meta.data[, -c(therapeutic.clusters), drop = FALSE]
+    }
   }
   # Merge backgrounds.
   bg <- list(bc1 = as.data.frame(bc1@background), bc2 = as.data.frame(bc2@background))
