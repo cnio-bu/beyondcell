@@ -134,7 +134,7 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
       ### Genesets.
       gs.background <- suppressMessages(
         GenerateGenesets(DSS, n.genes = bc@n.genes, mode = bc@mode,
-                         include.pathways = FALSE))
+                         include.bc.pathways = FALSE))
       ### BCS.
       background <- suppressWarnings(
         bcScore(bc@expr.matrix, gs = gs.background, expr.thres = bc@thres))

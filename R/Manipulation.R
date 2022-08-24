@@ -275,7 +275,7 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
         message('Restoring pre-regressed background matrix...')
         gs.background <- suppressMessages(
           GenerateGenesets(DSS, n.genes = bc@n.genes, mode = bc@mode,
-                           include.pathways = FALSE))
+                           include.bc.pathways = FALSE))
         background <- suppressWarnings(
           bcScore(bc@expr.matrix, gs = gs.background, expr.thres = bc@thres))
         bc@background <- background@normalized
@@ -325,7 +325,7 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
       ### Genesets.
       gs.background <- suppressMessages(
         GenerateGenesets(DSS, n.genes = bc@n.genes, mode = bc@mode,
-                         include.pathways = FALSE))
+                         include.bc.pathways = FALSE))
       ### BCS.
       background <- suppressWarnings(
         bcScore(bc@expr.matrix, gs = gs.background, expr.thres = bc@thres))
