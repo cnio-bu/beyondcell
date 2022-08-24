@@ -18,6 +18,9 @@
 #' \code{\link[beyondcell]{ListFilters}} to check all the available values for
 #' these filters. The signatures that pass \strong{ANY} of them are included in
 #' the output.
+#' @param drug.sigs Logical. Are the GMT gene sets related to drug response 
+#' (\code{drug.sigs = TRUE}) or to functional pathways 
+#' (\code{drug.sigs = FALSE})?
 #' @param include.bc.pathways Logical. Return \code{beyoncell}'s pre-computed
 #' signatures for functional pathways?
 #' @details \code{x} can be:
@@ -35,9 +38,14 @@
 #' \item{\code{c("up", "down")} :} {To compute the signatures using both up and
 #' down-regulated genes.}
 #' }
-#' If \code{x} is a path to a GMT file, \code{mode} is deprecated and the names
-#' of all gene sets must end in "_UP" or "_DOWN" to indicate the \code{mode} of
-#' each one.
+#' If \code{x} is a path to a GMT file, \code{n.genes}, \code{mode} and 
+#' \code{filters} are deprecated. Moreover, the names of all gene sets must 
+#' end in "_UP" or "_DOWN" to indicate the \code{mode} of each one. In 
+#' addition, the user must indicate whether the gene sets are related to drug 
+#' response (\code{drug.sigs = TRUE}) or to functional pathways 
+#' (\code{drug.sigs = FALSE}).
+#' 
+#' If \code{x} is a pre-loaded matrix, \code{drug.sigs} is deprecated.
 #' @return A \code{geneset} object.
 #' @examples
 #' @export
@@ -45,7 +53,7 @@
 GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
                              filters = list(drugs = NULL, IDs = NULL, MoAs = NULL,
                                             targets = NULL, sources = NULL),
-                             include.bc.pathways = TRUE) {
+                             drug.sigs = TRUE, include.bc.pathways = TRUE) {
   # --- Global Checks ---
   # Check if x is a pre-loaded matrix or a path to a GMT file.
   is.D <- c(identical(x, PSc), identical(x, SSc), identical(x, DSS))
