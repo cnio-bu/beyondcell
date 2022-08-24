@@ -18,7 +18,7 @@
 #' \code{\link[beyondcell]{ListFilters}} to check all the available values for
 #' these filters. The signatures that pass \strong{ANY} of them are included in
 #' the output.
-#' @param include.pathways Logical. Return \code{beyoncell}'s pre-computed
+#' @param include.bc.pathways Logical. Return \code{beyoncell}'s pre-computed
 #' signatures for functional pathways?
 #' @details \code{x} can be:
 #' \itemize{
@@ -45,7 +45,7 @@
 GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
                              filters = list(drugs = NULL, IDs = NULL, MoAs = NULL,
                                             targets = NULL, sources = NULL),
-                             include.pathways = TRUE) {
+                             include.bc.pathways = TRUE) {
   # --- Global Checks ---
   # Check if x is a pre-loaded matrix or a path to a GMT file.
   is.D <- c(identical(x, PSc), identical(x, SSc), identical(x, DSS))
@@ -131,9 +131,9 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
     }
     selected.filters <- selected.filters[!sapply(filters, is.null)]
   }
-  # Check include.pathways.
-  if (length(include.pathways) != 1 | !is.logical(include.pathways)) {
-    stop('include.pathways must be TRUE or FALSE.')
+  # Check include.bc.pathways.
+  if (length(include.bc.pathways) != 1 | !is.logical(include.bc.pathways)) {
+    stop('include.bc.pathways must be TRUE or FALSE.')
   }
   # --- Code ---
   # If x is a pre-loaded matrix...
@@ -217,7 +217,7 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
     info <- data.frame()
   }
   # Pathways.
-  if (include.pathways) {
+  if (include.bc.pathways) {
     paths <- lapply(pathways, function(p) p[names(p)[mode %in% names(p)]])
     paths.info <- data.frame(IDs = names(paths), 
                              is.drug = rep(FALSE, length(paths)))

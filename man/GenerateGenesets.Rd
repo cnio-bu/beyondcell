@@ -9,7 +9,7 @@ GenerateGenesets(
   n.genes = 250,
   mode = c("up", "down"),
   filters = list(drugs = NULL, IDs = NULL, MoAs = NULL, targets = NULL, sources = NULL),
-  include.pathways = TRUE
+  include.bc.pathways = TRUE
 )
 }
 \arguments{
@@ -30,7 +30,7 @@ are interested in (cap insensitive). You can call
 these filters. The signatures that pass \strong{ANY} of them are included in
 the output.}
 
-\item{include.pathways}{Logical. Return \code{beyoncell}'s pre-computed
+\item{include.bc.pathways}{Logical. Return \code{beyoncell}'s pre-computed
 signatures for functional pathways?}
 }
 \value{
