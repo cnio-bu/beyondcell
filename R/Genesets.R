@@ -139,6 +139,13 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
     }
     selected.filters <- selected.filters[!sapply(filters, is.null)]
   }
+  # Check drug.sigs.
+  if (length(drug.sigs) != 1 | !is.logical(drug.sigs)) {
+    stop('drug.sigs must be TRUE or FALSE.')
+  }
+  if (type == "pre-loaded matrix" & !drug.sigs) {
+    warning('x is a pre-loaded matrix, drug.sigs is deprecated.')
+  }
   # Check include.bc.pathways.
   if (length(include.bc.pathways) != 1 | !is.logical(include.bc.pathways)) {
     stop('include.bc.pathways must be TRUE or FALSE.')
@@ -222,7 +229,8 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
     info <- info[order(info$IDs, decreasing = FALSE), ]
     info$is.drug <- rep(TRUE, nrow(info))
   } else {
-    info <- data.frame()
+    info <- data.frame(IDs = names(genes), 
+                       is.drug = rep(drug.sigs, length(genes)))
   }
   # Pathways.
   if (include.bc.pathways) {
