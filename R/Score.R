@@ -158,14 +158,12 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
   }
   # Invert the sign of BCS if necessary (exclude pathways).
   if (gs@inverse.score) {
-    not.paths <- which(!(rownames(scoring.matrix) %in% names(pathways)))
-    paths <- which(rownames(scoring.matrix) %in% names(pathways))
+    not.paths <- subset(gs@info, is.drug)$IDs
+    paths <- subset(gs@info, !is.drug)$IDs
     if (length(paths) > 0) {
       scoring.matrix <- rbind((scoring.matrix[not.paths, , drop = FALSE] * -1),
                               scoring.matrix[paths, , drop = FALSE])
-    } else {
-      scoring.matrix <- (-1) * scoring.matrix[, , drop = FALSE]
-    }
+    } else scoring.matrix <- (-1) * scoring.matrix[, , drop = FALSE]
   }
   slot(bc, "normalized") <- slot(bc, "data") <- round(scoring.matrix, digits = 2)
   # Scale the final matrix [0, 1] for each signature (for visualization).
