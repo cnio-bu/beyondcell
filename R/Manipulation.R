@@ -497,6 +497,7 @@ bcRecompute <- function(bc, slot = "data") {
     message('Removing therapeutic clusters...')
     bc@meta.data <- bc@meta.data[, -c(therapeutic.clusters), drop = FALSE]
   }
+  bc@meta.data <- bc@meta.data[colnames(bc@data), , drop = FALSE]
   # Return bc object.
   return(bc)
 }
