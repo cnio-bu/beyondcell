@@ -10,8 +10,7 @@ bcAddMetadata(bc, metadata)
 \item{bc}{\code{beyondcell} object.}
 
 \item{metadata}{Matrix or dataframe with metadata to add. Rownames should be
-cell names and colnames should not be already present in
-\code{bc@meta.data}.}
+cell names and colnames should be numeric or categorical variables.}
 }
 \value{
 Returns a \code{beyondcell} object with updated metadata.

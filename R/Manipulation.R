@@ -508,8 +508,7 @@ bcRecompute <- function(bc, slot = "data") {
 #' @name bcAddMetadata
 #' @param bc \code{beyondcell} object.
 #' @param metadata Matrix or dataframe with metadata to add. Rownames should be
-#' cell names and colnames should not be already present in
-#' \code{bc@@meta.data}.
+#' cell names and colnames should be numeric or categorical variables.
 #' @return Returns a \code{beyondcell} object with updated metadata.
 #' @examples
 #' @export
@@ -529,8 +528,12 @@ bcAddMetadata <- function(bc, metadata) {
   }
   # Check that columns in metadata are different from the existing columns in
   # bc@meta.data.
-  if (any(colnames(metadata) %in% colnames(bc@meta.data))) {
-    stop('Some metadata columns are already present in bc@meta.data slot.')
+  in.metadata <- colnames(metadata) %in% colnames(bc@meta.data)
+  if (any(in.metadata)) {
+    warning(paste0('Some metadata columns are already present in bc@meta.data ', 
+                   'slot and will be overwritten: ',
+                   paste0(colnames(metadata)[in.metadata], collapse = ", "), 
+                   '.'))
   }
   # --- Code ---
   metadata <- metadata[rownames(bc@meta.data), , drop = FALSE]
