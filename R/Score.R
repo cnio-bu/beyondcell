@@ -145,11 +145,11 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
     ### Operate "up" and "down" scores.
     scoring.matrix <- bcs[["up"]] - bcs[["down"]]
     ### Restore NaNs.
-    scoring.matrix[nan.cells | below.thres] <- NaN
+    scoring.matrix[nan.cells | below.thres] <- 0
   } else {
     scoring.matrix <- bcs[[gs@mode]]
     ### Restore NaNs.
-    scoring.matrix[below.thres] <- NaN
+    scoring.matrix[below.thres] <- 0
     ### If mode is "down", values must be negative.
     if (gs@mode == "down") {
       scoring.matrix <- -1 * scoring.matrix[, , drop = FALSE]
