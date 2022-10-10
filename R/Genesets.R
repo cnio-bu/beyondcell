@@ -4,45 +4,20 @@
 #' @name GenerateGenesets
 #' @importFrom qusage read.gmt
 #' @importFrom gdata trim
-#' @param x A pre-loaded matrix or a path to a GMT file with custom gene sets. 
+#' @param x A path to a GMT file with custom gene sets. 
 #' See Details for more information.
-#' @param n.genes Number of up and/or down-regulated genes used to compute each
-#' signature.
-#' @param mode Whether the output \code{geneset} must contain up and/or
-#' down-regulated genes. See Details for more information.
-#' @param filters If \code{x} is a pre-loaded matrix, you can provide a list of
-#' filters to subset it. You can specify which \code{drugs}, sig \code{IDs},
-#' mechanisms of action (\code{MoAs}), \code{targets} and/or \code{sources} you
-#' are interested in (cap insensitive). You can call
-#' \code{\link[beyondcell]{ListFilters}} to check all the available values for
-#' these filters. The signatures that pass \strong{ANY} of them are included in
-#' the output.
 #' @param include.pathways Logical. Return \code{beyoncell}'s pre-computed
 #' signatures for functional pathways?
 #' @details \code{x} can be:
 #' \itemize{
-#' \item{A pre-loaded matrix:} {Either \code{PSc}, \code{SSc} or \code{DSS}.}
 #' \item{A path to a GMT file:} {A file that contains custom gene sets. Each
-#' gene set must have an "_UP" or "_DOWN" suffix.}
+#' gene set must have an "_UP" or "_DOWN/_DN" suffix.}
 #' }
-#' In addition, \code{mode} can be:
-#' \itemize{
-#' \item{\code{"up"}:} {To compute the signatures using only up-regulated
-#' genes.}
-#' \item{\code{"down"}:} {To compute the signatures using only down-regulated
-#' genes.}
-#' \item{\code{c("up", "down")} :} {To compute the signatures using both up and
-#' down-regulated genes.}
-#' }
-#' If \code{x} is a path to a GMT file, \code{mode} is deprecated and the names
-#' of all gene sets must end in "_UP" or "_DOWN" to indicate the \code{mode} of
-#' each one.
 #' @return A \code{geneset} object.
 #' @examples
 #' @export
 
-GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
-                             include.pathways = TRUE) {
+GenerateGenesets <- function(x, include.pathways = TRUE) {
   # --- Global Checks ---
   # Check if x is a path to a GMT file.
   message('Reading gmt file...')
@@ -63,42 +38,18 @@ GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
     stop(paste0('The GMT file contains duplicated gene set\'s: ',
                 paste0(duplicated.gene.sets, collapse = ", "), '.'))
   }
-  
-  # Check n.genes and mode.
-  if (any(!(mode %in% c("up", "down")))) stop('Incorrect mode.')
-  mode <- sort(unique(mode), decreasing = TRUE)
 
-  ### Number of genes.
-  if (!identical(n.genes, 250)) warning('x is a GMT file, n.genes is deprecated.')
   ### Mode in GMT files.
   n.up <- length(unique(grep(pattern = "_UP$", x = upper.gmt.names)))
-  n.down <- length(unique(grep(pattern = "_DOWN$", x = upper.gmt.names)))
+  n.down <- length(unique(grep(pattern = "_DOWN$|_DN$", x = upper.gmt.names)))
   if (n.up + n.down != length(names(gmt.file))) {
-    stop('All gene sets\' names in the GMT file must end in "_UP" or "_DOWN".')
-  } else {
-    if (n.up > 0 & n.down > 0) {
-      if (!identical(mode, c("up", "down"))) {
-        mode <- c("up", "down")
-        warning(paste('The GMT file includes UP and DOWN gene sets. mode',
-                        'changed to c("up", "down").'))
-      }
-    } else if (n.up > 0) {
-      if (mode != "up") {
-        mode <- "up"
-        warning('The GMT file only includes UP gene sets. mode changed to "up".')
-      }
-    } else if (n.down > 0) {
-      if (mode != "down") {
-        mode <- "down"
-        warning('The GMT file only includes DOWN gene sets. mode changed to "down".')
-      }
-    }
-  }
+    stop('All gene sets\' names in the GMT file must end in "_UP" or "_DOWN/_DN".')
+  } 
+
   # Check include.pathways.
   if (length(include.pathways) != 1 | !is.logical(include.pathways)) {
     stop('include.pathways must be TRUE or FALSE.')
   }
-  
   # --- Code ---
   ### Genes.
   unique.gene.sets <- unique(gsub(pattern = "_UP$|_DOWN$", replacement = "",
@@ -155,3 +106,4 @@ ListFilters <- function(entry) {
   }
   return(out)
 }
+
