@@ -42,178 +42,81 @@
 #' @export
 
 GenerateGenesets <- function(x, n.genes = 250, mode = c("up", "down"),
-                             filters = list(drugs = NULL, IDs = NULL, MoAs = NULL,
-                                            targets = NULL, sources = NULL),
                              include.pathways = TRUE) {
   # --- Global Checks ---
-  # Check if x is a pre-loaded matrix or a path to a GMT file.
-  is.D <- c(identical(x, PSc), identical(x, SSc), identical(x, DSS))
-  if (any(is.D)) {
-    type <- "pre-loaded matrix"
-    message(paste('Reading', c("PSc", "SSc", "DSS")[is.D], 'signatures...'))
-    n.max <- 500
-  } else {
-    type <- "gmt"
-    message('Reading gmt file...')
-    gmt.file <- tryCatch(qusage::read.gmt(x), error = function(cond) {
-      message(paste0('The GMT file does not seem to exist: ', x, ' .'))
-      stop(paste('x must be either a pre-loaded matrix (PSc, SSc or DSS), a
-                 ranked matrix or the path to a GMT file.'))
-    }, warning = function(cond) {
-      message(paste('Warning when reading the GMT file. Here is the',
-                    'original warning message:'))
-      warning(paste0(cond))
-      return(suppressWarnings(qusage::read.gmt(x)))
-    })
-    ### Check for duplicated gene sets.
-    upper.gmt.names <- toupper(names(gmt.file))
-    if (anyDuplicated(upper.gmt.names) != 0) {
-      duplicated.gene.sets <- unique(names(gmt.file)[duplicated(upper.gmt.names)])
-      stop(paste0('The GMT file contains duplicated gene set\'s: ',
-                  paste0(duplicated.gene.sets, collapse = ", "), '.'))
-    }
+  # Check if x is a path to a GMT file.
+  message('Reading gmt file...')
+  gmt.file <- tryCatch(qusage::read.gmt(x), error = function(cond) {
+    message(paste0('The GMT file does not seem to exist: ', x, ' .'))
+    stop(paste('x must be either a pre-loaded matrix (PSc, SSc or DSS), a
+                ranked matrix or the path to a GMT file.'))
+  }, warning = function(cond) {
+    message(paste('Warning when reading the GMT file. Here is the',
+                  'original warning message:'))
+    warning(paste0(cond))
+    return(suppressWarnings(qusage::read.gmt(x)))
+  })
+  ### Check for duplicated gene sets.
+  upper.gmt.names <- toupper(names(gmt.file))
+  if (anyDuplicated(upper.gmt.names) != 0) {
+    duplicated.gene.sets <- unique(names(gmt.file)[duplicated(upper.gmt.names)])
+    stop(paste0('The GMT file contains duplicated gene set\'s: ',
+                paste0(duplicated.gene.sets, collapse = ", "), '.'))
   }
+  
   # Check n.genes and mode.
   if (any(!(mode %in% c("up", "down")))) stop('Incorrect mode.')
   mode <- sort(unique(mode), decreasing = TRUE)
-  if (type != "gmt") {
-    ### Number of genes.
-    if (length(n.genes) != 1 | n.genes[1]%%1 != 0 | n.genes[1] < 1) {
-      stop('n.genes must be a positive integer.')
-    } else if (n.genes > n.max) {
-      stop(paste0('n.genes exceeds the maximum number of genes in signature (',
-                  n.max, ').'))
-    }
+
+  ### Number of genes.
+  if (!identical(n.genes, 250)) warning('x is a GMT file, n.genes is deprecated.')
+  ### Mode in GMT files.
+  n.up <- length(unique(grep(pattern = "_UP$", x = upper.gmt.names)))
+  n.down <- length(unique(grep(pattern = "_DOWN$", x = upper.gmt.names)))
+  if (n.up + n.down != length(names(gmt.file))) {
+    stop('All gene sets\' names in the GMT file must end in "_UP" or "_DOWN".')
   } else {
-    ### Number of genes.
-    if (!identical(n.genes, 250)) warning('x is a GMT file, n.genes is deprecated.')
-    ### Mode in GMT files.
-    n.up <- length(unique(grep(pattern = "_UP$", x = upper.gmt.names)))
-    n.down <- length(unique(grep(pattern = "_DOWN$", x = upper.gmt.names)))
-    if (n.up + n.down != length(names(gmt.file))) {
-      stop('All gene sets\' names in the GMT file must end in "_UP" or "_DOWN".')
-    } else {
-      if (n.up > 0 & n.down > 0) {
-        if (!identical(mode, c("up", "down"))) {
-          mode <- c("up", "down")
-          warning(paste('The GMT file includes UP and DOWN gene sets. mode',
+    if (n.up > 0 & n.down > 0) {
+      if (!identical(mode, c("up", "down"))) {
+        mode <- c("up", "down")
+        warning(paste('The GMT file includes UP and DOWN gene sets. mode',
                         'changed to c("up", "down").'))
-        }
-      } else if (n.up > 0) {
-        if (mode != "up") {
-          mode <- "up"
-          warning('The GMT file only includes UP gene sets. mode changed to "up".')
-        }
-      } else if (n.down > 0) {
-        if (mode != "down") {
-          mode <- "down"
-          warning('The GMT file only includes DOWN gene sets. mode changed to "down".')
-        }
+      }
+    } else if (n.up > 0) {
+      if (mode != "up") {
+        mode <- "up"
+        warning('The GMT file only includes UP gene sets. mode changed to "up".')
+      }
+    } else if (n.down > 0) {
+      if (mode != "down") {
+        mode <- "down"
+        warning('The GMT file only includes DOWN gene sets. mode changed to "down".')
       }
     }
-  }
-  # Check filters.
-  filters.names <- c("drugs", "IDs", "MoAs", "targets", "sources")
-  selected.filters <- names(filters)
-  if (any(!(selected.filters %in% filters.names))) stop('Invalid names in filters.')
-  if (type != "pre-loaded matrix") {
-    filters_class <- sapply(filters, is.null)
-    if (any(!filters_class)) {
-      warning('x is not a pre-loaded matrix, filters is deprecated.')
-    }
-  } else {
-    filters_class <- sapply(filters, is.null) | sapply(filters, is.character)
-    if (any(!filters_class)) {
-      stop(paste0('Incorrect value for filter\'s entry: "',
-                  paste0(selected.filters[!filters_class], collapse = ", "),
-                  '". You must provide a character vector.'))
-    }
-    selected.filters <- selected.filters[!sapply(filters, is.null)]
   }
   # Check include.pathways.
   if (length(include.pathways) != 1 | !is.logical(include.pathways)) {
     stop('include.pathways must be TRUE or FALSE.')
   }
+  
   # --- Code ---
-  # If x is a pre-loaded matrix...
-  if (type == "pre-loaded matrix") {
-    ### sig IDs and inverse.score.
-    inverse.score <- TRUE # When using PSc/DDS, inverse the sign of the BCS.
-    if (is.D[1]) {
-      info <- subset(drugInfo, subset = drugInfo$sources == "LINCS")
-    } else if (is.D[2]) {
-      info <- subset(drugInfo, subset = drugInfo$sources != "LINCS")
-      inverse.score <- FALSE
-    } else if (is.D[3]) {
-      info <- subset(drugInfo, subset = drugInfo$IDs %in% DSS[[1]]$sig_id)
-      x <- PSc # DSS is a subset of PSc
+  ### Genes.
+  unique.gene.sets <- unique(gsub(pattern = "_UP$|_DOWN$", replacement = "",
+                                  x = names(gmt.file), ignore.case = TRUE))
+  genes <- setNames(lapply(unique.gene.sets, function(sig) {
+    l <- list()
+    if (toupper(paste0(sig, "_UP")) %in% upper.gmt.names) {
+      l <- c(l, list(up = gmt.file[[match(toupper(paste0(sig, "_UP")),
+                                          table = upper.gmt.names)]]))
     }
-    ### Filters.
-    if (length(selected.filters) == 0) {
-      ids <- unique(info$IDs)
-    } else {
-      ids <- unique(unlist(lapply(selected.filters, function(y) {
-        tryCatch(suppressWarnings(GetIDs(values = filters[[y]], filter = y,
-                                         df = info)),
-                 error = function(cond) character())
-      })))
-      warnings <- unlist(lapply(selected.filters, function(z) {
-        tryCatch(GetIDs(values = filters[[z]], filter = z, df = info),
-                 error = function(cond) {
-                   err <- paste0(z, ": ", paste0(filters[[z]],
-                                                 collapse = ", "), ".\n")
-                   return(err)
-                 }, warning = function(cond) {
-                   warn <- as.character(cond)
-                   warn.values <- strsplit(sapply(strsplit(warn, split = ": "),
-                                                  `[[`, 3), split = ", ")
-                   return(paste0(z, ": ", warn.values))
-                 })
-      }))
-      warnings <- warnings[!startsWith(warnings, prefix = "sig_")]
-      if (length(ids) == 0) {
-        stop('Couldn\'t find signatures that matched any of the filters.')
-      } else if (length(warnings) > 0) {
-        warning(paste('The following filters\' values yielded no results:\n',
-                      paste0("   - ", warnings, " ", collapse = "")))
-      }
-    }
-    ### Genes.
-    genes <- lapply(ids, function(sig) {
-      l <- list(up = x[["up"]][1:n.genes, sig], down = x[["down"]][1:n.genes, sig])
-      return(l)
-    })
-    names(genes) <- ids
-    # Else if x is a GMT file...
-  } else if (type == "gmt") {
-    ### inverse.score.
-    inverse.score <- FALSE
-    ### Genes.
-    unique.gene.sets <- unique(gsub(pattern = "_UP$|_DOWN$", replacement = "",
-                                    x = names(gmt.file), ignore.case = TRUE))
-    genes <- setNames(lapply(unique.gene.sets, function(sig) {
-      l <- list()
-      if (toupper(paste0(sig, "_UP")) %in% upper.gmt.names) {
-        l <- c(l, list(up = gmt.file[[match(toupper(paste0(sig, "_UP")),
+    if (toupper(paste0(sig, "_DOWN")) %in% upper.gmt.names) {
+      l <- c(l, list(down = gmt.file[[match(toupper(paste0(sig, "_DOWN")),
                                             table = upper.gmt.names)]]))
-      }
-      if (toupper(paste0(sig, "_DOWN")) %in% upper.gmt.names) {
-        l <- c(l, list(down = gmt.file[[match(toupper(paste0(sig, "_DOWN")),
-                                              table = upper.gmt.names)]]))
-      }
-      return(l)
-    }), unique.gene.sets)
-  }
+    }
+    return(l)
+  }), unique.gene.sets)
   # Drug IDs.
-  if (type == "pre-loaded matrix") {
-    info <- subset(info, subset = info$IDs %in% ids)
-    info <- aggregate(.~ IDs, data = info, na.action = NULL, FUN = function(rw) {
-      paste(na.omit(unique(rw)), collapse = ", ")
-    })
-    info <- info[order(info$IDs, decreasing = FALSE), ]
-  } else {
-    info <- data.frame()
-  }
+  info <- data.frame()
   # Pathways.
   if (include.pathways) {
     paths <- lapply(pathways, function(p) p[names(p)[mode %in% names(p)]])
