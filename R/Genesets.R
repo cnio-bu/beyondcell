@@ -6,8 +6,8 @@
 #' @importFrom gdata trim
 #' @param x A path to a GMT file with custom gene sets. 
 #' See Details for more information.
-#' @param include.pathways Logical. Return \code{beyoncell}'s pre-computed
-#' signatures for functional pathways?
+#' @param perform.reversal Logical. Return \code{beyoncell}'s pre-computed
+#' signatures as if the signature was reversed.
 #' @details \code{x} can be:
 #' \itemize{
 #' \item{A path to a GMT file:} {A file that contains custom gene sets. Each
@@ -17,7 +17,7 @@
 #' @examples
 #' @export
 
-GenerateGenesets <- function(x, perform.reversal = FALSE, include.pathways = TRUE) {
+GenerateGenesets <- function(x, perform.reversal = FALSE) {
   # --- Global Checks ---
   # Check if x is a path to a GMT file.
   message('Reading gmt file...')
@@ -46,10 +46,6 @@ GenerateGenesets <- function(x, perform.reversal = FALSE, include.pathways = TRU
     stop('All gene sets\' names in the GMT file must end in "_UP" or "_DOWN/_DN".')
   } 
 
-  # Check include.pathways.
-  if (length(include.pathways) != 1 | !is.logical(include.pathways)) {
-    stop('include.pathways must be TRUE or FALSE.')
-  }
     # Check perform.reversal.
   if (length(perform.reversal) != 1 | !is.logical(perform.reversal)) {
     stop('perform.reversal must be TRUE or FALSE.')
@@ -72,16 +68,10 @@ GenerateGenesets <- function(x, perform.reversal = FALSE, include.pathways = TRU
     return(l)
   }), unique.gene.sets)
 
-  # Pathways.
-  if (include.pathways) {
-    paths <- lapply(pathways, function(p) p[names(p)[mode %in% names(p)]])
-  } else {
-    paths <- list()
-  }
   # Output.
-  return(geneset(genelist = c(genes, paths),
-  n.genes = NULL, # User defined genesets have no n.genes
-  mode = NULL,  # User defined genesets have no mode
+  return(geneset(genelist = genes,
+  n.genes = NaN, # User defined genesets have no n.genes
+  mode = "None",  # User defined genesets have no mode
   info = data.frame(), # User defined genesets have an empty info. slot.
   inverse.score = perform.reversal))
 }
@@ -176,7 +166,6 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
   if (identical(x, PSc) | identical(x, DSS)) {
     inverse.score <- TRUE # When using PSc/DDS, inverse the sign of the BCS.
   }
-
   ### Filters.
   if (length(selected.filters) == 0) {
     ids <- unique(info$IDs)
@@ -206,7 +195,6 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
                       paste0("   - ", warnings, " ", collapse = "")))
       }
     }
-
   ### Genes.
   genes <- lapply(ids, function(sig) {
     l <- list(up = x@genelist[[sig]]$up[1:n.genes],
@@ -215,7 +203,7 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
     return(l)
   })
   names(genes) <- ids
-
+  print(ids)
    # Drug IDs.
   info <- subset(info, subset = info$IDs %in% ids)
   info <- aggregate(.~ IDs, data = info, na.action = NULL, FUN = function(rw) {
@@ -229,6 +217,7 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
   } else {
     paths <- list()
   }
+  print("Output arrived")
   # Output.
   return(geneset(genelist = c(genes, paths), n.genes = n.genes,
                  mode = mode, info = info, inverse.score = inverse.score))
