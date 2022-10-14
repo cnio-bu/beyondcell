@@ -93,7 +93,7 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
   
    # --- Global Checks ---
   # Check if x is a preloaded collection
-  is.D <- c(identical(x, "PSc"), identical(x, "SSc"), identical(x, "DSS"))
+  is.D <- c(identical(x, PSc), identical(x, SSc), identical(x, DSS))
 
   if (!any(is.D)) {
    stop(paste('x must be either PSc, SSc or DSS.'))
@@ -170,7 +170,9 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
 
   ### Genes.
   genes <- lapply(ids, function(sig) {
-    l <- list(up = x[["up"]][1:n.genes, sig], down = x[["down"]][1:n.genes, sig])
+    l <- list(up = x@genelist[[sig]]$up[1:n.genes],
+              down = x@genelist[[sig]]$down[1: n.genes]
+              )
     return(l)
   })
   names(genes) <- ids
