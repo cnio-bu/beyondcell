@@ -56,7 +56,7 @@ GenerateGenesets <- function(x, perform.reversal = FALSE, include.pathways = TRU
   }
   # --- Code ---
   ### Genes.
-  unique.gene.sets <- unique(gsub(pattern = "_UP$|_DOWN$", replacement = "",
+  unique.gene.sets <- unique(gsub(pattern = "_UP$|_DOWN$|_DN$", replacement = "",
                                   x = names(gmt.file), ignore.case = TRUE))
   genes <- setNames(lapply(unique.gene.sets, function(sig) {
     l <- list()
@@ -64,7 +64,8 @@ GenerateGenesets <- function(x, perform.reversal = FALSE, include.pathways = TRU
       l <- c(l, list(up = gmt.file[[match(toupper(paste0(sig, "_UP")),
                                           table = upper.gmt.names)]]))
     }
-    if (toupper(paste0(sig, "_DOWN")) %in% upper.gmt.names) {
+    if (toupper(paste0(sig, "_DOWN")) %in% upper.gmt.names |
+        toupper(paste0(sig, "_DN")) %in% upper.gmt.names ){
       l <- c(l, list(down = gmt.file[[match(toupper(paste0(sig, "_DOWN")),
                                             table = upper.gmt.names)]]))
     }
@@ -84,6 +85,43 @@ GenerateGenesets <- function(x, perform.reversal = FALSE, include.pathways = TRU
   info = data.frame(), # User defined genesets have an empty info. slot.
   inverse.score = perform.reversal))
 }
+
+#' @title Load beyondcell collection
+#' @description This function creates a \code{\link[beyondcell]{geneset}}
+#' object from one of the default collections available.
+#' @name GetCollection
+#' @importFrom gdata trim
+#' @param x Either PSc, SSc or DSS.
+#' See Details for more information.
+#' @param n.genes Number of up and/or down-regulated genes used to compute each
+#' signature.
+#' @param mode Whether the output \code{geneset} must contain up and/or
+#' down-regulated genes. See Details for more information.
+#' @param filters If \code{x} is a pre-loaded collection, you can provide a list of
+#' filters to subset it. You can specify which \code{drugs}, sig \code{IDs},
+#' mechanisms of action (\code{MoAs}), \code{targets} and/or \code{sources} you
+#' are interested in (cap insensitive). You can call
+#' \code{\link[beyondcell]{ListFilters}} to check all the available values for
+#' these filters. The signatures that pass \strong{ANY} of them are included in
+#' the output.
+#' @param include.pathways Logical. Return \code{beyoncell}'s pre-computed
+#' signatures for functional pathways?
+#' @details \code{x} can be:
+#' \itemize{
+#' \item{A pre-loaded matrix:} {Either \code{PSc}, \code{SSc} or \code{DSS}.}
+#' }
+#' In addition, \code{mode} can be:
+#' \itemize{
+#' \item{\code{"up"}:} {To compute the signatures using only up-regulated
+#' genes.}
+#' \item{\code{"down"}:} {To compute the signatures using only down-regulated
+#' genes.}
+#' \item{\code{c("up", "down")} :} {To compute the signatures using both up and
+#' down-regulated genes.}
+#' }
+#' @return A \code{geneset} object.
+#' @examples
+#' @export
 
 GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
                           filters = list(drugs = NULL, IDs = NULL, MoAs = NULL,
