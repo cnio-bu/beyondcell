@@ -248,12 +248,10 @@ GetStatistics <- function(bc, signatures, cells, pb, total, i, n.rows,
 #' @name GetIDs
 #' @param values User-supplied filtering vector.
 #' @param filter Column name or number to subset by.
-#' @param df \code{data.frame} with drug information. It must contain, at least,
-#' two columns: \code{"IDs"} and \code{filter}.
 #' @return A vector with the IDs that match the \code{filter}'s values.
 #' @export
 
-GetIDs <- function(values, filter, df = drugInfo) {
+GetIDs <- function(values, filter) {
   # --- Checks ---
   # Check values.
   if (length(values) < 1 | !is.character(values)) {
@@ -263,23 +261,15 @@ GetIDs <- function(values, filter, df = drugInfo) {
   if (length(filter) != 1) {
     stop('You must specify a single filter.')
   }
-  if (is.character(filter) & !(filter %in% colnames(df))) {
-    stop(paste('filter =', filter, 'is not a column of df.'))
-  }
-  if (is.numeric(filter) & (filter < 1 | filter > ncol(df))) {
-    stop(paste('filter = ', filter, 'is out of range.'))
-  }
-  # Check df.
-  if (class(df) != "data.frame") {
-    stop('df must be a data.frame')
-  }
-  if (!("IDs" %in% colnames(df))) {
-    stop('df must contain an "IDs" column.')
-  }
+  all_filters <- c("Synonyms", "IDs", "Moas", "Targets", "IDs")
+  names(all_filters) <- c("drugs", "IDs", "MoAs", "targets", "studies")
+
+  df <- drugInfo[[all_filters[filter]]]
+
   # --- Code ---
   upper.values <- toupper(values)
   selected <- subset(df, subset = toupper(df[[filter]]) %in% upper.values)
-  if (filter == "drugs" & "preferred.drug.names" %in% colnames(df)) {
+  if (filter == "drugs" & ".drug.names" %in% colnames(df)) {
     synonyms <- subset(df, subset = toupper(df[["preferred.drug.names"]]) %in%
                          unique(toupper(selected[["preferred.drug.names"]])))
     selected <- unique(rbind(selected, synonyms))
