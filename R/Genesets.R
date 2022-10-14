@@ -128,10 +128,10 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
                                          targets = NULL, studies = NULL),
                           include.pathways = TRUE){
 
-  
    # --- Global Checks ---
   # Check if x is a preloaded collection
   is.D <- c(identical(x, PSc), identical(x, SSc), identical(x, DSS))
+  n.max <- 500 # Our colls. have at max. 500 genes
 
   if (!any(is.D)) {
    stop(paste('x must be either PSc, SSc or DSS.'))
@@ -168,7 +168,7 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
 
    # --- Code ---
   # Subset pre-loaded collections...
-  info <- subset(drugInfo[["IDs"]], subset = drugInfo[["IDS"]]$collections == x)
+  info <- subset(drugInfo[["IDs"]], subset = drugInfo[["IDs"]]$collections == x)
   
   inverse.score <- FALSE
   if (identical(x, PSc) | identical(x, DSS)) {
