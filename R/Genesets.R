@@ -142,12 +142,11 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
     ids <- unique(info$IDs)
     } else {
       ids <- unique(unlist(lapply(selected.filters, function(y) {
-        tryCatch(suppressWarnings(GetIDs(values = filters[[y]], filter = y,
-                                         df = info)),
+        tryCatch(suppressWarnings(GetIDs(values = filters[[y]], filter = y)),
                  error = function(cond) character())
       })))
       warnings <- unlist(lapply(selected.filters, function(z) {
-        tryCatch(GetIDs(values = filters[[z]], filter = z, df = info),
+        tryCatch(GetIDs(values = filters[[z]], filter = z),
                  error = function(cond) {
                    err <- paste0(z, ": ", paste0(filters[[z]],
                                                  collapse = ", "), ".\n")
