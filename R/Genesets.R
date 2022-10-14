@@ -168,7 +168,9 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
 
    # --- Code ---
   # Subset pre-loaded collections...
-  info <- subset(drugInfo[["IDs"]], subset = drugInfo[["IDs"]]$collections == x)
+  info <- subset(drugInfo[["IDs"]], 
+                 subset = drugInfo[["IDs"]]$collections == substitute(x)
+                 )
   
   inverse.score <- FALSE
   if (identical(x, PSc) | identical(x, DSS)) {
