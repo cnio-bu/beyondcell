@@ -120,6 +120,7 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
 
    # --- Global Checks ---
   # Check if x is a preloaded collection
+  collection_name <- deparse(substitute(x))
   is.D <- c(identical(x, PSc), identical(x, SSc), identical(x, DSS))
   n.max <- 500 # Our colls. have at max. 500 genes
 
@@ -158,10 +159,15 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
 
    # --- Code ---
   # Subset pre-loaded collections...
-  info <- subset(drugInfo[["IDs"]], 
-                 subset = drugInfo[["IDs"]]$collections == substitute(x)
-                 )
-  
+  if (collection_name == "DSS"){
+    dss_sigs <- names(DSS@genelist)
+    info <- subset(drugInfo[["IDs"]],
+                   subset = drugInfo[["IDs"]]$IDs %in% dss_sigs)
+                   } else {
+    info <- subset(drugInfo[["IDs"]], 
+                   subset = drugInfo[["IDs"]]$collections == collection_name
+                 )}
+                 
   inverse.score <- FALSE
   if (identical(x, PSc) | identical(x, DSS)) {
     inverse.score <- TRUE # When using PSc/DDS, inverse the sign of the BCS.
@@ -203,7 +209,6 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
     return(l)
   })
   names(genes) <- ids
-  print(ids)
    # Drug IDs.
   info <- subset(info, subset = info$IDs %in% ids)
   info <- aggregate(.~ IDs, data = info, na.action = NULL, FUN = function(rw) {
@@ -217,8 +222,7 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
   } else {
     paths <- list()
   }
-  print("Output arrived")
-  # Output.
+   # Output.
   return(geneset(genelist = c(genes, paths), n.genes = n.genes,
                  mode = mode, info = info, inverse.score = inverse.score))
 
