@@ -133,7 +133,7 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
   info <- subset(drugInfo[["IDs"]], subset = drugInfo[["IDS"]]$collections == x)
   
   inverse.score <- FALSE
-  if( x  %in% c("PSc", "DSS")){
+  if (identical(x, PSc) | identical(x, DSS)) {
     inverse.score <- TRUE # When using PSc/DDS, inverse the sign of the BCS.
   }
 
