@@ -62,8 +62,13 @@ GenerateGenesets <- function(x, perform.reversal = FALSE) {
     }
     if (toupper(paste0(sig, "_DOWN")) %in% upper.gmt.names |
         toupper(paste0(sig, "_DN")) %in% upper.gmt.names ){
-      l <- c(l, list(down = gmt.file[[match(toupper(paste0(sig, "_DOWN")),
-                                            table = upper.gmt.names)]]))
+      # Match will return NA if no matches available.
+      sig_dn_down <- paste0(sig, c("_DOWN", "_DN"))
+      sig_dn_down <- toupper(sig_dn_down)
+      match_id <- match(sig_dn_down, table = upper.gmt.names)
+      valid_id <- match_id[!is.na(match_id)]
+
+      l <- c(l, list(down = gmt.file[[valid_id]]))
     }
     return(l)
   }), unique.gene.sets)
