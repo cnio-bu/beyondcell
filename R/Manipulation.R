@@ -90,6 +90,7 @@ bcSubset <- function(bc, signatures = NULL, bg.signatures = NULL, cells = NULL,
   # If there is spatial info, check cells in the slices too.
   is.spatial <- exists(x = "images", where = bc@SeuratInfo)
   if (is.spatial) {
+    if(length(bc@SeuratInfo$images) > 0) {
     spots <- lapply(bc@SeuratInfo$images, FUN = function(x) {
       return(rownames(x@coordinates))
     })
@@ -100,6 +101,7 @@ bcSubset <- function(bc, signatures = NULL, bg.signatures = NULL, cells = NULL,
     } else if (any(!in.pass.cells)) {
       warning(paste0('These cells were not found in the image slices: ',
                      paste0(pass.cells[!in.pass.cells], collapse = ", "), '.'))
+      }
     }
   }
   # Check nan.sigs.
