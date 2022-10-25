@@ -4,34 +4,14 @@
 \alias{GenerateGenesets}
 \title{Creates a geneset object}
 \usage{
-GenerateGenesets(
-  x,
-  n.genes = 250,
-  mode = c("up", "down"),
-  filters = list(drugs = NULL, IDs = NULL, MoAs = NULL, targets = NULL, sources = NULL),
-  include.pathways = TRUE
-)
+GenerateGenesets(x, perform.reversal = FALSE)
 }
 \arguments{
-\item{x}{A pre-loaded matrix or a path to a GMT file with custom gene sets. 
+\item{x}{A path to a GMT file with custom gene sets. 
 See Details for more information.}
 
-\item{n.genes}{Number of up and/or down-regulated genes used to compute each
-signature.}
-
-\item{mode}{Whether the output \code{geneset} must contain up and/or
-down-regulated genes. See Details for more information.}
-
-\item{filters}{If \code{x} is a pre-loaded matrix, you can provide a list of
-filters to subset it. You can specify which \code{drugs}, sig \code{IDs},
-mechanisms of action (\code{MoAs}), \code{targets} and/or \code{sources} you
-are interested in (cap insensitive). You can call
-\code{\link[beyondcell]{ListFilters}} to check all the available values for
-these filters. The signatures that pass \strong{ANY} of them are included in
-the output.}
-
-\item{include.pathways}{Logical. Return \code{beyoncell}'s pre-computed
-signatures for functional pathways?}
+\item{perform.reversal}{Logical. Return \code{beyoncell}'s pre-computed
+signatures as if the signature was reversed.}
 }
 \value{
 A \code{geneset} object.
@@ -43,20 +23,7 @@ object.
 \details{
 \code{x} can be:
 \itemize{
-\item{A pre-loaded matrix:} {Either \code{PSc}, \code{SSc} or \code{DSS}.}
 \item{A path to a GMT file:} {A file that contains custom gene sets. Each
-gene set must have an "_UP" or "_DOWN" suffix.}
+gene set must have an "_UP" or "_DOWN/_DN" suffix.}
 }
-In addition, \code{mode} can be:
-\itemize{
-\item{\code{"up"}:} {To compute the signatures using only up-regulated
-genes.}
-\item{\code{"down"}:} {To compute the signatures using only down-regulated
-genes.}
-\item{\code{c("up", "down")} :} {To compute the signatures using both up and
-down-regulated genes.}
-}
-If \code{x} is a path to a GMT file, \code{mode} is deprecated and the names
-of all gene sets must end in "_UP" or "_DOWN" to indicate the \code{mode} of
-each one.
 }

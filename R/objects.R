@@ -7,7 +7,7 @@
 #' @slot mode Argument passed to \code{GenerateGenesets}. Whether the
 #' \code{geneset} contains up and/or down-regulated genes.
 #' @slot info Dataframe with drug signatures information, including sig IDs,
-#' drug names, MoAs, target genes and data sources (LINCS, CTRP, GDSC or CCLE).
+#' drug names, MoAs, target genes and data sources (LINCS, CTRP, GDSC or PRISM).
 #' This slot is only filled if \code{GenerateGenesets}' input is a pre-loaded
 #' matrix.
 #' @slot inverse.score Wether to inverse or not the sign of the computed BCS. 

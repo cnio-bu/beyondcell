@@ -133,7 +133,7 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
       message('Computing background BCS using DSS signatures...')
       ### Genesets.
       gs.background <- suppressMessages(
-        GenerateGenesets(DSS, n.genes = bc@n.genes, mode = bc@mode,
+        GetCollection(DSS, n.genes = bc@n.genes, mode = bc@mode,
                          include.pathways = FALSE))
       ### BCS.
       background <- suppressWarnings(
