@@ -5,36 +5,22 @@
 #' @import Seurat
 #' @import ggplot2
 #' @import scales
-#' @importFrom RColorBrewer brewer.pal
-#' @importFrom grDevices colorRampPalette
-#' @importFrom patchwork wrap_plots
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
 #' @param idents Name of the metadata column to colour by.
 #' @param UMAP UMAP reduction to plot. Either \code{"beyondcell"}, computed
 #' using \code{\link[beyondcell]{bcUMAP}}, or \code{"Seurat"}, obtained using
 #' \code{Seurat}'s functions.
-#' @param spatial Logical indicating if a \code{\link[Seurat]{SpatialPlot}}
-#' should be drawn. If \code{spatial = TRUE}, the \code{UMAP} value will be 
-#' ignored.
 #' @param factor.col Logical indicating if \code{idents} column is a factor or
 #' not. Set \code{factor.col = FALSE} if \code{idents} is a numeric column (such
 #' as \code{percent.mt} or \code{nFeature_RNA}).
-#' @param mfrow Numeric vector of the form \code{c(nr, nc)}. \code{nr}
-#' corresponds to the number of rows and \code{nc} to the number of columns of
-#' the grid in which the plots will be drawn. If you want to draw the plots
-#' individually, set \code{mfrow = c(1, 1)}.
-#' @param ... Other arguments passed to 
-#' \code{\link[Seurat]{DimPlot}}/\code{\link[Seurat]{SpatialDimPlot}} if 
-#' \code{factor.col = TRUE} or 
-#' \code{\link[Seurat]{FeaturePlot}}/\code{\link[Seurat]{SpatialFeaturePlot}} if 
-#' \code{factor.col = FALSE}.
+#' @param ... Other arguments passed to \code{\link[Seurat]{DimPlot}}.
 #' @return A \code{ggplot2} object with the UMAP reduction coloured by
 #' \code{idents}.
 #' @examples
 #' @export
 
-bcClusters <- function(bc, idents, UMAP = "beyondcell", spatial = FALSE, 
-                       factor.col = TRUE, mfrow = c(1, 1), ...) {
+bcClusters <- function(bc, idents, UMAP = "beyondcell", factor.col = TRUE,
+                       ...) {
   # --- Checks ---
   # Check that bc is a beyondcell object.
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
@@ -49,29 +35,19 @@ bcClusters <- function(bc, idents, UMAP = "beyondcell", spatial = FALSE,
   }
   # Check UMAP.
   if (UMAP == "beyondcell") {
-    if (length(bc@reductions) == 0 & !spatial) {
+    if (length(bc@reductions) == 0) {
       stop('You must precompute beyondcell\'s UMAP projection using bcUMAP().')
     }
     sc <- Seurat::CreateSeuratObject(bc@scaled)
     reduction <- bc@reductions
   } else if (UMAP == "Seurat") {
-    if (length(bc@SeuratInfo$reductions) == 0 & !spatial) {
+    if (length(bc@SeuratInfo$reductions) == 0) {
       stop('No UMAP projection available for your Seurat\'s object.')
     }
     sc <- Seurat::CreateSeuratObject(bc@expr.matrix[, colnames(bc@scaled)])
     reduction <- bc@SeuratInfo$reductions
   } else {
     stop('Incorrect UMAP argument. Please use either "Seurat" or "beyondcell".')
-  }
-  # Check spatial
-  if (spatial) {
-    if (bc@SeuratInfo$assays == "RNA") {
-      stop("bc wasn't created from spatial data.")
-    } else {
-      if (length(bc@SeuratInfo$images) == 0) {
-        stop("Image not found.")
-      }
-    }
   }
   # Check factor.col.
   if (length(factor.col) != 1 | !is.logical(factor.col)) {
@@ -82,63 +58,16 @@ bcClusters <- function(bc, idents, UMAP = "beyondcell", spatial = FALSE,
   sc <- Seurat::AddMetaData(sc, metadata = meta)
   # Add reductions.
   sc@reductions <- reduction
-  # Add images.
-  if (spatial) sc@images <- bc@SeuratInfo$images
   # Plot.
   if (factor.col) {
     # Set Idents.
     Seurat::Idents(sc) <- idents
-    if (spatial) {
-      if (identical(mfrow, c(1, 1))) scale <- NULL
-      else scale <- ggplot2::scale_fill_discrete(drop = FALSE)
-      p <- lapply(seq_along(bc@SeuratInfo$images), function(i) {
-        suppressMessages(Seurat::SpatialDimPlot(sc, ...)[[i]] + 
-                           ggplot2::theme_minimal() +
-                           ggplot2::theme(legend.title = element_blank(), 
-                                          axis.title = element_blank(), 
-                                          axis.text = element_blank()) + scale)
-      })
-    } else {
-      p <- Seurat::DimPlot(sc, reduction = "umap", ...) + 
-        ggplot2::theme_minimal()
-    }
+    p <- Seurat::DimPlot(sc, reduction = "umap", ...) + ggplot2::theme_minimal()
   } else {
-    if (spatial) {
-      if (identical(mfrow, c(1, 1))) scale <- NULL
-      else {
-        values <- bc@meta.data[[idents]]
-        SpatialColors <- grDevices::colorRampPalette(
-          rev(x = RColorBrewer::brewer.pal(n = 11, name = "Spectral")))
-        scale <- ggplot2::scale_fill_gradientn(colours = SpatialColors(n = 100),
-                                               limits = c(min(values), max(values)))
-      }
-      p <- lapply(seq_along(bc@SeuratInfo$images), function(i) {
-        suppressMessages(Seurat::SpatialFeaturePlot(sc, features = idents, ...)[[i]] + 
-                           ggplot2:: theme(legend.position = "right") + scale)
-      })
-    } else {
-      p <- Seurat::FeaturePlot(sc, reduction = "umap", features = idents, ...) +
-        ggplot2::theme_minimal() + ggplot2::labs(title = NULL)
-    }
+    p <- Seurat::FeaturePlot(sc, reduction = "umap", features = idents, ...) +
+      ggplot2::theme_minimal() + ggplot2::labs(title = NULL)
   }
-  # If mfrow = c(1, 1), return a list ggplots.
-  if (identical(mfrow, c(1, 1))) {
-    final.p <- p
-    # Else, wrap plots according to mfrow and return a list of patchworks.
-  } else {
-    ncol.nrow <- mfrow[1] * mfrow[2]
-    final.p <- lapply(1:ceiling(length(p)/ncol.nrow), function(i) {
-      ### Range.
-      start <- ((i - 1) * ncol.nrow) + 1
-      end <- min(i * ncol.nrow, length(p))
-      sub.p <- patchwork::wrap_plots(p[start:end], nrow = mfrow[1],
-                                     ncol = mfrow[2], guides = "collect")
-      return(sub.p)
-    })
-  }
-  # If final.p has only one plot, don't return a list.
-  if (length(final.p) == 1) final.p <- final.p[[1]]
-  return(final.p)
+  return(p)
 }
 
 #' @title Plots a histogram with the BCS of the signature of interest
@@ -250,8 +179,6 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
                  linetype = "dashed")
     return(hist)
   })
-  # If p has only one plot, don't return a list.
-  if (length(p) == 1) p <- p[[1]]
   return(p)
 }
 
@@ -268,9 +195,6 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
 #' @param UMAP UMAP reduction to plot. Either \code{"beyondcell"}, computed
 #' using \code{\link[beyondcell]{bcUMAP}}, or \code{"Seurat"}, obtained using
 #' \code{Seurat}'s functions.
-#' @param spatial Logical indicating if a \code{\link[Seurat]{SpatialPlot}}
-#' should be drawn. If \code{spatial = TRUE}, the \code{UMAP} and \code{blend} 
-#' values will be ignored.
 #' @param signatures List with plot parameters to colour the UMAP by BCS:
 #' \itemize{
 #' \item{\code{values}:} {Vector with the names of the signatures of interest.
@@ -308,14 +232,12 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
 #' \code{merged = "indirect"}, the signatures are assumed to have an indirect
 #' relationship and their BCS will be substracted.
 #' @param blend (From \code{\link[Seurat]{FeaturePlot}}) Scale and blend
-#' expression values to visualise co-expression of two genes. If 
-#' \code{spatial = TRUE}, \code{blend} is set to \code{FALSE}.
+#' expression values to visualise co-expression of two genes.
 #' @param mfrow Numeric vector of the form \code{c(nr, nc)}. \code{nr}
 #' corresponds to the number of rows and \code{nc} to the number of columns of
 #' the grid in which the plots will be drawn. If you want to draw the plots
 #' individually, set \code{mfrow = c(1, 1)}.
-#' @param ... Other arguments passed to 
-#' \code{\link[Seurat]{FeaturePlot}}/\code{\link[Seurat]{SpatialFeaturePlot}}.
+#' @param ... Other arguments passed to \code{FeaturePlot}.
 #' @details When \code{genes[["limits"]] = c(NA, NA)}, \code{bcSignatures}
 #' computes the limits automatically. You can make all plots share the same
 #' limits by specifying \code{genes[["share.limits"]] = TRUE}, or make the
@@ -330,7 +252,7 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
 #' @examples
 #' @export
 
-bcSignatures <- function(bc, UMAP = "beyondcell", spatial = FALSE,
+bcSignatures <- function(bc, UMAP = "beyondcell",
                          signatures = list(values = NULL, colorscale = NULL,
                                            alpha = 0.7, na.value = "grey50",
                                            limits = c(0, 1), center = NULL,
@@ -343,30 +265,20 @@ bcSignatures <- function(bc, UMAP = "beyondcell", spatial = FALSE,
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
   # Check UMAP.
   if (UMAP == "beyondcell") {
-    if (length(bc@reductions) == 0 & !spatial) {
+    if (length(bc@reductions) == 0) {
       stop('You must precompute beyondcell\'s UMAP projection using bcUMAP().')
     }
     reduction <- bc@reductions
     cells <- subset(rownames(bc@meta.data),
                     subset = rownames(bc@meta.data) %in% colnames(bc@normalized))
   } else if (UMAP == "Seurat") {
-    if (length(bc@SeuratInfo$reductions) == 0 & !spatial) {
+    if (length(bc@SeuratInfo$reductions) == 0) {
       stop('No UMAP projection available for your Seurat\'s object.')
     }
     reduction <- bc@SeuratInfo$reductions
     cells <- rownames(bc@meta.data)
   } else {
     stop('Incorrect UMAP argument. Please use either "Seurat" or "beyondcell".')
-  }
-  # Check spatial
-  if (spatial) {
-    if (bc@SeuratInfo$assays == "RNA") {
-      stop("bc wasn't created from spatial data.")
-    } else {
-      if (length(bc@SeuratInfo$images) == 0) {
-        stop("Image not found.")
-      } else blend <- FALSE
-    }
   }
   # Check signatures' list values.
   default.sigs <- list(values = NULL, colorscale = NULL, alpha = 0.7,
@@ -521,8 +433,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell", spatial = FALSE,
     sc@reductions <- reduction
     ### Plot.
     p <- suppressMessages(
-      Seurat::FeaturePlot(sc, features = gene, blend = TRUE, combine = TRUE, 
-                          ...))
+      Seurat::FeaturePlot(sc, features = gene, blend = TRUE, combine = FALSE))
     # Else...
   } else {
     # Get info about drugs (their corresponding name in bc, the preferred name
@@ -563,13 +474,8 @@ bcSignatures <- function(bc, UMAP = "beyondcell", spatial = FALSE,
         genes[["limits"]][na.limits.genes] <- c(min(range.genes),
                                                 max(range.genes))[na.limits.genes]
       }
-      if (spatial) {
-        colors.genes <- ggplot2::scale_fill_continuous(limits = genes[["limits"]])
-      } else {
-        colors.genes <- ggplot2::scale_colour_gradient(low = "lightgrey", 
-                                                       high = "blue",
-                                                       limits = genes[["limits"]])
-      }
+      colors.genes <- ggplot2::scale_colour_gradient(low = "lightgrey", high = "blue",
+                                                     limits = genes[["limits"]])
     } else {
       colors.genes <- NULL
     }
@@ -577,10 +483,8 @@ bcSignatures <- function(bc, UMAP = "beyondcell", spatial = FALSE,
     sc <- Seurat::CreateSeuratObject(full.matrix)
     ### Add reductions.
     sc@reductions <- reduction
-    # Add images.
-    if (spatial) sc@images <- bc@SeuratInfo$images
     ### Plot for each signtature/gene...
-    p <- unlist(lapply(features, function(y) {
+    p <- lapply(features, function(y) {
       ### Merged.
       if (!is.null(merged)) {
         ids <- unlist(strsplit(y, split = merged.symbol, fixed = TRUE))
@@ -592,29 +496,18 @@ bcSignatures <- function(bc, UMAP = "beyondcell", spatial = FALSE,
         ### When merged != NULL...
         if (nrow(drug.and.MoA) > 1) {
           ### Paste both drug names and MoAs. If MoAs are the same, just print
-          ### them one time.
-          title <- paste0(unique(drug.and.MoA[, 1]), collapse = merged.symbol)
-          subtitle <- paste0(unique(na.omit(drug.and.MoA[, 2])), collapse = merged.symbol)
-          if (is.na(subtitle)) subtitle <- ""
-        } else {
-          title <- drug.and.MoA[, 1]
-          subtitle <- drug.and.MoA[, 2]
+          ### them one time
+          drug.and.MoA <- as.data.frame(t(apply(drug.and.MoA, 2, FUN = function(z) {
+            paste0(unique(z), collapse = merged.symbol)
+          })))
         }
-        subtitle <- BreakString(subtitle) ### Format subtitle.
+        drug.and.MoA[, 2] <- BreakString(drug.and.MoA[, 2]) ### Format subtitle.
       } else {
         ### Empty subtitle.
-        title <- paste0(ids, collapse = merged.symbol)
-        subtitle <- ""
+        drug.and.MoA <- c(paste0(ids, collapse = merged.symbol), "")
       }
-      ### Switch point.
-      sp <- bc@switch.point[y]
-      if (!is.na(sp)) {
-        switchpoint <- ggplot2::labs(caption = paste("Switch point =", sp))
-      } else switchpoint <- ggplot2::labs(caption = "")
       ### Colours (depending on wether y is a signature or a gene).
       if (all(ids %in% sigs)) {
-        if (spatial) aesthetics <-"fill"
-        else aesthetics <-"colour"
         ### Binned colorscale centred around the switch point or the specified
         ### center.
         colors <- center_scale_colour_stepsn(full.matrix[y, ],
@@ -623,36 +516,18 @@ bcSignatures <- function(bc, UMAP = "beyondcell", spatial = FALSE,
                                              na.value = signatures[["na.value"]],
                                              limits = signatures[["limits"]],
                                              center = center.sigs[y],
-                                             breaks = signatures[["breaks"]],
-                                             aesthetics = aesthetics)
+                                             breaks = signatures[["breaks"]])
       } else {
         ### Continuous colorscale with default Seurat colours.
         colors <- colors.genes
       }
       ### Plot.
-      if (spatial) {
-        fp <- lapply(seq_along(bc@SeuratInfo$images), function(i) {
-          suppressMessages(
-            Seurat::SpatialFeaturePlot(sc, combine = FALSE,
-                                       features = gsub(pattern = "_", replacement = "-", 
-                                                       x = y), ...)[[i]] +
-              ggplot2:: theme(legend.text = element_text(size = 8, face = "bold"),
-                              legend.key.height = unit(1, "cm"), 
-                              legend.position = "right") + 
-              ggplot2::labs(title = title, subtitle = subtitle) +
-              colors + switchpoint)
-        })
-      } else {
-        fp <- list(suppressMessages(
-          Seurat::FeaturePlot(sc, combine = FALSE,
-                              features = gsub(pattern = "_", replacement = "-",
-                                              x = y), ...)[[1]] +
-            ggplot2:: theme(legend.text = element_text(size = 8, face = "bold"),
-                            legend.key.height = unit(1, "cm")) + 
-            ggplot2::labs(title = title, subtitle = subtitle) +
-            colors + switchpoint))
-      }
-    }), recursive = FALSE)
+      fp <- suppressMessages(
+        Seurat::FeaturePlot(sc, features = gsub(pattern = "_", replacement = "-",
+                                                x = y), combine = FALSE, ...)[[1]] +
+          colors + ggplot2::labs(title = drug.and.MoA[1], subtitle = drug.and.MoA[2]))
+      return(fp)
+    })
   }
   # If mfrow = c(1, 1), return a list ggplots.
   if (identical(mfrow, c(1, 1))) {
@@ -669,8 +544,6 @@ bcSignatures <- function(bc, UMAP = "beyondcell", spatial = FALSE,
       return(sub.p)
     })
   }
-  # If final.p has only one plot, don't return a list.
-  if (length(final.p) == 1) final.p <- final.p[[1]]
   return(final.p)
 }
 
@@ -743,8 +616,6 @@ bcCellCycle <- function(bc, signatures) {
       labs(title = drug.and.MoA[1], subtitle = drug.and.MoA[2])
     return(violindot)
   })
-  # If p has only one plot, don't return a list.
-  if (length(p) == 1) p <- p[[1]]
   return(p)
 }
 
@@ -776,8 +647,6 @@ bcCellCycle <- function(bc, signatures) {
 #' @param alpha Transparency level between 1 (not transparent) and 0 (fully
 #' transparent).
 #' @param pt.size Point size.
-#' @param x.cutoff Numeric vector with the 2 desired cut-offs for x axis.
-#' @param y.cutoff Numeric vector with the 4 desired cut-offs for y axis.
 #' @param ... Other arguments passed to \code{\link[ggrepel]{geom_text_repel}}.
 #' @details This function returns a list of \code{\link[ggplot2]{ggplot2}}
 #' objects, one per each \code{lvl}. Note that residuals' means are different
@@ -788,8 +657,7 @@ bcCellCycle <- function(bc, signatures) {
 #' @export
 
 bc4Squares <- function(bc, idents, lvl = NULL, top = 3, topnames = NULL, 
-                       force = 1, alpha = 0.7, pt.size = 3, 
-                       x.cutoff = NULL, y.cutoff = NULL, ...) {
+                       force = 1, alpha = 0.7, pt.size = 3, ...) {
   # --- Checks ---
   # Check that bc is a beyondcell object.
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
@@ -843,33 +711,6 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3, topnames = NULL,
   if (length(pt.size) != 1 | !is.numeric(pt.size)) {
     stop('pt.size must be a single number.')
   }
-  # Check x.cutoff.
-  if (!is.null(x.cutoff)) {
-    if (length(x.cutoff) != 2 | !is.numeric(x.cutoff)) {
-      stop('x.cutoff must be a numeric vector of length 2.')
-    }
-    if (x.cutoff[2] < x.cutoff[1]) {
-      warning(paste('Upper x cut-off is smaller than lower x cut-off.',
-                    'Sorting x cut-offs in increasing order.'))
-      x.cutoff <- sort(x.cutoff, decreasing = FALSE)
-    }
-  }
-  # Check y.cutoff.
-  if (!is.null(y.cutoff)) {
-    if (length(y.cutoff) != 4 | !is.numeric(y.cutoff)) {
-      stop('y.cutoff must be a numeric vector of length 4.')
-    }
-    if (any(y.cutoff < 0 | y.cutoff > 1)) {
-      stop('y.cutoff must contain 4 switch point values between 0 and 1.')
-    }
-    sorted.y.cutoff <- sort(y.cutoff, decreasing = FALSE)
-    if (!identical(y.cutoff, sorted.y.cutoff)) {
-      warning(paste('Sorting y cut-offs in increasing order.'))
-      y.cutoff <- sorted.y.cutoff
-    }
-  } else {
-    y.cutoff <- c(0.1, 0.4, 0.6, 0.9)
-  }
   # --- Code ---
   # Get info about drugs (their corresponding name in bc, the preferred name
   # used by beyondcell and the MoA).
@@ -884,43 +725,23 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3, topnames = NULL,
                               paste0("residuals.mean.", l), drop = FALSE]
     colnames(res) <- "residuals.mean"
     df <- transform(merge(res, sp, by = 0), row.names = Row.names, Row.names = NULL)
-    if (is.null(x.cutoff)) {
-      ### Residual's deciles.
-      res.decil <- quantile(as.numeric(res$residuals.mean),
-                            prob = seq(from = 0, to = 1, length = 11))
-      x.cutoff <- c(res.decil[["10%"]], res.decil[["90%"]])
-      x.cutoff.caption <- "first and last deciles"
-    } else {
-      residuals.limits <- c(min(res$residuals.mean), max(res$residuals.mean))
-      if (x.cutoff[1] < residuals.limits[1]) {
-        x.cutoff[1] <- residuals.limits[1]
-        warning(paste0('For lvl = ', l, ': Lower x cut-off is outside of range.',
-                       'Setting it equal to the minimum residual\'s mean.'))
-      }
-      if (x.cutoff[2] > max(res$residuals.mean)) {
-        x.cutoff[2] <- residuals.limits[2]
-        warning(paste0('For lvl = ', l, ': Upper x cut-off is outside of range.',
-                       'Setting it equal to the maximum residual\'s mean.'))
-      }
-      x.cutoff.caption <- paste0(x.cutoff, collapse = " and ")
-    }
-    ### y cut-off caption.
-    y.cutoff.caption <- paste(paste0(y.cutoff[1:3], collapse = ", "), "and",
-                              y.cutoff[4])
+    ### Residual's deciles.
+    res.decil <- quantile(as.numeric(res$residuals.mean),
+                          prob = seq(from = 0, to = 1, length = 11))
     ### Drug annotation.
-    sp_cutoff1 <- as.numeric(df$switch.point) < y.cutoff[1]
-    sp_cutoff2 <- as.numeric(df$switch.point) > y.cutoff[2]
-    sp_cutoff3 <- as.numeric(df$switch.point) < y.cutoff[3]
-    sp_cutoff4 <- as.numeric(df$switch.point) > y.cutoff[4]
-    res_cutoff1 <- as.numeric(df$residuals.mean) < x.cutoff[1]
-    res_cutoff2 <- as.numeric(df$residuals.mean) > x.cutoff[2]
+    sp_lower_01 <- as.numeric(df$switch.point) < 0.1
+    sp_lower_06 <- as.numeric(df$switch.point) < 0.6
+    sp_higher_04 <- as.numeric(df$switch.point) > 0.4
+    sp_higher_09 <- as.numeric(df$switch.point) > 0.9
+    res_lower_10 <- as.numeric(df$residuals.mean) < res.decil[["10%"]]
+    res_higher_90 <- as.numeric(df$residuals.mean) > res.decil[["90%"]]
     df$annotation <- rep("no", times = nrow(df))
-    df$annotation[sp_cutoff1 & res_cutoff2] <- "TOP-HighSensitivityDrugs"
-    df$annotation[sp_cutoff4 & res_cutoff1] <- "TOP-LowSensitivityDrugs"
-    df$annotation[sp_cutoff2 & sp_cutoff3 &
-                    res_cutoff1] <- "TOP-Differential-LowSensitivityDrugs"
-    df$annotation[sp_cutoff2 & sp_cutoff3 &
-                    res_cutoff2] <- "TOP-Differential-HighSensitivityDrugs"
+    df$annotation[sp_lower_01 & res_higher_90] <- "TOP-HighSensitivityDrugs"
+    df$annotation[sp_higher_09 & res_lower_10] <- "TOP-LowSensitivityDrugs"
+    df$annotation[sp_higher_04 & sp_lower_06 &
+                    res_lower_10] <- "TOP-Differential-LowSensitivityDrugs"
+    df$annotation[sp_higher_04 & sp_lower_06 &
+                    res_higher_90] <- "TOP-Differential-HighSensitivityDrugs"
     ### Drug labels.
     df$labels <- rep(NA, times = nrow(df))
     decreasing_order <- c("TOP-Differential-HighSensitivityDrugs",
@@ -964,23 +785,21 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3, topnames = NULL,
       scale_color_manual(values = setNames(colors, names)) +
       scale_fill_manual(values = setNames(colors, names), breaks = names[1:4],
                         drop = FALSE) + theme_classic() +
-      geom_vline(xintercept = x.cutoff[1], linetype = "dotted") +
-      geom_vline(xintercept = x.cutoff[2], linetype = "dotted") +
-      geom_hline(yintercept = y.cutoff[4], linetype = "dotted") +
-      geom_hline(yintercept = y.cutoff[1], linetype = "dotted") +
-      geom_hline(yintercept = y.cutoff[2], linetype = "dotted") +
-      geom_hline(yintercept = y.cutoff[3], linetype = "dotted") + ylim(0, 1) +
+      geom_vline(xintercept = res.decil["10%"], linetype = "dotted") +
+      geom_vline(xintercept = res.decil["90%"], linetype = "dotted") +
+      geom_hline(yintercept = 0.9, linetype = "dotted") +
+      geom_hline(yintercept = 0.1, linetype = "dotted") +
+      geom_hline(yintercept = 0.4, linetype = "dotted") +
+      geom_hline(yintercept = 0.6, linetype = "dotted") + ylim(0, 1) +
       labs(title = paste(idents, "=", lvl),
-           caption = paste0("x cut-offs: ", x.cutoff.caption, "; y cut-offs: ",
-                            y.cutoff.caption)) + 
+           caption = paste0("x cut-offs: first and last deciles; y cut-offs:",
+                            " 0.1, 0.4, 0.6 and 0.9")) + 
       xlab("Residuals' Mean") + ylab("Switch Point") +
       ggrepel::geom_text_repel(label = df$labels, force = force, na.rm = TRUE,
                                ...) +
-      guides(fill = guide_legend(title = "Drug Annotation"), color = "none") +
+      guides(fill = guide_legend(title = "Drug Annotation"), color = FALSE) +
       cowplot::theme_cowplot() + theme(plot.title = element_text(hjust = 0.5))
     return(p)
   })
-  # If p4s has only one plot, don't return a list.
-  if (length(p4s) == 1) p4s <- p4s[[1]]
   return(p4s)
 }

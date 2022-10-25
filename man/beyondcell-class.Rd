@@ -31,8 +31,7 @@ by \code{\link[beyondcell]{bcRanks}}.}
 \code{@meta.data}).}
 
 \item{\code{SeuratInfo}}{List with information about the input \code{Seurat} object,
-including the \code{@assays} used to compute the \code{beyondcell} object, 
-its \code{@reductions} and tissue \code{@images} for spatial data.}
+including the \code{@reductions}.}
 
 \item{\code{background}}{(Subsetted and/or regressed) normalized BCS obtained using
 DSS signatures. Useful to compute \code{beyondcell}'s UMAP reduction and the

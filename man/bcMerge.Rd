@@ -4,17 +4,12 @@
 \alias{bcMerge}
 \title{Merges two beyondcell objects}
 \usage{
-bcMerge(bc1, bc2, keep.bc.clusters = TRUE)
+bcMerge(bc1, bc2)
 }
 \arguments{
-\item{bc1}{First \code{beyondcell} object to merge. Can be a subset of 
-\code{bc2}.}
+\item{bc1}{First \code{beyondcell} object to merge.}
 
 \item{bc2}{Second \code{beyondcell} object to merge.}
-
-\item{keep.bc.clusters}{Whether to keep \code{bc1} reductions or not. 
-Choose \code{keep.bc.clusters = TRUE} when \code{bc2} is formed by functional
-pathways and \code{bc1} is a drug-containing \code{beyondcell} object.}
 }
 \value{
 A merged \code{beyondcell} object.
@@ -23,7 +18,5 @@ A merged \code{beyondcell} object.
 This function merges two \code{\link[beyondcell]{beyondcell}}
 objects obtained from the same single-cell matrix using the same
 \code{expr.thres} (see \code{\link[beyondcell]{bcScore}} for more
-information). It binds signatures, not cells. If \code{bc1} is a subset of 
-\code{bc2}, the resulting \code{beyondcell} object will contain just the 
-subsetted cells and the \code{SeuratInfo} stored in \code{bc1}.
+information). It binds signatures, not cells.
 }

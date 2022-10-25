@@ -78,9 +78,7 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
     stop('res must be a vector of numbers >= 0.')
   }
   # Check add.DSS.
-  sigs <- rownames(bc@normalized)
-  not.paths <- !(sigs %in% names(pathways))
-  drugs <- sigs[not.paths]
+  not.paths <- !(rownames(bc@normalized) %in% names(pathways))
   n.drugs <- sum(not.paths)
   if (length(add.DSS) != 1 | !is.logical(add.DSS)) {
     stop('add.DSS must be TRUE or FALSE.')
@@ -133,7 +131,7 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
       message('Computing background BCS using DSS signatures...')
       ### Genesets.
       gs.background <- suppressMessages(
-        GetCollection(DSS, n.genes = bc@n.genes, mode = bc@mode,
+        GenerateGenesets(DSS, n.genes = bc@n.genes, mode = bc@mode,
                          include.pathways = FALSE))
       ### BCS.
       background <- suppressWarnings(
@@ -164,7 +162,7 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
       message('Background BCS already computed. Skipping this step.')
     }
     ### Add background to bc.
-    all.rows <- unique(c(drugs, rownames(bc@background)))
+    all.rows <- unique(c(rownames(bc@normalized), rownames(bc@background)))
     merged.score <- rbind(bc@normalized, bc@background[, cells])[all.rows, ]
     ### Scale.
     merged.score <- t(apply(merged.score, 1, scales::rescale, to = c(0, 1)))
@@ -173,17 +171,15 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
     ### No background BCS.
     message(paste('DSS background not computed. UMAP will be created just with',
                   'the drugs (not pathways) in bc object.'))
-    bc.merged <- beyondcell(scaled = bc@scaled[drugs, ])
+    bc.merged <- bc
   }
-  sc <- Seurat::CreateSeuratObject(bc.merged@scaled[, , drop = FALSE])
-  print(dim(sc))
+  sc <- Seurat::CreateSeuratObject(bc.merged@scaled[not.paths, , drop = FALSE])
   # PCA.
   sc <- Seurat::ScaleData(sc, features = rownames(sc), do.scale = FALSE,
                           do.center = FALSE)
-  sc <- Seurat::RunPCA(sc, features = rownames(sc), npcs = 100, maxit = 100000,
-                       nfeatures.print = min(30, n.drugs/2))
+  sc <- Seurat::RunPCA(sc, features = rownames(sc), npcs = 100,  maxit = 100000)
   # Elbow plot.
-  elbowplot <- Seurat::ElbowPlot(sc, ndims = min(50, n.drugs - 1)) +
+  elbowplot <- Seurat::ElbowPlot(sc, ndims = 50) +
     ggplot2::theme(legend.position = "bottom")
   if (is.null(elbow.path)) {
     message('Printing elbow plot...')

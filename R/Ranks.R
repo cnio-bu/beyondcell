@@ -144,13 +144,13 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE) {
     })
   }
   rownames(info) <- info$IDs
-  info <- info[, c("drugs", "preferred.drug.names", "MoAs", "targets", "studies")]
+  info <- info[, c("drugs", "preferred.drug.names", "MoAs", "targets", "sources")]
   final.stats <- transform(merge(final.stats, info, by = 0, all.x = TRUE),
                            row.names = Row.names, Row.names = NULL)
   # Order by rank and reorder columns.
   final.stats <- final.stats[order(final.stats[, order.col], decreasing = FALSE),
                              c("drugs", "preferred.drug.names", "MoAs",
-                               "targets", "studies", cols)]
+                               "targets", "sources", cols)]
   # Add to beyondcell object.
   bc@ranks[[idents]] <- final.stats
   # Close the progress bar.

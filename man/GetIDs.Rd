@@ -4,12 +4,15 @@
 \alias{GetIDs}
 \title{Returns the IDs that match the specified filter's values}
 \usage{
-GetIDs(values, filter)
+GetIDs(values, filter, df = drugInfo)
 }
 \arguments{
 \item{values}{User-supplied filtering vector.}
 
 \item{filter}{Column name or number to subset by.}
+
+\item{df}{\code{data.frame} with drug information. It must contain, at least,
+two columns: \code{"IDs"} and \code{filter}.}
 }
 \value{
 A vector with the IDs that match the \code{filter}'s values.

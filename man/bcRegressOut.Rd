@@ -4,23 +4,12 @@
 \alias{bcRegressOut}
 \title{Regresses out unwanted effects from BCS}
 \usage{
-bcRegressOut(bc, vars.to.regress, k.neighbors = 10, add.DSS = FALSE)
+bcRegressOut(bc, vars.to.regress)
 }
 \arguments{
 \item{bc}{\code{\link[beyondcell]{beyondcell}} object.}
 
 \item{vars.to.regress}{Vector of metadata columns to regress out the BCS.}
-
-\item{k.neighbors}{(\code{\link[DMwR]{knnImputation}}'s \code{k}) Number of 
-nearest neighbors to use.}
-
-\item{add.DSS}{Use background BCS computed with \code{DSS} signatures
-(\code{add.DSS = TRUE}) or just use the signatures included in the \code{bc}
-object (\code{add.DSS = FALSE}) to do the imputation of \code{NaN} BCS. If 
-the number of drugs in \code{bc} (excluding pathways) is <= 20, it is 
-recomended to set \code{add.DSS = TRUE}. Note that if \code{add.DSS = TRUE}, 
-the regression and subset steps that have been applied on \code{bc} will 
-also be applied on the background BCS.}
 }
 \value{
 Returns a \code{beyondcell} object with regressed normalized BCS,

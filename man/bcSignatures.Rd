@@ -7,7 +7,6 @@
 bcSignatures(
   bc,
   UMAP = "beyondcell",
-  spatial = FALSE,
   signatures = list(values = NULL, colorscale = NULL, alpha = 0.7, na.value = "grey50",
     limits = c(0, 1), center = NULL, breaks = 0.1),
   genes = list(values = NULL, limits = c(NA, NA), share.limits = FALSE),
@@ -23,10 +22,6 @@ bcSignatures(
 \item{UMAP}{UMAP reduction to plot. Either \code{"beyondcell"}, computed
 using \code{\link[beyondcell]{bcUMAP}}, or \code{"Seurat"}, obtained using
 \code{Seurat}'s functions.}
-
-\item{spatial}{Logical indicating if a \code{\link[Seurat]{SpatialPlot}}
-should be drawn. If \code{spatial = TRUE}, the \code{UMAP} and \code{blend} 
-values will be ignored.}
 
 \item{signatures}{List with plot parameters to colour the UMAP by BCS:
 \itemize{
@@ -68,16 +63,14 @@ have a direct relationship and the BCS will be added. On the other hand, if
 relationship and their BCS will be substracted.}
 
 \item{blend}{(From \code{\link[Seurat]{FeaturePlot}}) Scale and blend
-expression values to visualise co-expression of two genes. If 
-\code{spatial = TRUE}, \code{blend} is set to \code{FALSE}.}
+expression values to visualise co-expression of two genes.}
 
 \item{mfrow}{Numeric vector of the form \code{c(nr, nc)}. \code{nr}
 corresponds to the number of rows and \code{nc} to the number of columns of
 the grid in which the plots will be drawn. If you want to draw the plots
 individually, set \code{mfrow = c(1, 1)}.}
 
-\item{...}{Other arguments passed to 
-\code{\link[Seurat]{FeaturePlot}}/\code{\link[Seurat]{SpatialFeaturePlot}}.}
+\item{...}{Other arguments passed to \code{FeaturePlot}.}
 }
 \value{
 A list of \code{patchwork} (if \code{mfrow != c(1, 1)}) or
