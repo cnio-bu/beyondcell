@@ -8,13 +8,13 @@ ListFilters(entry)
 }
 \arguments{
 \item{entry}{Either \code{"drugs"}, \code{"IDs"}, \code{"MoAs"},
-\code{"targets"} or \code{"sources"}.}
+\code{"targets"} or \code{"studies"}.}
 }
 \value{
 All the possible values for the specified \code{entry}.
 }
 \description{
 This function returns all the available values for \code{drugs},
-\code{IDs}, \code{MoAs}, \code{targets} or \code{sources} filters in
+\code{IDs}, \code{MoAs}, \code{targets} or \code{studies} filters in
 \code{\link[beyondcell]{GenerateGenesets}} function.
 }

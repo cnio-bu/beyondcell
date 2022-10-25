@@ -94,7 +94,7 @@ GenerateGenesets <- function(x, perform.reversal = FALSE) {
 #' down-regulated genes. See Details for more information.
 #' @param filters If \code{x} is a pre-loaded collection, you can provide a list of
 #' filters to subset it. You can specify which \code{drugs}, sig \code{IDs},
-#' mechanisms of action (\code{MoAs}), \code{targets} and/or \code{sources} you
+#' mechanisms of action (\code{MoAs}), \code{targets} and/or \code{studies} you
 #' are interested in (cap insensitive). You can call
 #' \code{\link[beyondcell]{ListFilters}} to check all the available values for
 #' these filters. The signatures that pass \strong{ANY} of them are included in
@@ -235,11 +235,11 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
 
 #' @title Returns all the possible values for the specified filter
 #' @description This function returns all the available values for \code{drugs},
-#' \code{IDs}, \code{MoAs}, \code{targets} or \code{sources} filters in
+#' \code{IDs}, \code{MoAs}, \code{targets} or \code{studies} filters in
 #' \code{\link[beyondcell]{GenerateGenesets}} function.
 #' @name ListFilters
 #' @param entry Either \code{"drugs"}, \code{"IDs"}, \code{"MoAs"},
-#' \code{"targets"} or \code{"sources"}.
+#' \code{"targets"} or \code{"studies"}.
 #' @return All the possible values for the specified \code{entry}.
 #' @export
 
@@ -253,7 +253,7 @@ ListFilters <- function(entry) {
     out <- sort(unique(drugInfo[["MoAs"]]$MoAs), decreasing = FALSE)
   } else if (entry == "targets") {
     out <- sort(unique(drugInfo[["Targets"]]$targets), decreasing = FALSE)
-  } else if (entry == "sources") {
+  } else if (entry == "studies") {
     out <- sort(unique(drugInfo[["IDs"]]$studies), decreasing = FALSE)
   } else {
     stop("Incorrect entry.")
