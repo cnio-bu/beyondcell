@@ -16,10 +16,10 @@
 bcScore <- function(sc, gs, expr.thres = 0.1) {
   # --- Checks ---
   # Check if sc is a Seurat object or an expression matrix.
-  if ("Seurat"%in% class(sc)) {
+  if ("Seurat" %in% class(sc)) {
     input <- "Seurat object"
     default <- Seurat::DefaultAssay(sc)
-    if(default %in% c("RNA", "SCT")) {
+    if(default %in% c("RNA", "SCT", "Spatial")) {
       if("data" %in% slotNames(sc@assays[[default]])) {
         message(paste0('Using ', default, ' assay as input.'))
         expr.matrix <- as.matrix(Seurat::GetAssayData(sc, slot = "data",
@@ -28,10 +28,11 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
         stop('Default assay must include a normalized data (@data) slot.')
       }
     } else {
-      stop('Seurat default assay must be either RNA or SCT.')
+      stop('Seurat default assay must be either RNA, Spatial or SCT.')
     }
   } else if ("matrix" %in% class(sc) & is.numeric(sc)) {
     input <- "expression matrix"
+    default <- list()
     warning(paste('Using count matrix as input. Please, check that this matrix',
                   'is normalized and unscaled.'))
     expr.matrix <- sc
@@ -55,10 +56,13 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
   # --- Code ---
   # Create beyondcell object.
   bc <- beyondcell(expr.matrix = expr.matrix, meta.data = sc@meta.data,
-                   SeuratInfo = list(reductions = sc@reductions),
+                   SeuratInfo = list(assays = default, reductions = sc@reductions),
                    regression = list(order = rep("", 2), vars = NULL,
                                      order.background = rep("", 2)),
                    n.genes = gs@n.genes, mode = gs@mode, thres = expr.thres)
+  # Add images if it is a spatial object.
+  is.spatial <- "images" %in% slotNames(sc)
+  if (is.spatial) bc@SeuratInfo$images <- sc@images
   # Convert genes in expr.matrix and gs to lowercase.
   rownames(expr.matrix) <- tolower(rownames(expr.matrix))
   gs@genelist <- lapply(gs@genelist, function(x) {
@@ -92,7 +96,7 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
     return(n.expr.genes < (length(all.genes) * expr.thres))
   }))
   rownames(below.thres) <- names(gs@genelist)
-  below.thres <- below.thres[, colnames(expr.matrix)]
+  below.thres <- below.thres[, colnames(expr.matrix), drop = FALSE]
   # If all cells are below the threshold, remove that signature and raise a
   # warning
   nan.rows.idx <- which(rowSums(below.thres) == ncol(below.thres))
@@ -101,7 +105,7 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
                    "expr.thres and will be removed: ", 
                    paste0(rownames(below.thres)[nan.rows.idx], collapse = ", "), 
                    "."))
-    below.thres <- below.thres[-nan.rows.idx, ]
+    below.thres <- below.thres[-nan.rows.idx, , drop = FALSE]
     gs@genelist <- gs@genelist[-nan.rows.idx]
   }
   # BCS.
@@ -151,9 +155,8 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
       scoring.matrix <- -1 * scoring.matrix[, , drop = FALSE]
     }
   }
-  # If genesets were obtained in a TREATED vs CONTROL comparison, invert BCS
-  # sign (exclude pathways).
-  if (gs@comparison == "treated_vs_control") {
+  # Invert the sign of BCS if necessary (exclude pathways).
+  if (gs@inverse.score) {
     not.paths <- which(!(rownames(scoring.matrix) %in% names(pathways)))
     paths <- which(rownames(scoring.matrix) %in% names(pathways))
     if (length(paths) > 0) {
@@ -172,6 +175,10 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
   slot(bc, "switch.point") <- switch.point
   # Close the progress bar.
   close(pb)
+  # Report the number of complete cases in the BCS matrix.
+  complete <- sum(complete.cases(t(bc@normalized)))
+  message(paste0("There are ", complete, "/", ncol(bc@normalized), 
+                 " cells without missing values in your beyondcell object."))
   return(bc)
 }
 

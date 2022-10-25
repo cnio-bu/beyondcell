@@ -7,17 +7,17 @@
 #' @slot mode Argument passed to \code{GenerateGenesets}. Whether the
 #' \code{geneset} contains up and/or down-regulated genes.
 #' @slot info Dataframe with drug signatures information, including sig IDs,
-#' drug names, MoAs, target genes and data sources (LINCS, CTRP, GDSC or CCLE).
+#' drug names, MoAs, target genes and data sources (LINCS, CTRP, GDSC or PRISM).
 #' This slot is only filled if \code{GenerateGenesets}' input is a pre-loaded
 #' matrix.
-#' @slot comparison Argument passed to \code{GenerateGenesets}. Either
-#' \code{"treated_vs_control"} or \code{"control_vs_treated"}.
+#' @slot inverse.score Wether to inverse or not the sign of the computed BCS. 
+#' Only applicable to PSc and DDS drug signatures.
 
 geneset <- setClass("geneset", slots = list(genelist = "list",
                                             n.genes = "numeric",
                                             mode = "character",
                                             info = "data.frame",
-                                            comparison = "character"))
+                                            inverse.score = "logical"))
 
 #' @title Beyondcell class
 #' @description An object to represent the beyondcell scores (BCS) for each cell and
@@ -34,7 +34,8 @@ geneset <- setClass("geneset", slots = list(genelist = "list",
 #' (including the therapeutic clusters and \code{\link[Seurat]{Seurat}}'s
 #' \code{@@meta.data}).
 #' @slot SeuratInfo List with information about the input \code{Seurat} object,
-#' including the \code{@@reductions}.
+#' including the \code{@@assays} used to compute the \code{beyondcell} object, 
+#' its \code{@@reductions} and tissue \code{@@images} for spatial data.
 #' @slot background (Subsetted and/or regressed) normalized BCS obtained using
 #' DSS signatures. Useful to compute \code{beyondcell}'s UMAP reduction and the
 #' therapeutic clusters when the number of drug signatures is low.
