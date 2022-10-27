@@ -1,4 +1,4 @@
-# Tests.
+# Test errors.
 testthat::test_that("errors", {
   ### Check x.
   testthat::expect_error(
@@ -26,5 +26,67 @@ testthat::test_that("errors", {
   testthat::expect_error(
     GenerateGenesets("../testdata/correct.gmt", perform.reversal = 1),
     'perform.reversal must be TRUE or FALSE.'
+  )
+})
+
+# Test values.
+testthat::test_that("default values", {
+  ### Test that GenerateGenesets' output is a geneset object.
+  testthat::expect_s4_class(
+    GenerateGenesets("../testdata/correct.gmt"),
+    "geneset"
+  )
+  ### Check that the slot @genelist has names.
+  gs_genelist <- GenerateGenesets("../testdata/correct.gmt")@genelist
+  testthat::expect_false(
+    is.null(names(gs_genelist)),
+    NULL
+  )
+  ### Check that the slot @genelist is a list of lists.
+  testthat::expect_true(
+    all(sapply(gs_genelist, class) == "list")
+  )
+  ### Check that each list inside the slot @genelist has length 1 or 2.
+  testthat::expect_true(
+    all(sapply(gs_genelist, length) %in% 1:2)
+  )
+  ### Check that the slot @genelist is a list of lists of character vectors.
+  testthat::expect_true(
+    all(sapply(gs_genelist, 
+               FUN = function(x) all(sapply(x, class) == "character")))
+  )
+  ### Check that each character vector inside the slot @genelist has a min 
+  ### length of 1.
+  testthat::expect_true(
+    all(sapply(gs_genelist, FUN = function(x) all(sapply(x, length) >= 1)))
+  )
+  ### Check that each character vector inside the slot @genelist is named either
+  ### "up" or "down".
+  testthat::expect_true(
+    all(sapply(gs_genelist, 
+               FUN = function(x) all(names(x) %in% c("up", "down"))))
+  )
+  ### Check that the slot @n.genes is empty.
+  testthat::expect_equal(
+    GenerateGenesets("../testdata/correct.gmt")@n.genes,
+    NaN
+  )
+  ### Check that the slot @mode is empty.
+  testthat::expect_equal(
+    format(GenerateGenesets("../testdata/correct.gmt")@mode),
+    "None"
+  )
+  ### Check that the slot @info is empty.
+  testthat::expect_equal(
+    GenerateGenesets("../testdata/correct.gmt")@info,
+    data.frame()
+  )
+  ### Check the slot @inverse.score.
+  testthat::expect_false(
+    GenerateGenesets("../testdata/correct.gmt")@inverse.score
+  )
+  testthat::expect_true(
+    GenerateGenesets("../testdata/correct.gmt", 
+                     perform.reversal = TRUE)@inverse.score
   )
 })
