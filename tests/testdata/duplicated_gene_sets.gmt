@@ -1,0 +1,4 @@
+GENESET1_up	"Up-regulated genes in geneset 1"	A	B	C	D	E
+GENESET1_DOWN	"Down-regulated genes in geneset 1"	F	G	H	I	J
+GENESET1_up	"Up-regulated genes in geneset 1"	A	B	C	D	E
+GENESET2_DN	"Down-regulated genes in geneset 2"	B	D	Q	R	S	T
