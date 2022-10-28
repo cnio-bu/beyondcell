@@ -137,12 +137,14 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
   mode <- sort(unique(mode), decreasing = TRUE)
 
   ### Number of genes.
+  if (!is.numeric(n.genes)) stop('n.genes must be numeric.')
   if (length(n.genes) != 1 | n.genes[1]%%1 != 0 | n.genes[1] < 1) {
     stop('n.genes must be a positive integer.')
-    } else if (n.genes > n.max) {
-      stop(paste0('n.genes exceeds the maximum number of genes in signature (',
-                  n.max, ').'))
-    }
+  }
+  if (n.genes > n.max) {
+    stop(paste0('n.genes exceeds the maximum number of genes in signature (',
+                n.max, ').'))
+  }
 
   # Check filters.
   filters.names <- c("drugs", "IDs", "MoAs", "targets", "studies")
