@@ -216,9 +216,10 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
   # Pathways.
   if (include.pathways) {
     paths <- lapply(pathways, function(p) {
-      in.p.mode <- mode %in% names(p)
-      if (any(in.p.mode)) p[mode[in.p.mode]]
+      in.p.mode <- names(p) %in% mode
+      if (any(in.p.mode)) p[names(p)[in.p.mode]]
     })
+    paths <- paths[!sapply(paths, is.null)]
   } else {
     paths <- list()
   }
