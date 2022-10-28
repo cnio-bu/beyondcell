@@ -132,11 +132,11 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
    stop(paste('x must be either PSc, SSc or DSS.'))
   } 
 
-  # Check n.genes and mode.
+  # Check mode.
   if (any(!(mode %in% c("up", "down")))) stop('Incorrect mode.')
   mode <- sort(unique(mode), decreasing = TRUE)
 
-  ### Number of genes.
+  # Check n.genes.
   if (!is.numeric(n.genes)) stop('n.genes must be numeric.')
   if (length(n.genes) != 1 | n.genes[1]%%1 != 0 | n.genes[1] < 1) {
     stop('n.genes must be a positive integer.')
@@ -181,7 +181,7 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
   if (identical(x, PSc) | identical(x, DSS)) {
     inverse.score <- TRUE # When using PSc/DDS, inverse the sign of the BCS.
   }
-  ### Filters.
+  # Filters.
   if (length(selected.filters) == 0) {
     ids <- unique(info$IDs)
     } else {
@@ -210,7 +210,7 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
                       paste0("   - ", warnings, " ", collapse = "")))
       }
     }
-  ### Genes.
+  # Genes.
   genes <- lapply(ids, function(sig) {
     l <- list(up = x@genelist[[sig]]$up[1:n.genes],
               down = x@genelist[[sig]]$down[1: n.genes]
