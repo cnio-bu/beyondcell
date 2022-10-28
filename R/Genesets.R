@@ -193,10 +193,10 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
       warning(paste('The following filters\' values yielded no results:\n',
                     paste0("   - ", warnings, " ", collapse = "")))
     }
-  }
+  } else ids <- names(x@genelist)
   
   # Drug info.
-  if (exists(ids)) {
+  if (!identical(ids, names(x@genelist))) {
     info <- subset(x@info, subset = x@info$IDs %in% ids)
     info <- aggregate(.~ IDs, data = info, na.action = NULL, 
                       FUN = function(rw) {
