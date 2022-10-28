@@ -225,7 +225,7 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
   
   # Output.
   return(geneset(genelist = c(genes, paths), n.genes = n.genes,
-                 mode = mode, info = info, inverse.score = inverse.score))
+                 mode = mode, info = info, inverse.score = x@inverse.score))
 
 }
 
