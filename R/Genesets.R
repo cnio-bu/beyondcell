@@ -216,10 +216,14 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
   
   # Pathways.
   if (include.pathways) {
-    paths <- lapply(pathways, function(p) p[names(p)[mode %in% names(p)]])
+    paths <- lapply(pathways, function(p) {
+      in.p.mode <- mode %in% names(p)
+      if (any(in.p.mode)) p[mode[in.p.mode]]
+    })
   } else {
     paths <- list()
   }
+  
   # Output.
   return(geneset(genelist = c(genes, paths), n.genes = n.genes,
                  mode = mode, info = info, inverse.score = inverse.score))
