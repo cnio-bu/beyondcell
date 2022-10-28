@@ -124,10 +124,10 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
                           include.pathways = TRUE){
 
    # --- Global Checks ---
-  # Check if x is a preloaded collection
+  # Check if x is a pre-loaded collection.
   collection_name <- deparse(substitute(x))
   is.D <- c(identical(x, PSc), identical(x, SSc), identical(x, DSS))
-  n.max <- 500 # Our colls. have at max. 500 genes
+  n.max <- 500 # Our collections have at max 500 genes.
 
   if (!any(is.D)) {
    stop(paste('x must be either PSc, SSc or DSS.'))
@@ -163,7 +163,7 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
   }
 
    # --- Code ---
-  # Subset pre-loaded collections...
+  # Subset pre-loaded collections.
   if (collection_name == "DSS"){
     dss_sigs <- names(DSS@genelist)
     info <- subset(drugInfo[["IDs"]],
@@ -214,7 +214,7 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
     return(l)
   })
   names(genes) <- ids
-   # Drug IDs.
+  # Drug IDs.
   info <- subset(info, subset = info$IDs %in% ids)
   info <- aggregate(.~ IDs, data = info, na.action = NULL, FUN = function(rw) {
     paste(na.omit(unique(rw)), collapse = ", ")
