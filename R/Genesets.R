@@ -167,20 +167,6 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
   }
 
   # --- Code ---
-  # Subset pre-loaded collections.
-  #if (collection_name == "DSS"){
-  #  dss_sigs <- names(DSS@genelist)
-  #  info <- subset(drugInfo[["IDs"]],
-  #                 subset = drugInfo[["IDs"]]$IDs %in% dss_sigs)
-  #                 } else {
-  #  info <- subset(drugInfo[["IDs"]], 
-  #                 subset = drugInfo[["IDs"]]$collections == collection_name
-  #               )}
-                 
-  #inverse.score <- FALSE
-  if (identical(x, PSc) | identical(x, DSS)) {
-    inverse.score <- TRUE # When using PSc/DDS, inverse the sign of the BCS.
-  }
   # Filters.
   if (length(selected.filters) == 0) {
     ids <- unique(info$IDs)
