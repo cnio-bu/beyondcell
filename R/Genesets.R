@@ -147,17 +147,20 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
   }
 
   # Check filters.
+  if (!is.list(filters)) stop('filters must be a list.')
   filters.names <- c("drugs", "IDs", "MoAs", "targets", "studies")
   selected.filters <- names(filters)
-  if (any(!(selected.filters %in% filters.names))) stop('Invalid names in filters.')
+  if (any(!(selected.filters %in% filters.names))) {
+    stop('Invalid names in filters.')
+  }
   filters_class <- sapply(filters, is.null) | sapply(filters, is.character)
-    if (any(!filters_class)) {
-      stop(paste0('Incorrect value for filter\'s entry: "',
-                  paste0(selected.filters[!filters_class], collapse = ", "),
-                  '". You must provide a character vector.'))
-    }
-    selected.filters <- selected.filters[!sapply(filters, is.null)]
-
+  if (any(!filters_class)) {
+    stop(paste0('Incorrect value for filter\'s entry: ',
+                paste0(selected.filters[!filters_class], collapse = ", "),
+                '. You must provide a character vector.'))
+  }
+  selected.filters <- selected.filters[!sapply(filters, is.null)]
+  
     # Check include.pathways.
   if (length(include.pathways) != 1 | !is.logical(include.pathways)) {
     stop('include.pathways must be TRUE or FALSE.')
