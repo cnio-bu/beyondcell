@@ -123,7 +123,7 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
                                          targets = NULL, studies = NULL),
                           include.pathways = TRUE){
 
-   # --- Global Checks ---
+  # --- Global Checks ---
   # Check if x is a pre-loaded collection.
   is.D <- c(identical(x, PSc), identical(x, SSc), identical(x, DSS))
   n.max <- 500 # Our collections have at max 500 genes.
@@ -161,12 +161,12 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
   }
   selected.filters <- selected.filters[!sapply(filters, is.null)]
   
-    # Check include.pathways.
+  # Check include.pathways.
   if (length(include.pathways) != 1 | !is.logical(include.pathways)) {
     stop('include.pathways must be TRUE or FALSE.')
   }
 
-   # --- Code ---
+  # --- Code ---
   # Subset pre-loaded collections.
   #if (collection_name == "DSS"){
   #  dss_sigs <- names(DSS@genelist)
@@ -231,7 +231,7 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
   } else {
     paths <- list()
   }
-   # Output.
+  # Output.
   return(geneset(genelist = c(genes, paths), n.genes = n.genes,
                  mode = mode, info = info, inverse.score = inverse.score))
 
