@@ -203,8 +203,7 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
       paste(na.omit(unique(rw)), collapse = ", ")
     })
     info <- info[order(info$IDs, decreasing = FALSE), ]
-    x@info <- info
-  }
+  } else info <- x@info
   
   # Genes.
   genes <- lapply(ids, function(sig) {
