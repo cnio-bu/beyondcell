@@ -192,7 +192,7 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
     } else if (length(warnings) > 0) {
       warning(paste('The following filters\' values yielded no results:\n',
                     paste0("   - ", warnings, " ", collapse = "")))
-    } else ids <- names(x@genelist)
+    }
     
   # Genes.
   genes <- lapply(ids, function(sig) {
