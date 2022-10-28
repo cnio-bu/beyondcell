@@ -117,21 +117,16 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
                                          targets = NULL, studies = NULL),
                           include.pathways = TRUE){
 
-   # --- Global Checks ---
-  # Check if x is a preloaded collection
-  collection_name <- deparse(substitute(x))
+  # --- Global Checks ---
+  # Check if x is a pre-loaded collection.
   is.D <- c(identical(x, PSc), identical(x, SSc), identical(x, DSS))
-  n.max <- 500 # Our colls. have at max. 500 genes
+  n.max <- 500 # Our collections have at max 500 genes.
 
   if (!any(is.D)) {
    stop(paste('x must be either PSc, SSc or DSS.'))
   } 
-
-  # Check n.genes and mode.
-  if (any(!(mode %in% c("up", "down")))) stop('Incorrect mode.')
-  mode <- sort(unique(mode), decreasing = TRUE)
-
-  ### Number of genes.
+  
+  # Check n.genes.
   if (!is.numeric(n.genes)) stop('n.genes must be numeric.')
   if (length(n.genes) != 1 | n.genes[1]%%1 != 0 | n.genes[1] < 1) {
     stop('n.genes must be a positive integer.')
@@ -140,6 +135,10 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
     stop(paste0('n.genes exceeds the maximum number of genes in signature (',
                 n.max, ').'))
   }
+  
+  # Check mode.
+  if (any(!(mode %in% c("up", "down")))) stop('Incorrect mode.')
+  mode <- sort(unique(mode), decreasing = TRUE)
 
   # Check filters.
   if (!is.list(filters)) stop('filters must be a list.')
@@ -155,78 +154,71 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
                 '. You must provide a character vector.'))
   }
   selected.filters <- selected.filters[!sapply(filters, is.null)]
-
-    # Check include.pathways.
+  
+  # Check include.pathways.
   if (length(include.pathways) != 1 | !is.logical(include.pathways)) {
     stop('include.pathways must be TRUE or FALSE.')
   }
 
-   # --- Code ---
-  # Subset pre-loaded collections...
-  if (collection_name == "DSS"){
-    dss_sigs <- names(DSS@genelist)
-    info <- subset(drugInfo[["IDs"]],
-                   subset = drugInfo[["IDs"]]$IDs %in% dss_sigs)
-                   } else {
-    info <- subset(drugInfo[["IDs"]], 
-                   subset = drugInfo[["IDs"]]$collections == collection_name
-                 )}
-                 
-  inverse.score <- FALSE
-  if (identical(x, PSc) | identical(x, DSS)) {
-    inverse.score <- TRUE # When using PSc/DDS, inverse the sign of the BCS.
-  }
-  ### Filters.
-  if (length(selected.filters) == 0) {
-    ids <- unique(info$IDs)
-    } else {
-      ids <- unique(unlist(lapply(selected.filters, function(y) {
-        tryCatch(suppressWarnings(GetIDs(values = filters[[y]], filter = y)),
-                 error = function(cond) character())
-      })))
-      warnings <- unlist(lapply(selected.filters, function(z) {
-        tryCatch(GetIDs(values = filters[[z]], filter = z),
-                 error = function(cond) {
-                   err <- paste0(z, ": ", paste0(filters[[z]],
-                                                 collapse = ", "), ".\n")
-                   return(err)
-                 }, warning = function(cond) {
-                   warn <- as.character(cond)
-                   warn.values <- strsplit(sapply(strsplit(warn, split = ": "),
-                                                  `[[`, 3), split = ", ")
-                   return(paste0(z, ": ", warn.values))
-                 })
-      }))
-      warnings <- warnings[!startsWith(warnings, prefix = "sig_")]
-      if (length(ids) == 0) {
-        stop('Couldn\'t find signatures that matched any of the filters.')
-      } else if (length(warnings) > 0) {
-        warning(paste('The following filters\' values yielded no results:\n',
-                      paste0("   - ", warnings, " ", collapse = "")))
-      }
+  # --- Code ---
+  # Filters.
+  if (length(selected.filters) != 0) {
+    ids <- unique(unlist(lapply(selected.filters, function(y) {
+      tryCatch(suppressWarnings(GetIDs(values = filters[[y]], filter = y)), 
+               error = function(cond) character())
+    })))
+    warnings <- unlist(lapply(selected.filters, function(y) {
+      tryCatch(GetIDs(values = filters[[y]], filter = y), 
+               error = function(cond) {
+                 err <- paste0(z, ": ", paste0(filters[[z]], 
+                                               collapse = ", "), ".\n")
+                 return(err)
+               }, warning = function(cond) {
+                 warn <- as.character(cond)
+                 warn.values <- strsplit(sapply(strsplit(warn, split = ": "),
+                                                `[[`, 3), split = ", ")
+                 return(paste0(z, ": ", warn.values))
+               })
+    }))
+    warnings <- warnings[!startsWith(warnings, prefix = "sig-")]
+    if (length(ids) == 0) {
+      stop('Couldn\'t find signatures that matched any of the filters.')
+    } else if (length(warnings) > 0) {
+      warning(paste('The following filters\' values yielded no results:\n',
+                    paste0("   - ", warnings, " ", collapse = "")))
     }
-  ### Genes.
+  } else ids <- names(x@genelist)
+  
+  # Drug info.
+  if (!identical(ids, names(x@genelist))) {
+    info <- subset(x@info, subset = x@info$IDs %in% ids)
+    info <- aggregate(.~ IDs, data = info, na.action = NULL, 
+                      FUN = function(rw) {
+      paste(na.omit(unique(rw)), collapse = ", ")
+    })
+    info <- info[order(info$IDs, decreasing = FALSE), ]
+    x@info <- info
+  }
+  
+  # Genes.
   genes <- lapply(ids, function(sig) {
     l <- list(up = x@genelist[[sig]]$up[1:n.genes],
-              down = x@genelist[[sig]]$down[1: n.genes]
-              )
+              down = x@genelist[[sig]]$down[1:n.genes])
     return(l)
   })
   names(genes) <- ids
-   # Drug IDs.
-  info <- subset(info, subset = info$IDs %in% ids)
-  info <- aggregate(.~ IDs, data = info, na.action = NULL, FUN = function(rw) {
-    paste(na.omit(unique(rw)), collapse = ", ")
-  })
-  info <- info[order(info$IDs, decreasing = FALSE), ]
   
   # Pathways.
   if (include.pathways) {
-    paths <- lapply(pathways, function(p) p[names(p)[mode %in% names(p)]])
+    paths <- lapply(pathways, function(p) {
+      in.p.mode <- mode %in% names(p)
+      if (any(in.p.mode)) p[mode[in.p.mode]]
+    })
   } else {
     paths <- list()
   }
-   # Output.
+  
+  # Output.
   return(geneset(genelist = c(genes, paths), n.genes = n.genes,
                  mode = mode, info = info, inverse.score = inverse.score))
 
