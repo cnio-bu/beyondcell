@@ -168,34 +168,32 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
 
   # --- Code ---
   # Filters.
-  if (length(selected.filters) == 0) {
-    ids <- unique(info$IDs)
-    } else {
-      ids <- unique(unlist(lapply(selected.filters, function(y) {
-        tryCatch(suppressWarnings(GetIDs(values = filters[[y]], filter = y)),
-                 error = function(cond) character())
-      })))
-      warnings <- unlist(lapply(selected.filters, function(z) {
-        tryCatch(GetIDs(values = filters[[z]], filter = z),
-                 error = function(cond) {
-                   err <- paste0(z, ": ", paste0(filters[[z]],
-                                                 collapse = ", "), ".\n")
-                   return(err)
-                 }, warning = function(cond) {
-                   warn <- as.character(cond)
-                   warn.values <- strsplit(sapply(strsplit(warn, split = ": "),
-                                                  `[[`, 3), split = ", ")
-                   return(paste0(z, ": ", warn.values))
-                 })
-      }))
-      warnings <- warnings[!startsWith(warnings, prefix = "sig_")]
-      if (length(ids) == 0) {
-        stop('Couldn\'t find signatures that matched any of the filters.')
-      } else if (length(warnings) > 0) {
-        warning(paste('The following filters\' values yielded no results:\n',
-                      paste0("   - ", warnings, " ", collapse = "")))
-      }
-    }
+  if (length(selected.filters) != 0) {
+    ids <- unique(unlist(lapply(selected.filters, function(y) {
+      tryCatch(suppressWarnings(GetIDs(values = filters[[y]], filter = y)), 
+               error = function(cond) character())
+    })))
+    warnings <- unlist(lapply(selected.filters, function(y) {
+      tryCatch(GetIDs(values = filters[[y]], filter = y), 
+               error = function(cond) {
+                 err <- paste0(z, ": ", paste0(filters[[z]], 
+                                               collapse = ", "), ".\n")
+                 return(err)
+               }, warning = function(cond) {
+                 warn <- as.character(cond)
+                 warn.values <- strsplit(sapply(strsplit(warn, split = ": "),
+                                                `[[`, 3), split = ", ")
+                 return(paste0(z, ": ", warn.values))
+               })
+    }))
+    warnings <- warnings[!startsWith(warnings, prefix = "sig-")]
+    if (length(ids) == 0) {
+      stop('Couldn\'t find signatures that matched any of the filters.')
+    } else if (length(warnings) > 0) {
+      warning(paste('The following filters\' values yielded no results:\n',
+                    paste0("   - ", warnings, " ", collapse = "")))
+    } else ids <- names(x@genelist)
+    
   # Genes.
   genes <- lapply(ids, function(sig) {
     l <- list(up = x@genelist[[sig]]$up[1:n.genes],
