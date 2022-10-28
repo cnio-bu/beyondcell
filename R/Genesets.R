@@ -197,11 +197,11 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
   # Genes.
   genes <- lapply(ids, function(sig) {
     l <- list(up = x@genelist[[sig]]$up[1:n.genes],
-              down = x@genelist[[sig]]$down[1: n.genes]
-              )
+              down = x@genelist[[sig]]$down[1: n.genes])
     return(l)
   })
   names(genes) <- ids
+  
   # Drug IDs.
   info <- subset(info, subset = info$IDs %in% ids)
   info <- aggregate(.~ IDs, data = info, na.action = NULL, FUN = function(rw) {
