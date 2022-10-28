@@ -1,10 +1,24 @@
+# --- Functions ---
+# Function to aggregate and order data.frame in the slot @info.
+aggregateInfo <- function(x) {
+  x <- aggregate(.~ IDs, data = x, na.action = NULL, FUN = function(rw) {
+    paste(na.omit(unique(rw)), collapse = ", ")
+  })
+  x <- x[order(x$IDs, decreasing = FALSE), ]
+  return(x)
+}
+
+# --- Code ---
 # Maximum n.genes in a collection.
 n.max <- 500
 
 # Filters names.
 filters.names <- c("drugs", "IDs", "MoAs", "targets", "studies")
 
-# Tests.
+# Pathways
+load("../../R/sysdata.rda")
+
+# Test errors.
 testthat::test_that("errors", {
   ### Check x.
   testthat::expect_error(
@@ -65,5 +79,129 @@ testthat::test_that("errors", {
   testthat::expect_error(
     GetCollection(SSc, include.pathways = 1),
     'include.pathways must be TRUE or FALSE.'
+  )
+})
+
+# Test values.
+testthat::test_that("default values", {
+  ### Check that GetCollection's output is a geneset object.
+  testthat::expect_s4_class(
+    GetCollection(SSc),
+    "geneset"
+  )
+  ### Check that default GetCollection's output is identical to pre-loaded 
+  ### collections.
+  testthat::expect_equal(
+    GetCollection(PSc, n.genes = 500, include.pathways = FALSE),
+    PSc
+  )
+  testthat::expect_equal(
+    GetCollection(SSc, n.genes = 500, include.pathways = FALSE),
+    SSc
+  )
+  testthat::expect_equal(
+    GetCollection(DSS, n.genes = 500, include.pathways = FALSE),
+    DSS
+  )
+  ### Check that default GetCollection's pathways output is identical to 
+  ### pathways.
+  testthat::expect_equal(
+    GetCollection(SSc, include.pathways = TRUE)@genelist[names(pathways)],
+    pathways
+  )
+  ### Check the value of the slot @n.genes.
+  testthat::expect_equal(
+    GetCollection(SSc, n.genes = 100)@n.genes,
+    100
+  )
+  ### Check that each character vector inside the slot @genelist has a max
+  ### length of n.genes (only applies to drug signatures).
+  testthat::expect_true(
+    all(sapply(GetCollection(SSc, n.genes = 100, 
+                             include.pathways = FALSE)@genelist, 
+               FUN = function(x) all(sapply(x, length) <= 100)))
+  )
+  ### Check that pathway signatures are not affected by the argument n.genes.
+  testthat::expect_equal(
+    GetCollection(SSc, n.genes = 100, 
+                  include.pathways = TRUE)@genelist[names(pathways)],
+    pathways
+  )
+  ### Check the value of the slot @mode.
+  testthat::expect_equal(
+    GetCollection(SSc)@mode,
+    c("up", "down")
+  )
+  testthat::expect_equal(
+    GetCollection(SSc, mode = "up")@mode,
+    "up"
+  )
+  testthat::expect_equal(
+    GetCollection(SSc, mode = "down")@mode,
+    "down"
+  )
+  ### Check that the names of the character vectors inside the slot @genelist 
+  ### are equal to mode (applies to pathway signatures).
+  testthat::expect_true(
+    all(sapply(GetCollection(SSc, mode = "up", 
+                             include.pathways = TRUE)@genelist,
+               FUN = function(x) all(names(x) == "up")))
+  )
+  testthat::expect_true(
+    all(sapply(GetCollection(SSc, mode = "down", 
+                             include.pathways = TRUE)@genelist,
+               FUN = function(x) all(names(x) == "down")))
+  )
+  ### If the mode = c("up", "down"), pathway signatures can have only 1 mode.
+  testthat::expect_true(
+    all(sapply(GetCollection(SSc, mode = c("up", "down"), 
+                             include.pathways = FALSE)@genelist,
+               FUN = function(x) all(identical(names(x), c("up", "down")))))
+  )
+  testthat::expect_true(
+    all(sapply(GetCollection(SSc, mode = c("up", "down"), 
+                             include.pathways = TRUE)@genelist[names(pathways)],
+               FUN = function(x) all(names(x) %in% c("up", "down"))))
+  )
+  ### Check drugs filter.
+  bortezomib <- subset(SSc@info, subset = preferred.drug.names == "BORTEZOMIB" |
+                         drugs == "BORTEZOMIB")
+  testthat::expect_equal(
+    GetCollection(SSc, filters = list(drugs = "bortezomib"))@info,
+    aggregateInfo(bortezomib)
+  )
+  ### Check IDs filter.
+  sig_21378 <- subset(SSc@info, subset = IDs == "sig-21378")
+  testthat::expect_equal(
+    GetCollection(SSc, filters = list(IDs = "sig-21378"))@info,
+    aggregateInfo(sig_21378)
+  )
+  ### Check MoAs filter.
+  NFkB <- subset(SSc@info, subset = MoAs == "NFkB signaling inhibitor")
+  testthat::expect_equal(
+    GetCollection(SSc, filters = list(MoAs = "NFkB signaling inhibitor"))@info,
+    aggregateInfo(NFkB)
+  )
+  ### Check targets filter.
+  PSMB9 <- subset(SSc@info, subset = targets == "PSMB9")
+  testthat::expect_equal(
+    GetCollection(SSc, filters = list(targets = "PSMB9"))@info,
+    aggregateInfo(PSMB9)
+  )
+  ### Check studies filter.
+  PRISM <- subset(SSc@info, subset = studies == "PRISM")
+  testthat::expect_equal(
+    GetCollection(SSc, filters = list(studies = "PRISM"))@info,
+    aggregateInfo(PRISM)
+  )
+  ### Check multiple filters.
+  multiple <- merge(bortezomib(merge(sig_21378, merge(NFkB, 
+                                                      merge(PSMB9, PRISM)))))
+  testthat::expect_equal(
+    GetCollection(SSc, 
+                  filters = list(drugs = "bortezomib", IDs = "sig-21378",
+                                 MoAs = "NFkB signaling inhibitor",
+                                 targets = "PSMB9", studies = "PRISM"))@info,
+    aggregateInfo(multiple)
   )
 })
