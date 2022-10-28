@@ -193,7 +193,19 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
       warning(paste('The following filters\' values yielded no results:\n',
                     paste0("   - ", warnings, " ", collapse = "")))
     }
-    
+  }
+  
+  # Drug info.
+  if (exists(ids)) {
+    info <- subset(x@info, subset = x@info$IDs %in% ids)
+    info <- aggregate(.~ IDs, data = info, na.action = NULL, 
+                      FUN = function(rw) {
+      paste(na.omit(unique(rw)), collapse = ", ")
+    })
+    info <- info[order(info$IDs, decreasing = FALSE), ]
+    x@info <- info
+  }
+  
   # Genes.
   genes <- lapply(ids, function(sig) {
     l <- list(up = x@genelist[[sig]]$up[1:n.genes],
@@ -202,12 +214,6 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
   })
   names(genes) <- ids
   
-  # Drug IDs.
-  info <- subset(info, subset = info$IDs %in% ids)
-  info <- aggregate(.~ IDs, data = info, na.action = NULL, FUN = function(rw) {
-    paste(na.omit(unique(rw)), collapse = ", ")
-  })
-  info <- info[order(info$IDs, decreasing = FALSE), ]
   
   # Pathways.
   if (include.pathways) {
