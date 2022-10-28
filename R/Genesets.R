@@ -131,11 +131,7 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
   if (!any(is.D)) {
    stop(paste('x must be either PSc, SSc or DSS.'))
   } 
-
-  # Check mode.
-  if (any(!(mode %in% c("up", "down")))) stop('Incorrect mode.')
-  mode <- sort(unique(mode), decreasing = TRUE)
-
+  
   # Check n.genes.
   if (!is.numeric(n.genes)) stop('n.genes must be numeric.')
   if (length(n.genes) != 1 | n.genes[1]%%1 != 0 | n.genes[1] < 1) {
@@ -145,6 +141,10 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
     stop(paste0('n.genes exceeds the maximum number of genes in signature (',
                 n.max, ').'))
   }
+  
+  # Check mode.
+  if (any(!(mode %in% c("up", "down")))) stop('Incorrect mode.')
+  mode <- sort(unique(mode), decreasing = TRUE)
 
   # Check filters.
   if (!is.list(filters)) stop('filters must be a list.')
