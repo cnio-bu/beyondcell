@@ -208,7 +208,7 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
   # Genes.
   genes <- lapply(ids, function(sig) {
     l <- list(up = x@genelist[[sig]]$up[1:n.genes],
-              down = x@genelist[[sig]]$down[1:n.genes])
+              down = x@genelist[[sig]]$down[1:n.genes])[mode]
     return(l)
   })
   names(genes) <- ids
