@@ -35,8 +35,8 @@ ssc.mouse@genelist <- lapply(ssc.mouse@genelist, FUN = function(x) {
   lapply(x, function(y) capitalize(y))})
 ssc.mouse@info <- data.frame()
 
-# Small experiment with low expression cells for 2/3 of signatures.
-### Small geneset with 3 signatures (only up).
+# Experiment with low expression cells for 2/3 of signatures.
+### Geneset with 3 signatures (only up).
 ngenes <- 50
 ssc.lowexpr <- GetCollection(SSc, n.genes = ngenes, mode = "up",
                              filters = list(IDs = c("sig-20879", "sig-20880", 
