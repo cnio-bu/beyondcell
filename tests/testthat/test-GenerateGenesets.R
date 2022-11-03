@@ -10,21 +10,22 @@ testthat::test_that("errors", {
     'cannot open file \'a.gmt\': No such file or directory'
   )
   testthat::expect_error(
-    GenerateGenesets("../testdata/duplicated_gene_sets.gmt"),
-    'The GMT file contains duplicated gene set\'s: GENESET1_up.'
+    GenerateGenesets("../testdata/duplicated10.gmt"),
+    paste('The GMT file contains duplicated gene set\'s: sig-20965_up,', 
+          'sig-20965_down.')
   )
   testthat::expect_error(
-    GenerateGenesets("../testdata/incorrect_mode.gmt"),
+    GenerateGenesets("../testdata/incorrect_mode10.gmt"),
     'All gene sets\' names in the GMT file must end in "_UP" or "_DOWN/_DN".'
   )
   ### Check perform.reversal.
   testthat::expect_error(
-    GenerateGenesets("../testdata/correct.gmt", 
+    GenerateGenesets("../testdata/correct10.gmt", 
                      perform.reversal = rep(TRUE, 2)),
     'perform.reversal must be TRUE or FALSE.'
   )
   testthat::expect_error(
-    GenerateGenesets("../testdata/correct.gmt", perform.reversal = 1),
+    GenerateGenesets("../testdata/correct10.gmt", perform.reversal = 1),
     'perform.reversal must be TRUE or FALSE.'
   )
 })
@@ -33,11 +34,11 @@ testthat::test_that("errors", {
 testthat::test_that("default values", {
   ### Test that GenerateGenesets' output is a geneset object.
   testthat::expect_s4_class(
-    GenerateGenesets("../testdata/correct.gmt"),
+    GenerateGenesets("../testdata/correct10.gmt"),
     "geneset"
   )
   ### Check that the slot @genelist has names.
-  gs_genelist <- GenerateGenesets("../testdata/correct.gmt")@genelist
+  gs_genelist <- GenerateGenesets("../testdata/correct10.gmt")@genelist
   testthat::expect_false(
     is.null(names(gs_genelist)),
     NULL
@@ -68,25 +69,25 @@ testthat::test_that("default values", {
   )
   ### Check that the slot @n.genes is empty.
   testthat::expect_equal(
-    GenerateGenesets("../testdata/correct.gmt")@n.genes,
+    GenerateGenesets("../testdata/correct10.gmt")@n.genes,
     NaN
   )
   ### Check that the slot @mode is empty.
   testthat::expect_equal(
-    format(GenerateGenesets("../testdata/correct.gmt")@mode),
+    format(GenerateGenesets("../testdata/correct10.gmt")@mode),
     "None"
   )
   ### Check that the slot @info is empty.
   testthat::expect_equal(
-    GenerateGenesets("../testdata/correct.gmt")@info,
+    GenerateGenesets("../testdata/correct10.gmt")@info,
     data.frame()
   )
   ### Check the slot @inverse.score.
   testthat::expect_false(
-    GenerateGenesets("../testdata/correct.gmt")@inverse.score
+    GenerateGenesets("../testdata/correct10.gmt")@inverse.score
   )
   testthat::expect_true(
-    GenerateGenesets("../testdata/correct.gmt", 
+    GenerateGenesets("../testdata/correct10.gmt", 
                      perform.reversal = TRUE)@inverse.score
   )
 })
