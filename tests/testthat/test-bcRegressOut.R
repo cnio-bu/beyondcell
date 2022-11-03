@@ -1,5 +1,5 @@
 # PBMC data.
-pbmc.data <- Seurat::Read10X("../testdata/")
+pbmc.data <- Seurat::Read10X("../testdata/", gene.column = 1)
 
 # Seurat object.
 pbmc.raw <- Seurat::CreateSeuratObject(counts = pbmc.data, project = "pbmc3k",
@@ -9,11 +9,15 @@ pbmc.raw <- Seurat::CreateSeuratObject(counts = pbmc.data, project = "pbmc3k",
 pbmc <- Seurat::NormalizeData(pbmc.raw, normalization.method = "LogNormalize",
                               scale.factor = 10000)
 
-# Geneset object.
-ssc <- GetCollection(SSc, n.genes = 250, include.pathways = FALSE)
-                     
+# Geneset objects.
+gs100 <- GenerateGenesets("../testdata/correct100.gmt")
+gs10 <- GenerateGenesets("../testdata/correct10.gmt")
+gs20 <- GenerateGenesets("../testdata/correct20.gmt")
+
 # Beyondcell object.
-bc.pbmc <- bcScore(pbmc, gs = ssc, expr.thres = 0)
+bc.pbmc <- bcScore(pbmc, gs = gs100, expr.thres = 0.1)
+bc.pbmc10 <- bcScore(pbmc, gs = gs10, expr.thres = 0.1)
+bc.pbmc20 <- bcScore(pbmc, gs = gs20, expr.thres = 0.1)
 
 # Beyondcell object that has been already regressed.
 bc.reg1 <- bc.reg2 <- bc.pbmc
@@ -34,16 +38,6 @@ bc.corrupt2@regression$order <- c("", "subset")
 bc.corrupt3@regression$order <- rep("", 3)
 bc.corrupt4@regression$order <- rep("subset", 2)
 bc.corrupt5@regression$order <- c("subset", "")
-
-# Experiment with 10 drugs.
-ssc.10 <- GetCollection(SSc, n.genes = 250, include.pathways = TRUE,
-                        filters = list(IDs = names(ssc@genelist)[1:10]))
-bc.10 <- bcScore(pbmc, gs = ssc.10, expr.thres = 0)
-
-# Experiment with 20 drugs.
-ssc.20 <- GetCollection(SSc, n.genes = 250, include.pathways = TRUE,
-                        filters = list(IDs = names(ssc@genelist)[1:20]))
-bc.20 <- bcScore(pbmc, gs = ssc.20, expr.thres = 0)
 
 # Test errors.
 testthat::test_that("errors", {
@@ -92,7 +86,7 @@ testthat::test_that("errors", {
     'add.DSS must be TRUE or FALSE.'
   )
   testthat::expect_error(
-    bcRegressOut(bc.10, vars.to.regress = "nFeature_RNA", add.DSS = FALSE),
+    bcRegressOut(bc.pbmc10, vars.to.regress = "nFeature_RNA", add.DSS = FALSE),
     paste('Only 10 drug signatures (excluding pathways) are present in the bc', 
           'object, please set add.DSS = TRUE.'), fixed = TRUE
   )
@@ -146,7 +140,8 @@ testthat::test_that("warnings", {
   ### Check add.DSS.
   testthat::expect_equal(
     testthat::capture_warning(
-      bcRegressOut(bc.20, vars.to.regress = "nFeature_RNA", add.DSS = FALSE),
+      bcRegressOut(bc.pbmc20, vars.to.regress = "nFeature_RNA", 
+                   add.DSS = FALSE),
     )$message,
     paste('Computing an UMAP reduction for 20 drugs. We recommend to set', 
           'add.DSS = TRUE when the number of signatures (excluding pathways)', 
