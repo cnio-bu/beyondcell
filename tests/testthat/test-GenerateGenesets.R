@@ -1,5 +1,7 @@
 # GMT filepaths.
 correct.gmt.path <- "../testdata/gmt/correct10.gmt"
+correct.gmt.up.path <- "../testdata/gmt/correct10up.gmt"
+correct.gmt.down.path <- "../testdata/gmt/correct10down.gmt"
 duplicated.gmt.path <- "../testdata/gmt/duplicated10.gmt"
 incorrect.mode.gmt.path <- "../testdata/gmt/incorrect_mode10.gmt"
 
@@ -76,10 +78,18 @@ testthat::test_that("default values", {
     GenerateGenesets(correct.gmt.path)@n.genes,
     NaN
   )
-  ### Check that the slot @mode is c("up", "down").
+  ### Check the values of the slot @mode.
   testthat::expect_equal(
     GenerateGenesets(correct.gmt.path)@mode,
     c("up", "down")
+  )
+  testthat::expect_equal(
+    GenerateGenesets(correct.gmt.up.path)@mode,
+    "up"
+  )
+  testthat::expect_equal(
+    GenerateGenesets(correct.gmt.down.path)@mode,
+    "down"
   )
   ### Check that the slot @info is empty.
   testthat::expect_equal(

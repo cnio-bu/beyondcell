@@ -118,6 +118,9 @@ names(gmt10) <- gsub(pattern = "\\.", replacement = "_", names(gmt10))
 names(gmt10)[6] <- gsub(pattern = "_down", replacement = "_dn", names(gmt10)[6])
 names(gmt10)[c(7, 8, 9, 10)] <- toupper(names(gmt10)[c(7, 8, 9, 10)])
 names(gmt10)
+gmt10up <- gmt10[grep(pattern = "_up", names(gmt10), ignore.case = TRUE)]
+gmt10down <- gmt10[grep(pattern = "_down|_dn", names(gmt10), 
+                        ignore.case = TRUE)]
 
 gmt10warning <- unlist(ssc@genelist[genesets100[1:10]], recursive = FALSE)
 names(gmt10warning) <- gsub(pattern = "\\.", replacement = "_", 
@@ -142,6 +145,8 @@ write.table(rownames(counts), file = paste0(sc.out.dir, "genes.tsv"),
 
 gmt.out.dir <- "../tests/testdata/gmt/"
 output.gmt(gmt10, filename = paste0(gmt.out.dir, "correct10.gmt"))
+output.gmt(gmt10up, filename = paste0(gmt.out.dir, "correct10up.gmt"))
+output.gmt(gmt10down, filename = paste0(gmt.out.dir, "correct10down.gmt"))
 output.gmt(gmt10warning, filename = paste0(gmt.out.dir, "score_warning10.gmt"))
 output.gmt(gmt10duplicated, filename = paste0(gmt.out.dir, "duplicated10.gmt"))
 output.gmt(gmt10incorrect, 
