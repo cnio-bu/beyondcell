@@ -1,4 +1,5 @@
 rm(list = ls())
+library(Matrix)
 set.seed(1)
 
 # --- Functions ---
@@ -11,10 +12,6 @@ proportion.expressed <- function(mtx, genelist) {
 
 # Creates a gmt from a list.
 output.gmt <- function(l, filename) {
-  if(file.exists(filename)) {
-    warning(paste("Removing previous", filename, "file."))
-    file.remove(filename)
-  }
   invisible(lapply(1:length(l), function(i) {
     cat(c(names(l)[i], "na", l[[i]], "\n"), sep = "\t", file = filename,
         append = TRUE)
@@ -110,33 +107,37 @@ which(colSums(cellsigmatrix < 0.2) > 0)
 table(colSums(cellsigmatrix < 0.2))
 
 # Create gmts.
-genesets100 <- head(c(sig.max.unique.genes, names(ssc@genelist)[1:100]), 
+genesets100 <- head(unique(c(sig.max.unique.genes, names(ssc@genelist)[1:100])), 
                     n = 100)
 
-gmt10 <- unlist(ssc@genelist[genesets100[1:10]], recursive = FALSE)
+gmt10 <- unlist(ssc@genelist[genesets100[2:11]], recursive = FALSE)
 names(gmt10) <- gsub(pattern = "\\.", replacement = "_", names(gmt10))
 names(gmt10)[6] <- gsub(pattern = "_down", replacement = "_dn", names(gmt10)[6])
 names(gmt10)[c(7, 8, 9, 10)] <- toupper(names(gmt10)[c(7, 8, 9, 10)])
 names(gmt10)
 
+gmt10warning <- unlist(ssc@genelist[genesets100[1:10]], recursive = FALSE)
+names(gmt10warning) <- gsub(pattern = "\\.", replacement = "_", 
+                            names(gmt10warning))
 gmt10duplicated <- c(gmt10[1:18], gmt10[1:2])
 gmt10incorrect <- gmt10
 names(gmt10incorrect)[19] <- gsub(pattern = "_up", replacement = "_bad", 
-                                  names(gmt10incorrect))
+                                  names(gmt10incorrect)[19])
 
-gmt20 <- unlist(ssc@genelist[genesets100[1:20]], recursive = FALSE)
+gmt20 <- unlist(ssc@genelist[genesets100[2:21]], recursive = FALSE)
 names(gmt20) <- gsub(pattern = "\\.", replacement = "_", names(gmt20))
-gmt100 <- unlist(ssc@genelist[genesets100[1:100]], recursive = FALSE)
+gmt100 <- unlist(ssc@genelist[genesets100[2:101]], recursive = FALSE)
 names(gmt100) <- gsub(pattern = "\\.", replacement = "_", names(gmt100))
 
 # Save.
-writeMM(obj = Matrix(counts), file = "../tests/testdata/matrix.mtx")
+Matrix::writeMM(obj = Matrix(counts), file = "../tests/testdata/matrix.mtx")
 write.table(colnames(counts), file = "../tests/testdata/barcodes.tsv", 
             row.names = FALSE, col.names = FALSE, quote = FALSE, sep = "\t")
 write.table(rownames(counts), file = "../tests/testdata/genes.tsv", 
             row.names = FALSE, col.names = FALSE, quote = FALSE, sep = "\t")
 
 output.gmt(gmt10, filename = "../tests/testdata/correct10.gmt")
+output.gmt(gmt10warning, filename = "../tests/testdata/score_warning10.gmt")
 output.gmt(gmt10duplicated, filename = "../tests/testdata/duplicated10.gmt")
 output.gmt(gmt10incorrect, filename = "../tests/testdata/incorrect_mode10.gmt")
 output.gmt(gmt20, filename = "../tests/testdata/correct20.gmt")
