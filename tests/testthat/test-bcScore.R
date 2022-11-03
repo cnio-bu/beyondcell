@@ -8,7 +8,7 @@ capitalize <- function(x) {
 
 # --- Code ---
 # PBMC data.
-pbmc.data <- Seurat::Read10X("../testdata/")
+pbmc.data <- Seurat::Read10X("../testdata/", gene.column = 1)
 
 # Seurat object.
 pbmc.raw <- Seurat::CreateSeuratObject(counts = pbmc.data, project = "pbmc3k",
@@ -27,77 +27,51 @@ Seurat::DefaultAssay(pbmc.fake) <- "ADT"
 mtx <- as.matrix(pbmc@assays$RNA@data)
 
 # Geneset object.
-ssc <- GetCollection(SSc, n.genes = 100)
+gs <- GenerateGenesets("../testdata/correct10.gmt")
 
 # Geneset with "mouse" genes.
-ssc.mouse <- ssc
-ssc.mouse@genelist <- lapply(ssc.mouse@genelist, FUN = function(x) {
-  lapply(x, function(y) capitalize(y))})
-ssc.mouse@info <- data.frame()
-
-# Experiment with low expression cells for 2/3 of signatures.
-### Geneset with 3 signatures (only up).
-ngenes <- 50
-ssc.lowexpr <- GetCollection(SSc, n.genes = ngenes, mode = "up",
-                             filters = list(IDs = c("sig-20879", "sig-20880", 
-                                                    "sig-20881")),
-                             include.pathways = FALSE)
-### Unique genes in all 3 signatures.
-all.genes <- unique(unlist(ssc.lowexpr@genelist))
-### Subset pbmc.data to keep as many rows as unique genes.
-pbmc.data.lowexpr <- pbmc.data[1:length(all.genes), ]
-### Change rownames.
-rownames(pbmc.data.lowexpr) <- all.genes
-### Make all expression values = 0...
-pbmc.data.lowexpr[, ] <- 10
-### Except for >10% of the genes in signatures 2 and 3 (expression = 10).
-pbmc.data.lowexpr[ssc.lowexpr@genelist[[2]][["up"]][1:((0.1*ngenes)+1)], ] <- 10
-pbmc.data.lowexpr[ssc.lowexpr@genelist[[3]][["up"]][1:((0.1*ngenes)+1)], ] <- 10
-### Create Seurat object.
-pbmc.raw.lowexpr <- Seurat::CreateSeuratObject(counts = pbmc.data.lowexpr, 
-                                               project = "lowexpr",
-                                               min.cells = 3, min.features = 2)
-### And normalize.
-pbmc.lowexpr <- Seurat::NormalizeData(pbmc.raw.lowexpr, scale.factor = 10000, 
-                                      normalization.method = "LogNormalize")
+gs.mouse <- gs
+gs.mouse@genelist <- lapply(gs.mouse@genelist, FUN = function(x) {
+  lapply(x, function(y) capitalize(y))
+})
+gs.mouse@info <- data.frame()
 
 # Test errors.
 testthat::test_that("errors", {
   ### Check sc.
   testthat::expect_error(
-    bcScore(1:10, gs = ssc),
-    'sc must be either a Seurat object or a single-cell expression matrix.',
-    fixed = TRUE
+    bcScore(1:10, gs = gs),
+    'sc must be either a Seurat object or a single-cell expression matrix.'
   )
   testthat::expect_error(
-    bcScore(pbmc.raw, gs = ssc),
+    bcScore(pbmc.raw, gs = gs),
     'Default assay must include a normalized data (@data) slot.',
     fixed = TRUE
   )
   testthat::expect_error(
-    bcScore(pbmc.fake, gs = ssc),
+    bcScore(pbmc.fake, gs = gs),
     'Seurat default assay must be either RNA, Spatial or SCT.'
   )
   ### Check gs.
   testthat::expect_error(
-    bcScore(pbmc, gs = ssc@genelist),
+    bcScore(pbmc, gs = gs@genelist),
     'gs must be a geneset object.'
   )
   ### Check expr.thres.
   testthat::expect_error(
-    bcScore(pbmc, gs = ssc, expr.thres = "a"),
+    bcScore(pbmc, gs = gs, expr.thres = "a"),
     'expr.thres must be a positive number between 0 and 1.'
   )
   testthat::expect_error(
-    bcScore(pbmc, gs = ssc, expr.thres = 1:2),
+    bcScore(pbmc, gs = gs, expr.thres = 1:2),
     'expr.thres must be a positive number between 0 and 1.'
   )
   testthat::expect_error(
-    bcScore(pbmc, gs = ssc, expr.thres = 1.5),
+    bcScore(pbmc, gs = gs, expr.thres = 1.5),
     'expr.thres must be a positive number between 0 and 1.'
   )
   testthat::expect_error(
-    bcScore(pbmc, gs = ssc, expr.thres = -2),
+    bcScore(pbmc, gs = gs, expr.thres = -2),
     'expr.thres must be a positive number between 0 and 1.'
   )
 })
@@ -107,7 +81,7 @@ testthat::test_that("warnings", {
   ### Check when sc is an expression matrix.
   testthat::expect_equal(
     testthat::capture_warning(
-      bcScore(mtx, gs = ssc)
+      bcScore(mtx, gs = gs)
     )$message,
     paste('Using count matrix as input. Please, check that this matrix',
           'is normalized and unscaled.')
@@ -115,7 +89,7 @@ testthat::test_that("warnings", {
   ### Check when gene names are not in the same format.
   testthat::expect_equal(
     testthat::capture_warning(
-      bcScore(pbmc, gs = ssc.mouse)
+      bcScore(pbmc, gs = gs.mouse)
     )$message,
     paste('gs genes are capitalized and sc genes are in uppercase. Please', 
           'check your Seurat object and translate the genes if necessary.')
@@ -123,9 +97,9 @@ testthat::test_that("warnings", {
   ### Check signatures for which no cells pass the expr.thres.
   testthat::expect_equal(
     testthat::capture_warning(
-      bcScore(pbmc.lowexpr, gs = ssc.lowexpr)
+      bcScore(pbmc, gs = gs)
     )$message,
     paste('The following signatures have no cells that pass the expr.thres and',
-          'will be removed: "sig-20880", "sig-20881".')
+          'will be removed: sig-20965.')
   )
 })
