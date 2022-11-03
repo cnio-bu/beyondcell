@@ -26,11 +26,12 @@ Seurat::DefaultAssay(pbmc.fake) <- "ADT"
 # Single-cell expression matrix.
 mtx <- as.matrix(pbmc@assays$RNA@data)
 
-# Geneset object.
-gs <- GenerateGenesets("../testdata/correct10.gmt")
+# Geneset objects.
+gs10 <- GenerateGenesets("../testdata/correct10.gmt")
+gs.warning <- GenerateGenesets("../testdata/score_warning10.gmt")
 
 # Geneset with "mouse" genes.
-gs.mouse <- gs
+gs.mouse <- gs10
 gs.mouse@genelist <- lapply(gs.mouse@genelist, FUN = function(x) {
   lapply(x, function(y) capitalize(y))
 })
@@ -40,38 +41,38 @@ gs.mouse@info <- data.frame()
 testthat::test_that("errors", {
   ### Check sc.
   testthat::expect_error(
-    bcScore(1:10, gs = gs),
+    bcScore(1:10, gs = gs10),
     'sc must be either a Seurat object or a single-cell expression matrix.'
   )
   testthat::expect_error(
-    bcScore(pbmc.raw, gs = gs),
+    bcScore(pbmc.raw, gs = gs10),
     'Default assay must include a normalized data (@data) slot.',
     fixed = TRUE
   )
   testthat::expect_error(
-    bcScore(pbmc.fake, gs = gs),
+    bcScore(pbmc.fake, gs = gs10),
     'Seurat default assay must be either RNA, Spatial or SCT.'
   )
   ### Check gs.
   testthat::expect_error(
-    bcScore(pbmc, gs = gs@genelist),
+    bcScore(pbmc, gs = gs10@genelist),
     'gs must be a geneset object.'
   )
   ### Check expr.thres.
   testthat::expect_error(
-    bcScore(pbmc, gs = gs, expr.thres = "a"),
+    bcScore(pbmc, gs = gs10, expr.thres = "a"),
     'expr.thres must be a positive number between 0 and 1.'
   )
   testthat::expect_error(
-    bcScore(pbmc, gs = gs, expr.thres = 1:2),
+    bcScore(pbmc, gs = gs10, expr.thres = 1:2),
     'expr.thres must be a positive number between 0 and 1.'
   )
   testthat::expect_error(
-    bcScore(pbmc, gs = gs, expr.thres = 1.5),
+    bcScore(pbmc, gs = gs10, expr.thres = 1.5),
     'expr.thres must be a positive number between 0 and 1.'
   )
   testthat::expect_error(
-    bcScore(pbmc, gs = gs, expr.thres = -2),
+    bcScore(pbmc, gs = gs10, expr.thres = -2),
     'expr.thres must be a positive number between 0 and 1.'
   )
 })
@@ -81,7 +82,7 @@ testthat::test_that("warnings", {
   ### Check when sc is an expression matrix.
   testthat::expect_equal(
     testthat::capture_warning(
-      bcScore(mtx, gs = gs)
+      bcScore(mtx, gs = gs10)
     )$message,
     paste('Using count matrix as input. Please, check that this matrix',
           'is normalized and unscaled.')
@@ -97,7 +98,7 @@ testthat::test_that("warnings", {
   ### Check signatures for which no cells pass the expr.thres.
   testthat::expect_equal(
     testthat::capture_warning(
-      bcScore(pbmc, gs = gs)
+      bcScore(pbmc, gs = gs.warning)
     )$message,
     paste('The following signatures have no cells that pass the expr.thres and',
           'will be removed: sig-20965.')

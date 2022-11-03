@@ -11,8 +11,8 @@ testthat::test_that("errors", {
   )
   testthat::expect_error(
     GenerateGenesets("../testdata/duplicated10.gmt"),
-    paste('The GMT file contains duplicated gene set\'s: sig-20965_up,', 
-          'sig-20965_down.')
+    paste('The GMT file contains duplicated gene set\'s: sig-20988_up,', 
+          'sig-20988_down.')
   )
   testthat::expect_error(
     GenerateGenesets("../testdata/incorrect_mode10.gmt"),
