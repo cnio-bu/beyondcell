@@ -36,6 +36,15 @@ testthat::test_that("errors", {
   )
 })
 
+# Test messages.
+testthat::test_that("messages", {
+  ### Check initial message.
+  testthat::expect_message(
+    GenerateGenesets(correct.gmt.path),
+    'Reading gmt file...'
+  )
+})
+
 # Test values.
 testthat::test_that("default values", {
   ### Test that GenerateGenesets' output is a geneset object.
