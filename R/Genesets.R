@@ -44,13 +44,15 @@ GenerateGenesets <- function(x, perform.reversal = FALSE) {
   n.down <- length(unique(grep(pattern = "_DOWN$|_DN$", x = upper.gmt.names)))
   if (n.up + n.down != length(names(gmt.file))) {
     stop('All gene sets\' names in the GMT file must end in "_UP" or "_DOWN/_DN".')
-  } 
+  }
 
     # Check perform.reversal.
   if (length(perform.reversal) != 1 | !is.logical(perform.reversal)) {
     stop('perform.reversal must be TRUE or FALSE.')
   }
   # --- Code ---
+  ### Mode.
+  mode <- c("up", "down")[c(n.up != 0, n.down != 0)]
   ### Genes.
   unique.gene.sets <- unique(gsub(pattern = "_UP$|_DOWN$|_DN$", replacement = "",
                                   x = names(gmt.file), ignore.case = TRUE))
@@ -76,7 +78,7 @@ GenerateGenesets <- function(x, perform.reversal = FALSE) {
   # Output.
   return(geneset(genelist = genes,
   n.genes = NaN, # User defined genesets have no n.genes
-  mode = "None",  # User defined genesets have no mode
+  mode = mode,
   info = data.frame(), # User defined genesets have an empty info. slot.
   inverse.score = perform.reversal))
 }
