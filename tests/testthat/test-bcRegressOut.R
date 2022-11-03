@@ -95,54 +95,37 @@ testthat::test_that("errors", {
 # Test warnings.
 testthat::test_that("warnings", {
   ### Check regression and subset order.
-  testthat::expect_equal(
-    testthat::capture_warning(
-      bcRegressOut(bc.corrupt1, vars.to.regress = "nFeature_RNA"),
-    )$message,
+  testthat::expect_warning(
+    bcRegressOut(bc.corrupt1, vars.to.regress = "nFeature_RNA"),
     'Corrupt beyondcell object. Restoring original object before regressing...'
   )
-  testthat::expect_equal(
-    testthat::capture_warning(
-      bcRegressOut(bc.corrupt2, vars.to.regress = "nFeature_RNA"),
-    )$message,
+  testthat::expect_warning(
+    bcRegressOut(bc.corrupt2, vars.to.regress = "nFeature_RNA"),
     'Corrupt beyondcell object. Restoring original object before regressing...'
   )
-  testthat::expect_equal(
-    testthat::capture_warning(
-      bcRegressOut(bc.corrupt3, vars.to.regress = "nFeature_RNA"),
-    )$message,
+  testthat::expect_warning(
+    bcRegressOut(bc.corrupt3, vars.to.regress = "nFeature_RNA"),
     'Corrupt beyondcell object. Restoring original object before regressing...'
   )
-  testthat::expect_equal(
-    testthat::capture_warning(
-      bcRegressOut(bc.corrupt4, vars.to.regress = "nFeature_RNA"),
-    )$message,
+  testthat::expect_warning(
+    bcRegressOut(bc.corrupt4, vars.to.regress = "nFeature_RNA"),
     'Corrupt beyondcell object. Restoring original object before regressing...'
   )
-  testthat::expect_equal(
-    testthat::capture_warning(
-      bcRegressOut(bc.corrupt5, vars.to.regress = "nFeature_RNA"),
-    )$message,
+  testthat::expect_warning(
+    bcRegressOut(bc.corrupt5, vars.to.regress = "nFeature_RNA"),
     'Corrupt beyondcell object. Restoring original object before regressing...'
   )
-  testthat::expect_equal(
-    testthat::capture_warning(
-      bcRegressOut(bc.reg1, vars.to.regress = "nFeature_RNA"),
-    )$message,
+  testthat::expect_warning(
+    bcRegressOut(bc.reg1, vars.to.regress = "nFeature_RNA"),
     'bc is an already regressed object.'
   )
-  testthat::expect_equal(
-    testthat::capture_warning(
-      bcRegressOut(bc.reg2, vars.to.regress = "nFeature_RNA"),
-    )$message,
+  testthat::expect_warning(
+    bcRegressOut(bc.reg2, vars.to.regress = "nFeature_RNA"),
     'bc is an already regressed object.'
   )
   ### Check add.DSS.
-  testthat::expect_equal(
-    testthat::capture_warning(
-      bcRegressOut(bc.pbmc20, vars.to.regress = "nFeature_RNA", 
-                   add.DSS = FALSE),
-    )$message,
+  testthat::expect_warning(
+    bcRegressOut(bc.pbmc20, vars.to.regress = "nFeature_RNA", add.DSS = FALSE),
     paste('Computing an UMAP reduction for 20 drugs. We recommend to set', 
           'add.DSS = TRUE when the number of signatures (excluding pathways)', 
           'is below or equal to 20.')

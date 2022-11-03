@@ -85,26 +85,20 @@ testthat::test_that("errors", {
 # Test warnings.
 testthat::test_that("warnings", {
   ### Check when there aren't filters that yield to any result.
-  testthat::expect_equal(
-    testthat::capture_warning(
-      GetCollection(SSc, filters = list(targets = "ERBB2", studies = "CCLE"))
-    )$message,
+  testthat::expect_warning(
+    GetCollection(SSc, filters = list(targets = "ERBB2", studies = "CCLE")),
     paste('The following filters\' values yielded no results:\n', 
           ' - studies: "CCLE".')
   )
-  testthat::expect_equal(
-    testthat::capture_warning(
-      GetCollection(SSc, filters = list(targets = "ERBB2", 
-                                        studies = c("CCLE", "PRISM")))
-    )$message,
+  testthat::expect_warning(
+    GetCollection(SSc, filters = list(targets = "ERBB2", 
+                                      studies = c("CCLE", "PRISM"))),
     paste('The following filters\' values yielded no results:\n', 
           ' - studies: "CCLE".')
   )
-  testthat::expect_equal(
-    testthat::capture_warning(
-      GetCollection(SSc, filters = list(targets = "DNApol", studies = "CCLE",
-                                        IDs = "sig-20879"))
-    )$message,
+  testthat::expect_warning(
+    GetCollection(SSc, filters = list(targets = "DNApol", studies = "CCLE", 
+                                      IDs = "sig-20879")),
     paste('The following filters\' values yielded no results:\n', 
           ' - targets: "DNApol"\n  - studies: "CCLE".')
   )

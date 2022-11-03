@@ -80,26 +80,19 @@ testthat::test_that("errors", {
 # Test warnings.
 testthat::test_that("warnings", {
   ### Check when sc is an expression matrix.
-  testthat::expect_equal(
-    testthat::capture_warning(
-      bcScore(mtx, gs = gs10)
-    )$message,
+  testthat::expect_warning(bcScore(mtx, gs = gs10),
     paste('Using count matrix as input. Please, check that this matrix',
           'is normalized and unscaled.')
   )
   ### Check when gene names are not in the same format.
-  testthat::expect_equal(
-    testthat::capture_warning(
-      bcScore(pbmc, gs = gs.mouse)
-    )$message,
+  testthat::expect_warning(
+    bcScore(pbmc, gs = gs.mouse),
     paste('gs genes are capitalized and sc genes are in uppercase. Please', 
           'check your Seurat object and translate the genes if necessary.')
   )
   ### Check signatures for which no cells pass the expr.thres.
-  testthat::expect_equal(
-    testthat::capture_warning(
-      bcScore(pbmc, gs = gs.warning)
-    )$message,
+  testthat::expect_warning(
+    bcScore(pbmc, gs = gs.warning),
     paste('The following signatures have no cells that pass the expr.thres and',
           'will be removed: sig-20965.')
   )
