@@ -72,10 +72,10 @@ testthat::test_that("default values", {
     GenerateGenesets("../testdata/correct10.gmt")@n.genes,
     NaN
   )
-  ### Check that the slot @mode is empty.
+  ### Check that the slot @mode is c("up", "down").
   testthat::expect_equal(
-    format(GenerateGenesets("../testdata/correct10.gmt")@mode),
-    "None"
+    GenerateGenesets("../testdata/correct10.gmt")@mode,
+    c("up", "down")
   )
   ### Check that the slot @info is empty.
   testthat::expect_equal(
