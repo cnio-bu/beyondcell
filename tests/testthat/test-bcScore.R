@@ -8,7 +8,7 @@ capitalize <- function(x) {
 
 # --- Code ---
 # PBMC data.
-pbmc.data <- Seurat::Read10X("../testdata/", gene.column = 1)
+pbmc.data <- Seurat::Read10X("../testdata/single-cell/", gene.column = 1)
 
 # Seurat object.
 pbmc.raw <- Seurat::CreateSeuratObject(counts = pbmc.data, project = "pbmc3k",
@@ -27,8 +27,8 @@ Seurat::DefaultAssay(pbmc.fake) <- "ADT"
 mtx <- as.matrix(pbmc@assays$RNA@data)
 
 # Geneset objects.
-gs10 <- GenerateGenesets("../testdata/correct10.gmt")
-gs.warning <- GenerateGenesets("../testdata/score_warning10.gmt")
+gs10 <- GenerateGenesets("../testdata/gmt/correct10.gmt")
+gs.warning <- GenerateGenesets("../testdata/gmt/score_warning10.gmt")
 
 # Geneset with "mouse" genes.
 gs.mouse <- gs10

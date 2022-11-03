@@ -1,5 +1,5 @@
 # PBMC data.
-pbmc.data <- Seurat::Read10X("../testdata/", gene.column = 1)
+pbmc.data <- Seurat::Read10X("../testdata/single-cell/", gene.column = 1)
 
 # Seurat object.
 pbmc.raw <- Seurat::CreateSeuratObject(counts = pbmc.data, project = "pbmc3k",
@@ -10,9 +10,9 @@ pbmc <- Seurat::NormalizeData(pbmc.raw, normalization.method = "LogNormalize",
                               scale.factor = 10000)
 
 # Geneset objects.
-gs100 <- GenerateGenesets("../testdata/correct100.gmt")
-gs10 <- GenerateGenesets("../testdata/correct10.gmt")
-gs20 <- GenerateGenesets("../testdata/correct20.gmt")
+gs100 <- GenerateGenesets("../testdata/gmt/correct100.gmt")
+gs10 <- GenerateGenesets("../testdata/gmt/correct10.gmt")
+gs20 <- GenerateGenesets("../testdata/gmt/correct20.gmt")
 
 # Beyondcell object.
 bc.pbmc <- bcScore(pbmc, gs = gs100, expr.thres = 0.1)
