@@ -37,6 +37,13 @@ gs.mouse@genelist <- lapply(gs.mouse@genelist, FUN = function(x) {
 })
 gs.mouse@info <- data.frame()
 
+# Visium data with SCT normalization.
+image <- Seurat::Read10X_Image(image.dir = "../testdata/visium/", 
+                               image.name = "tissue_lowres_image.png")
+pbmc.visium <- Seurat::Load10X_Spatial(data.dir = "../testdata/visium/", 
+                                       filename = "matrix.h5", image = image)
+pbmc.visium <- SCTransform(pbmc.visium, assay = "Spatial", verbose = FALSE)
+
 # Test errors.
 testthat::test_that("errors", {
   ### Check sc.
@@ -95,5 +102,25 @@ testthat::test_that("warnings", {
     bcScore(pbmc, gs = gs.warning),
     paste('The following signatures have no cells that pass the expr.thres and',
           'will be removed: sig-20965.')
+  )
+})
+
+# Test messages.
+testthat::test_that("messages", {
+  ### Check initial message.
+  Seurat::DefaultAssay(pbmc) <- "RNA"
+  testthat::expect_message(
+    bcScore(pbmc, gs = gs10),
+    'Using RNA assay as input.'
+  )
+  Seurat::DefaultAssay(pbmc.visium) <- "SCT"
+  testthat::expect_message(
+    bcScore(pbmc.visium, gs = gs10),
+    'Using SCT assay as input.'
+  )
+  ### Check final message.
+  testthat::expect_message(
+    bcScore(pbmc, gs = gs10, expr.thres = 0),
+    'There are 80/80 cells without missing values in your beyondcell object.'
   )
 })
