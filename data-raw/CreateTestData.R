@@ -1,6 +1,8 @@
 rm(list = ls())
+library(Seurat)
+library(beyondcell)
 library(Matrix)
-set.seed(1)
+library(DropletUtils)
 
 # --- Functions ---
 # Proportion of expressed genes per cell and signature.
@@ -23,10 +25,23 @@ output.gmt <- function(l, filename) {
 
 # --- Data ---
 pbmc <- Seurat::Read10X("PBMC3K_subset/")
+visium.positions <- read.csv("Visium/tissue_positions_list.csv", header = FALSE)
 
 # --- Code ---
 # Counts matrix.
 counts <- as.matrix(pbmc)
+
+# Filter Visium positions.
+position.cols <- c("barcode", "in_tissue", "array_row", "array_col", 
+                   "pxl_row_in_fullres", "pxl_col_in_fullres")
+colnames(visium.positions) <- position.cols
+visium.positions <- subset(visium.positions, in_tissue == 1)
+
+# Modify Visium positions.
+set.seed(1)
+spots <- sample(1:nrow(visium.positions), size = ncol(counts), replace = FALSE)
+visium.positions <- visium.positions[spots, ]
+visium.positions[[1]] <- colnames(counts)
 
 # Genesets.
 ssc <- beyondcell::GetCollection(SSc, n.genes = 100, include.pathways = TRUE)
@@ -73,6 +88,7 @@ values <- unlist(sapply(2:length(table.counts), FUN = function(i) {
 }))
 
 # Update dynamically the counts matrix until all percentages > 0.08.
+set.seed(1)
 while (any(cellsigmatrix <= 0.1)) {
   zeroes <- which(counts == 0)
   counts[sample(zeroes, size = length(values), replace = FALSE)] <- values
@@ -109,6 +125,9 @@ table(colSums(cellsigmatrix < 0.1))
 which(colSums(cellsigmatrix < 0.2) > 0)
 table(colSums(cellsigmatrix < 0.2))
 
+# Sparse matrix.
+counts <- Matrix::Matrix(counts)
+
 # Create gmts.
 genesets100 <- head(unique(c(sig.max.unique.genes, names(ssc@genelist)[1:100])), 
                     n = 100)
@@ -137,11 +156,22 @@ names(gmt100) <- gsub(pattern = "\\.", replacement = "_", names(gmt100))
 
 # Save.
 sc.out.dir <- "../tests/testdata/single-cell/"
-Matrix::writeMM(obj = Matrix(counts), file = paste0(sc.out.dir, "matrix.mtx"))
+Matrix::writeMM(obj = counts, file = paste0(sc.out.dir, "matrix.mtx"))
 write.table(colnames(counts), file = paste0(sc.out.dir, "barcodes.tsv"), 
             row.names = FALSE, col.names = FALSE, quote = FALSE, sep = "\t")
 write.table(rownames(counts), file = paste0(sc.out.dir, "genes.tsv"), 
             row.names = FALSE, col.names = FALSE, quote = FALSE, sep = "\t")
+
+visium.out.dir <- "../tests/testdata/visium/"
+file.copy(from = "Visium/scalefactors_json.json", to = visium.out.dir)
+file.copy(from = "Visium/tissue_lowres_image.png", to = visium.out.dir)
+DropletUtils::write10xCounts(path = paste0(visium.out.dir, "matrix.h5"), 
+                             x = counts, barcodes = colnames(counts), 
+                             gene.id = rownames(counts), gene.type = gene.id,
+                             overwrite = TRUE)
+write.table(visium.positions, row.names = FALSE, col.names = FALSE, 
+            quote = FALSE, sep = ",", 
+            file = paste0(visium.out.dir, "tissue_positions_list.csv"))
 
 gmt.out.dir <- "../tests/testdata/gmt/"
 output.gmt(gmt10, filename = paste0(gmt.out.dir, "correct10.gmt"))
