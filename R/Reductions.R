@@ -126,7 +126,7 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
   if (add.DSS) {
     ### DSS (background) BCS.
     if (!identical(sort(rownames(bc@background), decreasing = FALSE),
-                   sort(DSS[[1]]$sig_id, decreasing = FALSE)) |
+                   sort(DSS@info$IDs, decreasing = FALSE)) |
         !identical(sort(colnames(bc@background), decreasing = FALSE),
                    sort(cells, decreasing = FALSE)) |
         !identical(bc@regression$order, bc@regression$order.background)) {
@@ -134,7 +134,7 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
       ### Genesets.
       gs.background <- suppressMessages(
         GetCollection(DSS, n.genes = bc@n.genes, mode = bc@mode,
-                         include.pathways = FALSE))
+                      include.pathways = FALSE))
       ### BCS.
       background <- suppressWarnings(
         bcScore(bc@expr.matrix, gs = gs.background, expr.thres = bc@thres))
