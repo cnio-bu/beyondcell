@@ -277,7 +277,7 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
         message('Restoring pre-regressed background matrix...')
         gs.background <- suppressMessages(
           GetCollection(DSS, n.genes = bc@n.genes, mode = bc@mode,
-                           include.pathways = FALSE))
+                        include.pathways = FALSE))
         background <- suppressWarnings(
           bcScore(bc@expr.matrix, gs = gs.background, expr.thres = bc@thres))
         bc@background <- background@normalized
@@ -319,15 +319,15 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
   if (add.DSS) {
     ### DSS (background) BCS.
     if (!identical(sort(rownames(bc@background), decreasing = FALSE),
-                   sort(DSS[[1]]$sig_id, decreasing = FALSE)) |
+                   sort(DSS@info$IDs, decreasing = FALSE)) |
         !identical(sort(colnames(bc@background), decreasing = FALSE),
                    sort(cells, decreasing = FALSE)) |
         !identical(bc@regression$order, bc@regression$order.background)) {
       message('Computing background BCS using DSS signatures...')
       ### Genesets.
       gs.background <- suppressMessages(
-        GetCollection(DSS, n.genes = bc@n.genes, mode = bc@mode,
-                         include.pathways = FALSE))
+        GetCollection(DSS, n.genes = bc@n.genes, mode = bc@mode, 
+                      include.pathways = FALSE))
       ### BCS.
       background <- suppressWarnings(
         bcScore(bc@expr.matrix, gs = gs.background, expr.thres = bc@thres))
