@@ -45,9 +45,9 @@ GenerateGenesets <- function(x, perform.reversal = FALSE) {
     stop('perform.reversal must be TRUE or FALSE.')
   }
   # --- Code ---
-  ### Mode.
+  # Mode.
   mode <- c("up", "down")[c(n.up != 0, n.down != 0)]
-  ### Genes.
+  # Genes.
   unique.gene.sets <- unique(gsub(pattern = "_UP$|_DOWN$|_DN$", replacement = "",
                                   x = names(gmt.file), ignore.case = TRUE))
   genes <- setNames(lapply(unique.gene.sets, function(sig) {
@@ -68,10 +68,11 @@ GenerateGenesets <- function(x, perform.reversal = FALSE) {
     }
     return(l)
   }), unique.gene.sets)
-
+  # Median number of genes in all signatures.
+  n.genes <- median(sapply(genes, FUN = function(x) length(unlist(x))))
   # Output.
   return(geneset(genelist = genes,
-  n.genes = NaN, # User defined genesets have no n.genes
+  n.genes = n.genes,
   mode = mode,
   info = data.frame(), # User defined genesets have an empty info. slot.
   inverse.score = perform.reversal))
