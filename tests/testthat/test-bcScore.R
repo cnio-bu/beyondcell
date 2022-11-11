@@ -32,6 +32,13 @@ normalized.score <- function(mtx, gs, mode) {
   }))
 }
 
+# Function to compute the scaled BCS.
+scale.score <- function(normalized) {
+  scaled <- round(t(apply(normalized, 1, scales::rescale, to = 0:1)), 
+                  digits = 2)
+  return(scaled)
+}
+
 # Function to compute the switch point when mode = c("up", "down").
 sp.up.down <- function(normalized, scaled) {
   sapply(1:nrow(normalized), FUN = function(i) {
@@ -116,10 +123,9 @@ norm.down[nan.01] <- NaN
 norm[nan.01 | is.na(norm.up) & is.na(norm.down)] <- NaN
 
 # Scaled scores.
-scaled <- round(t(apply(norm, 1, scales::rescale, to = 0:1)), digits = 2)
-scaled.up <- round(t(apply(norm.up, 1, scales::rescale, to = 0:1)), digits = 2)
-scaled.down <- round(t(apply(norm.down, 1, scales::rescale, to = 0:1)), 
-                     digits = 2)
+scaled <- scale.score(norm)
+scaled.up <- scale.score(norm.up)
+scaled.down <- scale.score(norm.down)
 
 # Test errors.
 testthat::test_that("errors", {
@@ -218,7 +224,7 @@ testthat::test_that("default values", {
   bc.object.up <- bcScore(pbmc, gs = gs10up, expr.thres = 0.1)
   bc.object.down <- bcScore(pbmc, gs = gs10down, expr.thres = 0.1)
   bc.object.visium <- bcScore(pbmc.visium, gs = gs10, expr.thres = 0.1)
-  ### Test that bcScore output is a beyondcell object.
+  ### Check that bcScore output is a beyondcell object.
   testthat::expect_s4_class(
     bc.object,
     "beyondcell"
