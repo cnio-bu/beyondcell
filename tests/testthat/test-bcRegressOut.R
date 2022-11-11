@@ -494,10 +494,10 @@ testthat::test_that("default values", {
   # column(s).
   TCs <- which(startsWith(colnames(bc.object.bg@meta.data), "bc_clusters_res."))
   testthat::expect_false(
-    startsWith(colnames(bc.regressed@meta.data), "bc_clusters_res.")
+    any(startsWith(colnames(bc.regressed@meta.data), "bc_clusters_res."))
   )
   testthat::expect_false(
-    startsWith(colnames(bc.regressed.bg@meta.data), "bc_clusters_res.")
+    any(startsWith(colnames(bc.regressed.bg@meta.data), "bc_clusters_res."))
   )
   testthat::expect_equal(
     bc.regressed@meta.data,
@@ -517,10 +517,6 @@ testthat::test_that("default values", {
     bc.regressed@background,
     bc.object@background
   )
-  testthat::expect_equal(
-    bc.regressed.bg@background,
-    bc.object.bg@background
-  )
   ### Check that the slot @reductions is empty.
   testthat::expect_equal(
     bc.regressed@reductions,
@@ -531,37 +527,40 @@ testthat::test_that("default values", {
     list()
   )
   ### Check the values of slot @regression.
+  ordering <- c("order", "vars", "order.background")
   testthat::expect_equal(
-    bc.regressed@regression,
+    bc.regressed@regression[ordering],
     list(order = c("regression", ""), vars = "nFeature_RNA", 
          order.background = rep("", 2))
   )
   testthat::expect_equal(
-    bc.regressed.bg@regression,
+    bc.regressed.bg@regression[ordering],
     list(order = c("regression", ""), vars = "nFeature_RNA", 
          order.background = c("regression", ""))
   )
   testthat::expect_equal(
     bcRegressOut(bc.sub, add.DSS = TRUE,
-                 vars.to.regress = "nFeature_RNA")@regression,
+                 vars.to.regress = "nFeature_RNA")@regression[ordering],
     list(order = c("subset", "regression"), vars = "nFeature_RNA", 
          order.background = c("subset", "regression"))
   )
   testthat::expect_equal(
     bcRegressOut(bc.reg.bg, add.DSS = FALSE,
-                 vars.to.regress = "nFeature_RNA")@regression,
+                 vars.to.regress = "nFeature_RNA")@regression[ordering],
     list(order = c("regression", ""), vars = "nFeature_RNA", 
          order.background = c("regression", ""))
   )
   testthat::expect_equal(
-    bcRegressOut(bc.sub.reg, add.DSS = FALSE,
-                 vars.to.regress = "nFeature_RNA")@regression,
+    suppressWarnings(
+      bcRegressOut(bc.sub.reg, add.DSS = FALSE, 
+                   vars.to.regress = "nFeature_RNA")@regression[ordering]
+    ),
     list(order = c("subset", "regression"), vars = "nFeature_RNA", 
          order.background = rep("", 2))
   )
   testthat::expect_equal(
     bcRegressOut(bc.corrupt1, add.DSS = TRUE,
-                 vars.to.regress = "nFeature_RNA")@regression,
+                 vars.to.regress = "nFeature_RNA")@regression[ordering],
     list(order = c("regression", ""), vars = "nFeature_RNA", 
          order.background = c("regression", ""))
   )
