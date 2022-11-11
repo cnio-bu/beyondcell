@@ -1,3 +1,40 @@
+# --- Functions ---
+# Function to subset a geneset object by mode and/or length.
+subset.geneset <- function(gs, mode, n) {
+  gs@genelist <- gs@genelist[1:n]
+  gs@genelist <- lapply(gs@genelist, FUN = function(x) x[mode])
+  gs@n.genes <- median(sapply(gs@genelist, FUN = function(y) length(unlist(y))))
+  gs@mode <- mode
+  return(gs)
+}
+
+# Function to compute the scaled BCS.
+scale.score <- function(normalized) {
+  scaled <- round(t(apply(normalized, 1, scales::rescale, to = 0:1)), 
+                  digits = 2)
+  return(scaled)
+}
+
+# Function to compute the switch point when mode = c("up", "down").
+sp.up.down <- function(normalized, scaled) {
+  sapply(1:nrow(normalized), FUN = function(i) {
+    scores <- normalized[i, ]
+    if (all(na.omit(scores) > 0)) return(0)
+    else if (all(na.omit(scores) < 0)) return(1)
+    else if (any(na.omit(scores) == 0)) {
+      idx <- which(scores == 0 & !is.na(scores))[1]
+      round(scaled[i, idx], digits = 2)
+    } else {
+      min.value <- min(normalized[i, scores > 0 & !is.na(scores)])
+      min.idx <- which(normalized[i, ] == min.value & !is.na(scaled[i, ]))[1]
+      max.value <- max(normalized[i, scores < 0 & !is.na(scores)])
+      max.idx <- which(normalized[i, ] == max.value & !is.na(scaled[i, ]))[1]
+      round(mean(scaled[i, c(min.idx, max.idx)]), digits = 2)
+    }
+  })
+}
+
+# --- Code ---
 # PBMC data.
 pbmc.data <- Seurat::Read10X("../testdata/single-cell/", gene.column = 1)
 
@@ -14,15 +51,29 @@ gs100 <- GenerateGenesets("../testdata/gmt/correct100.gmt")
 gs10 <- GenerateGenesets("../testdata/gmt/correct10.gmt")
 gs20 <- GenerateGenesets("../testdata/gmt/correct20.gmt")
 
+gs100up <- subset.geneset(gs100, mode = "up", n = length(gs100@genelist))
+gs100down <- subset.geneset(gs100, mode = "down", n = length(gs100@genelist))
+
 # Beyondcell objects.
 bc.object <- bcScore(pbmc, gs = gs100, expr.thres = 0.3)
-bc.object.bg <- suppressWarnings(bcUMAP(bc.object, pc = 2, add.DSS = TRUE))
+bc.object.bg <- suppressWarnings(
+  bcUMAP(bc.object, pc = 2, add.DSS = TRUE)
+)
+
+bc.object.up <- bcScore(pbmc, gs = gs100up, expr.thres = 0.1)
+bc.object.down <- bcScore(pbmc, gs = gs100down, expr.thres = 0.1)
 
 bc.object.complete <- bcScore(pbmc, gs = gs100, expr.thres = 0)
-bc.object.complete.bg <- bcUMAP(bc.object.complete, pc = 2, add.DSS = TRUE)
+bc.object.complete.bg <- suppressWarnings(
+  bcUMAP(bc.object.complete, pc = 2, add.DSS = TRUE)
+)
 
 bc.object10 <- bcScore(pbmc, gs = gs10, expr.thres = 0.1)
 bc.object20 <- bcScore(pbmc, gs = gs20, expr.thres = 0.1)
+
+# Beyondcell object that has already been subsetted.
+bc.sub <- bc.object
+bc.sub@regression$order <- c("subset", "")
 
 # Beyondcell object with background matrix that has already been regressed.
 bc.reg.bg <- bc.object.bg
@@ -276,5 +327,269 @@ testthat::test_that("messages", {
       'Regressing scores...\n',
       'No NaN values were found in bc@background. No imputation needed.\n',
       'Regressing background BCS...\n')
+  )
+})
+
+# Test values.
+testthat::test_that("default values", {
+  bc.regressed <- bcRegressOut(bc.object, add.DSS = FALSE,
+                               vars.to.regress = "nFeature_RNA")
+  bc.regressed.bg <- bcRegressOut(bc.object, add.DSS = TRUE,
+                                  vars.to.regress = "nFeature_RNA")
+  bc.regressed.up <- bcRegressOut(bc.object.up, add.DSS = FALSE,
+                                  vars.to.regress = "nFeature_RNA")
+  bc.regressed.down <- bcRegressOut(bc.object.down, add.DSS = FALSE,
+                                    vars.to.regress = "nFeature_RNA")
+  ### Check that bcRegressOut output is a beyondcell object.
+  testthat::expect_s4_class(
+    bc.regressed,
+    "beyondcell"
+  )
+  ### Check that the slot @normalized is equal to the slot @data.
+  testthat::expect_equal(
+    bc.regressed@normalized,
+    bc.regressed@data
+  )
+  ### Check that the slot @scaled is a matrix.
+  testthat::expect_equal(
+    class(bc.regressed@scaled),
+    c("matrix", "array")
+  )
+  ### Check that the slot @normalized is a matrix.
+  testthat::expect_equal(
+    class(bc.regressed@normalized),
+    c("matrix", "array")
+  )
+  ### Check that the slot @background is a matrix.
+  testthat::expect_equal(
+    class(bc.regressed.bg@background),
+    c("matrix", "array")
+  )
+  ### Check that the matrices in slots @scaled, @normalized and @data have the 
+  ### same dimensions.
+  testthat::expect_true(
+    identical(dim(bc.regressed@scaled), dim(bc.regressed@normalized))
+  )
+  ### Check that the @background matrix has the same number of columns as the 
+  ### other matrices.
+  testthat::expect_true(
+    identical(ncol(bc.regressed.bg@scaled), ncol(bc.regressed.bg@background))
+  )
+  ### Check that the matrices in slots @scaled, @normalized and @data have the 
+  ### same dimnames.
+  testthat::expect_true(
+    identical(dimnames(bc.regressed@scaled), dimnames(bc.regressed@normalized))
+  )
+  ### Check that the @background matrix has the same colnames as the other 
+  ### matrices.
+  testthat::expect_true(
+    identical(colnames(bc.regressed.bg@scaled), 
+              colnames(bc.regressed.bg@background))
+  )
+  ### Check that the matrices do not contain NaN values.
+  testthat::expect_false(
+    any(is.na(bc.regressed@scaled))
+  )
+  testthat::expect_false(
+    any(is.na(bc.regressed@normalized))
+  )
+  testthat::expect_false(
+    any(is.na(bc.regressed.bg@background))
+  )
+  ### Check that the values in the slot @scaled range between 0 and 1.
+  testthat::expect_equal(
+    c(min(bc.regressed@scaled, na.rm = TRUE), 
+      max(bc.regressed@scaled, na.rm = TRUE)),
+    0:1
+  )
+  ### Check that the values in the slot @scaled are different between input and
+  ### output.
+  testthat::expect_false(
+    isTRUE(all.equal(bc.regressed@scaled, bc.object@scaled))
+  )
+  ### Check the values of the slot @scaled.
+  testthat::expect_equal(
+    bc.regressed@scaled, scale.score(bc.regressed@normalized)
+  )
+  testthat::expect_equal(
+    bc.regressed.up@scaled, scale.score(bc.regressed.up@normalized)
+  )
+  testthat::expect_equal(
+    bc.regressed.down@scaled, scale.score(bc.regressed.down@normalized)
+  )
+  ### Check that the values in the slot @normalized range between -Inf and +Inf 
+  ### when mode is c("up", "down").
+  testthat::expect_true(
+    min(bc.regressed@normalized, na.rm = TRUE) < 0
+  )
+  testthat::expect_true(
+    max(bc.regressed@normalized, na.rm = TRUE) > 0
+  )
+  ### Check that the values in the slot @normalized range between 0 and +Inf 
+  ### when mode is "up".
+  testthat::expect_true(
+    min(bc.regressed.up@normalized, na.rm = TRUE) >= 0
+  )
+  testthat::expect_true(
+    max(bc.regressed.up@normalized, na.rm = TRUE) > 0
+  )
+  ### Check that the values in the slot @normalized range between -Inf and 0 
+  ### when mode is "down".
+  testthat::expect_true(
+    min(bc.regressed.down@normalized, na.rm = TRUE) < 0
+  )
+  testthat::expect_true(
+    max(bc.regressed.down@normalized, na.rm = TRUE) <= 0
+  )
+  ### Check that the values in the slot @normalized are different between input 
+  ### and output.
+  testthat::expect_false(
+    isTRUE(all.equal(bc.regressed@normalized, bc.object@normalized))
+  )
+  ### Check that the slot @switch.point is a numeric vector.
+  testthat::expect_equal(
+    class(bc.regressed@switch.point),
+    "numeric"
+  )
+  ### Check that the @switch.point vector doesn't contain NA values.
+  testthat::expect_true(
+    all(!is.na(bc.regressed@switch.point))
+  )
+  ### Check that the values in the slot @switch.point range between 0 and 1.
+  testthat::expect_true(
+    min(bc.regressed@switch.point) >= 0
+  )
+  testthat::expect_true(
+    max(bc.regressed@switch.point) <= 1
+  )
+  ### Check that the values in the slot @switch.point are different between 
+  ### input and output.
+  testthat::expect_false(
+    isTRUE(all.equal(bc.regressed@switch.point, bc.object@switch.point))
+  )
+  ### Check the values of the slot @switch.point.
+  testthat::expect_equal(
+    unname(bc.regressed@switch.point),
+    sp.up.down(bc.regressed@normalized, bc.regressed@scaled)
+  )
+  testthat::expect_equal(
+    unique(bc.regressed.up@switch.point),
+    0
+  )
+  testthat::expect_equal(
+    unique(bc.regressed.down@switch.point),
+    1
+  )
+  ### Check that the slot @ranks is empty.
+  testthat::expect_equal(
+    bc.regressed@ranks,
+    list()
+  )
+  ### Check that the slot @expr.matrix contains the input matrix.
+  testthat::expect_equal(
+    bc.regressed@expr.matrix,
+    bc.object@expr.matrix
+  )
+  # Check that the slot @meta.data contains the input metadata except for TCs 
+  # column(s).
+  TCs <- which(startsWith(colnames(bc.object.bg@meta.data), "bc_clusters_res."))
+  testthat::expect_false(
+    startsWith(colnames(bc.regressed@meta.data), "bc_clusters_res.")
+  )
+  testthat::expect_false(
+    startsWith(colnames(bc.regressed.bg@meta.data), "bc_clusters_res.")
+  )
+  testthat::expect_equal(
+    bc.regressed@meta.data,
+    bc.object@meta.data
+  )
+  testthat::expect_equal(
+    bc.regressed.bg@meta.data,
+    bc.object.bg@meta.data[, -c(TCs)]
+  )
+  ### Check the values of the slot @SeuratInfo.
+  testthat::expect_equal(
+    bc.regressed@SeuratInfo,
+    bc.object@SeuratInfo
+  )
+  ### Check the values of slot @background.
+  testthat::expect_equal(
+    bc.regressed@background,
+    bc.object@background
+  )
+  testthat::expect_equal(
+    bc.regressed.bg@background,
+    bc.object.bg@background
+  )
+  ### Check that the slot @reductions is empty.
+  testthat::expect_equal(
+    bc.regressed@reductions,
+    list()
+  )
+  testthat::expect_equal(
+    bc.regressed.bg@reductions,
+    list()
+  )
+  ### Check the values of slot @regression.
+  testthat::expect_equal(
+    bc.regressed@regression,
+    list(order = c("regression", ""), vars = "nFeature_RNA", 
+         order.background = rep("", 2))
+  )
+  testthat::expect_equal(
+    bc.regressed.bg@regression,
+    list(order = c("regression", ""), vars = "nFeature_RNA", 
+         order.background = c("regression", ""))
+  )
+  testthat::expect_equal(
+    bcRegressOut(bc.sub, add.DSS = TRUE,
+                 vars.to.regress = "nFeature_RNA")@regression,
+    list(order = c("subset", "regression"), vars = "nFeature_RNA", 
+         order.background = c("subset", "regression"))
+  )
+  testthat::expect_equal(
+    bcRegressOut(bc.reg.bg, add.DSS = FALSE,
+                 vars.to.regress = "nFeature_RNA")@regression,
+    list(order = c("regression", ""), vars = "nFeature_RNA", 
+         order.background = c("regression", ""))
+  )
+  testthat::expect_equal(
+    bcRegressOut(bc.sub.reg, add.DSS = FALSE,
+                 vars.to.regress = "nFeature_RNA")@regression,
+    list(order = c("subset", "regression"), vars = "nFeature_RNA", 
+         order.background = rep("", 2))
+  )
+  testthat::expect_equal(
+    bcRegressOut(bc.corrupt1, add.DSS = TRUE,
+                 vars.to.regress = "nFeature_RNA")@regression,
+    list(order = c("regression", ""), vars = "nFeature_RNA", 
+         order.background = c("regression", ""))
+  )
+  ### Check that the slot @n.genes is equal to the slot @n.genes in the input 
+  ### beyondcell.
+  testthat::expect_equal(
+    bc.regressed@n.genes,
+    bc.object@n.genes
+  )
+  ### Check that the slot @mode is equal to the slot @mode in the input 
+  ### beyondcell.
+  testthat::expect_equal(
+    bc.regressed@mode,
+    bc.object@mode
+  )
+  testthat::expect_equal(
+    bc.regressed.up@mode,
+    bc.object.up@mode
+  )
+  testthat::expect_equal(
+    bc.regressed.down@mode,
+    bc.object.down@mode
+  )
+  ### Check that the slot @mode is equal to the slot @mode in the input 
+  ### beyondcell.
+  testthat::expect_equal(
+    unique(c(bc.regressed@thres, bc.regressed.up@thres, 
+             bc.regressed.down@thres)),
+    unique(c(bc.object@thres, bc.object.up@thres, bc.object.down@thres))
   )
 })
