@@ -433,12 +433,12 @@ testthat::test_that("default values", {
   )
   ### Check that the slot @background is empty.
   testthat::expect_equal(
-    bc.object@background,
-    as.matrix(data.frame())
+    dim(bc.object@background),
+    c(0, 0)
   )
   testthat::expect_equal(
-    bc.object.visium@background,
-    as.matrix(data.frame())
+    dim(bc.object.visium@background),
+    c(0, 0)
   )
   ### Check that the slot @reductions is empty.
   testthat::expect_equal(
