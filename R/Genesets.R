@@ -69,7 +69,7 @@ GenerateGenesets <- function(x, perform.reversal = FALSE) {
     return(l)
   }), unique.gene.sets)
   # Median number of genes in all signatures.
-  n.genes <- median(sapply(genes, FUN = function(x) length(unlist(x))))
+  n.genes <- median(sapply(unlist(genes, recursive = FALSE), length))
   # Output.
   return(geneset(genelist = genes,
   n.genes = n.genes,

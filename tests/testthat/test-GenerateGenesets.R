@@ -85,7 +85,7 @@ testthat::test_that("default values", {
   ### Check the values of the slot @n.genes.
   testthat::expect_equal(
     GenerateGenesets(correct.gmt.path)@n.genes,
-    100 + 100
+    100
   )
   ### Check the values of the slot @mode.
   testthat::expect_equal(
