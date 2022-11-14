@@ -40,3 +40,6 @@ Imports:
   viridis (>= 0.5.1)
 BugReports: https://gitlab.com/bu_cnio/beyondcell/-/issues
 RoxygenNote: 7.2.1
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3

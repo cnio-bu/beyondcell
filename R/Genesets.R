@@ -21,16 +21,10 @@ GenerateGenesets <- function(x, perform.reversal = FALSE) {
   # --- Global Checks ---
   # Check if x is a path to a GMT file.
   message('Reading gmt file...')
-  gmt.file <- tryCatch(qusage::read.gmt(x), error = function(cond) {
-    message(paste0('The GMT file does not seem to exist: ', x, ' .'))
-    stop(paste('x must be either a pre-loaded matrix (PSc, SSc or DSS), a
-                ranked matrix or the path to a GMT file.'))
-  }, warning = function(cond) {
-    message(paste('Warning when reading the GMT file. Here is the',
-                  'original warning message:'))
-    warning(paste0(cond))
-    return(suppressWarnings(qusage::read.gmt(x)))
-  })
+  gmt.file <- tryCatch(qusage::read.gmt(x), 
+                       error = function(cond) stop(cond$message),
+                       warning = function(cond) stop(cond$message))
+  
   ### Check for duplicated gene sets.
   upper.gmt.names <- toupper(names(gmt.file))
   if (anyDuplicated(upper.gmt.names) != 0) {
