@@ -434,22 +434,6 @@ testthat::test_that("default values", {
   testthat::expect_true(
     max(bc.regressed@normalized, na.rm = TRUE) > 0
   )
-  ### Check that the values in the slot @normalized range between 0 and +Inf 
-  ### when mode is "up".
-  testthat::expect_true(
-    min(bc.regressed.up@normalized, na.rm = TRUE) >= 0
-  )
-  testthat::expect_true(
-    max(bc.regressed.up@normalized, na.rm = TRUE) > 0
-  )
-  ### Check that the values in the slot @normalized range between -Inf and 0 
-  ### when mode is "down".
-  testthat::expect_true(
-    min(bc.regressed.down@normalized, na.rm = TRUE) < 0
-  )
-  testthat::expect_true(
-    max(bc.regressed.down@normalized, na.rm = TRUE) <= 0
-  )
   ### Check that the values in the slot @normalized are different between input 
   ### and output.
   testthat::expect_false(
