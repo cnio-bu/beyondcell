@@ -13,6 +13,8 @@
 #' more information.
 #' @param k.neighbors (\code{\link[Seurat]{FindNeighbors}}' \code{k.param})
 #' Defines \emph{k} for the k-Nearest Neighbour algorithm.
+#' @param npcs (\code{\link[Seurat]{RunPCA}}'s \code{npcs}) Total Number of PCs 
+#' to compute and store.
 #' @param res (\code{\link[Seurat]{FindClusters}}' \code{resolution}) Value of
 #' the resolution parameter, use a value above/below 1.0 if you want to obtain
 #' a larger/smaller number of communities. Can be a single number or a numeric
@@ -58,7 +60,7 @@
 #' @examples
 #' @export
 
-bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
+bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, npcs = 50, res = 0.2,
                    add.DSS = FALSE, method = "uwot", return.model = FALSE,
                    elbow.path = NULL) {
   # --- Checks ---
@@ -71,6 +73,15 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
   # Check k.neighbors.
   if (length(k.neighbors) != 1 | k.neighbors < 1) {
     stop('k.neighbors must be a positive integer.')
+  }
+  # Check npcs.
+  cells <- colnames(bc@normalized)
+  if (!is.numeric(npcs)) stop('npcs must be numeric.')
+  if (length(npcs) != 1 | npcs[1]%%1 != 0 | npcs[1] < 1) {
+    stop('npcs must be a positive integer.')
+  }
+  if (npcs >= length(cells)) {
+    stop('npcs must be lower than the number of cells.')
   }
   # Check res.
   if (any(sapply(res, function(x) !is.numeric(x))) |
@@ -121,8 +132,6 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
     }
   }
   # --- Code ---
-  # Cells in bc.
-  cells <- colnames(bc@normalized)
   if (add.DSS) {
     ### DSS (background) BCS.
     if (!identical(sort(rownames(bc@background), decreasing = FALSE),
@@ -180,7 +189,7 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
   # PCA.
   sc <- Seurat::ScaleData(sc, features = rownames(sc), do.scale = FALSE,
                           do.center = FALSE)
-  sc <- Seurat::RunPCA(sc, features = rownames(sc), npcs = 100, maxit = 100000,
+  sc <- Seurat::RunPCA(sc, features = rownames(sc), npcs = npcs, maxit = 100000,
                        nfeatures.print = min(30, n.drugs/2))
   # Elbow plot.
   elbowplot <- Seurat::ElbowPlot(sc, ndims = min(50, n.drugs - 1)) +

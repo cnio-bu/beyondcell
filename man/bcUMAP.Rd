@@ -8,6 +8,7 @@ bcUMAP(
   bc,
   pc = NULL,
   k.neighbors = 20,
+  npcs = 50,
   res = 0.2,
   add.DSS = FALSE,
   method = "uwot",
@@ -25,6 +26,9 @@ more information.}
 
 \item{k.neighbors}{(\code{\link[Seurat]{FindNeighbors}}' \code{k.param})
 Defines \emph{k} for the k-Nearest Neighbour algorithm.}
+
+\item{npcs}{(\code{\link[Seurat]{RunPCA}}'s \code{npcs}) Total Number of PCs 
+to compute and store.}
 
 \item{res}{(\code{\link[Seurat]{FindClusters}}' \code{resolution}) Value of
 the resolution parameter, use a value above/below 1.0 if you want to obtain
