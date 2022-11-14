@@ -248,7 +248,7 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
       (identical(reg.order[1], reg.order[2]) & reg.order[1] != "") |
       (!identical(reg.order.bg, c("", "")) & !identical(reg.order, reg.order.bg))) {
     warning(paste('Corrupt beyondcell object. Restoring original object before',
-                  'subsetting...'))
+                  'regressing...'))
     bc <- suppressMessages(bcRecompute(bc, slot = "data"))
     bc@background <- matrix(ncol = 0, nrow = 0)
     bc@regression <- list(order = c("regression", ""), vars = vars,
