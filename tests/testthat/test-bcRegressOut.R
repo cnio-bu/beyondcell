@@ -55,7 +55,7 @@ gs100up <- subset.geneset(gs100, mode = "up", n = length(gs100@genelist))
 gs100down <- subset.geneset(gs100, mode = "down", n = length(gs100@genelist))
 
 # Beyondcell objects.
-bc.object <- bcScore(pbmc, gs = gs100, expr.thres = 0.3)
+bc.object <- suppressWarnings(bcScore(pbmc, gs = gs100, expr.thres = 0.3))
 bc.object.bg <- suppressWarnings(
   bcUMAP(bc.object, pc = 2, add.DSS = TRUE)
 )
