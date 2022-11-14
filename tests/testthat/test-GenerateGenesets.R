@@ -82,10 +82,10 @@ testthat::test_that("default values", {
     all(sapply(gs_genelist, 
                FUN = function(x) all(names(x) %in% c("up", "down"))))
   )
-  ### Check that the slot @n.genes is empty.
+  ### Check the values of the slot @n.genes.
   testthat::expect_equal(
     GenerateGenesets(correct.gmt.path)@n.genes,
-    NaN
+    100 + 100
   )
   ### Check the values of the slot @mode.
   testthat::expect_equal(
