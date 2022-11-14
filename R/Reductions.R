@@ -13,6 +13,8 @@
 #' more information.
 #' @param k.neighbors (\code{\link[Seurat]{FindNeighbors}}' \code{k.param})
 #' Defines \emph{k} for the k-Nearest Neighbour algorithm.
+#' @param npcs (\code{\link[Seurat]{RunPCA}}'s \code{npcs}) Total Number of PCs 
+#' to compute and store.
 #' @param res (\code{\link[Seurat]{FindClusters}}' \code{resolution}) Value of
 #' the resolution parameter, use a value above/below 1.0 if you want to obtain
 #' a larger/smaller number of communities. Can be a single number or a numeric
@@ -36,6 +38,9 @@
 #' Whether \code{RunUMAP} will return the \code{uwot} model.
 #' @param elbow.path Path to save the elbow plot. If \code{elbow.path = NULL}
 #' (default), the plot will be printed.
+#' @param seed (\code{\link[Seurat]{Seurat}}'s \code{seed.use}) Random seed for 
+#' \code{\link[Seurat]{RunPCA}} and \code{\link[Seurat]{RunUMAP}}. If 
+#' \code{seed = NULL}, no seed will be set.
 #' @details This function performs all the steps required to obtain a UMAP
 #' reduction of the data and cluster the cells according to the BCS.
 #'
@@ -58,9 +63,9 @@
 #' @examples
 #' @export
 
-bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
+bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, npcs = 50, res = 0.2,
                    add.DSS = FALSE, method = "uwot", return.model = FALSE,
-                   elbow.path = NULL) {
+                   elbow.path = NULL, seed = 42) {
   # --- Checks ---
   # Check that bc is a beyondcell object.
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
@@ -71,6 +76,15 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
   # Check k.neighbors.
   if (length(k.neighbors) != 1 | k.neighbors < 1) {
     stop('k.neighbors must be a positive integer.')
+  }
+  # Check npcs.
+  cells <- colnames(bc@normalized)
+  if (!is.numeric(npcs)) stop('npcs must be numeric.')
+  if (length(npcs) != 1 | npcs[1]%%1 != 0 | npcs[1] < 1) {
+    stop('npcs must be a positive integer.')
+  }
+  if (npcs >= length(cells)) {
+    stop('npcs must be lower than the number of cells.')
   }
   # Check res.
   if (any(sapply(res, function(x) !is.numeric(x))) |
@@ -120,9 +134,12 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
       }
     }
   }
+  # Check seed.
+  if (!is.numeric(seed)) stop('seed must be numeric.')
+  if (length(seed) != 1) {
+    stop('seed must be a single number.')
+  }
   # --- Code ---
-  # Cells in bc.
-  cells <- colnames(bc@normalized)
   if (add.DSS) {
     ### DSS (background) BCS.
     if (!identical(sort(rownames(bc@background), decreasing = FALSE),
@@ -180,8 +197,8 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
   # PCA.
   sc <- Seurat::ScaleData(sc, features = rownames(sc), do.scale = FALSE,
                           do.center = FALSE)
-  sc <- Seurat::RunPCA(sc, features = rownames(sc), npcs = 100, maxit = 100000,
-                       nfeatures.print = min(30, n.drugs/2))
+  sc <- Seurat::RunPCA(sc, features = rownames(sc), npcs = npcs, maxit = 100000,
+                       nfeatures.print = min(30, n.drugs/2), seed.use = seed)
   # Elbow plot.
   elbowplot <- Seurat::ElbowPlot(sc, ndims = min(50, n.drugs - 1)) +
     ggplot2::theme(legend.position = "bottom")
@@ -201,7 +218,7 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, res = 0.2,
     message('Computing beyondcell\'s UMAP reduction...')
     sc <- Seurat::RunUMAP(sc, dims = 1:pc, umap.method = method,
                           return.model = return.model, n.components = 2,
-                          verbose = FALSE)
+                          verbose = FALSE, seed.use = seed)
     bc@reductions <- sc@reductions
     ### Therapeutic clusters.
     message('Adding therapeutic clusters to metadata...')

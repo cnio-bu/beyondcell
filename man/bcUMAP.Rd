@@ -8,11 +8,13 @@ bcUMAP(
   bc,
   pc = NULL,
   k.neighbors = 20,
+  npcs = 50,
   res = 0.2,
   add.DSS = FALSE,
   method = "uwot",
   return.model = FALSE,
-  elbow.path = NULL
+  elbow.path = NULL,
+  seed = 42
 )
 }
 \arguments{
@@ -25,6 +27,9 @@ more information.}
 
 \item{k.neighbors}{(\code{\link[Seurat]{FindNeighbors}}' \code{k.param})
 Defines \emph{k} for the k-Nearest Neighbour algorithm.}
+
+\item{npcs}{(\code{\link[Seurat]{RunPCA}}'s \code{npcs}) Total Number of PCs 
+to compute and store.}
 
 \item{res}{(\code{\link[Seurat]{FindClusters}}' \code{resolution}) Value of
 the resolution parameter, use a value above/below 1.0 if you want to obtain
@@ -53,6 +58,10 @@ Whether \code{RunUMAP} will return the \code{uwot} model.}
 
 \item{elbow.path}{Path to save the elbow plot. If \code{elbow.path = NULL}
 (default), the plot will be printed.}
+
+\item{seed}{(\code{\link[Seurat]{Seurat}}'s \code{seed.use}) Random seed for 
+\code{\link[Seurat]{RunPCA}} and \code{\link[Seurat]{RunUMAP}}. If 
+\code{seed = NULL}, no seed will be set.}
 }
 \value{
 A \code{beyondcell} object with the UMAP reduction in
