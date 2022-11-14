@@ -38,6 +38,9 @@
 #' Whether \code{RunUMAP} will return the \code{uwot} model.
 #' @param elbow.path Path to save the elbow plot. If \code{elbow.path = NULL}
 #' (default), the plot will be printed.
+#' @param seed (\code{\link[Seurat]{Seurat}}'s \code{seed.use}) Random seed for 
+#' \code{\link[Seurat]{RunPCA}} and \code{\link[Seurat]{RunUMAP}} 
+#' If \code{seed = NULL}, no seed will be set.
 #' @details This function performs all the steps required to obtain a UMAP
 #' reduction of the data and cluster the cells according to the BCS.
 #'
@@ -62,7 +65,7 @@
 
 bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, npcs = 50, res = 0.2,
                    add.DSS = FALSE, method = "uwot", return.model = FALSE,
-                   elbow.path = NULL) {
+                   elbow.path = NULL, seed = 42) {
   # --- Checks ---
   # Check that bc is a beyondcell object.
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
@@ -131,6 +134,11 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, npcs = 50, res = 0.2,
       }
     }
   }
+  # Check seed.
+  if (!is.numeric(seed)) stop('seed must be numeric.')
+  if (length(seed) != 1) {
+    stop('seed must be a single number.')
+  }
   # --- Code ---
   if (add.DSS) {
     ### DSS (background) BCS.
@@ -190,7 +198,7 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, npcs = 50, res = 0.2,
   sc <- Seurat::ScaleData(sc, features = rownames(sc), do.scale = FALSE,
                           do.center = FALSE)
   sc <- Seurat::RunPCA(sc, features = rownames(sc), npcs = npcs, maxit = 100000,
-                       nfeatures.print = min(30, n.drugs/2))
+                       nfeatures.print = min(30, n.drugs/2), seed.use = seed)
   # Elbow plot.
   elbowplot <- Seurat::ElbowPlot(sc, ndims = min(50, n.drugs - 1)) +
     ggplot2::theme(legend.position = "bottom")
@@ -210,7 +218,7 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, npcs = 50, res = 0.2,
     message('Computing beyondcell\'s UMAP reduction...')
     sc <- Seurat::RunUMAP(sc, dims = 1:pc, umap.method = method,
                           return.model = return.model, n.components = 2,
-                          verbose = FALSE)
+                          verbose = FALSE, seed.use = seed)
     bc@reductions <- sc@reductions
     ### Therapeutic clusters.
     message('Adding therapeutic clusters to metadata...')

@@ -13,7 +13,8 @@ bcUMAP(
   add.DSS = FALSE,
   method = "uwot",
   return.model = FALSE,
-  elbow.path = NULL
+  elbow.path = NULL,
+  seed = 42
 )
 }
 \arguments{
@@ -57,6 +58,10 @@ Whether \code{RunUMAP} will return the \code{uwot} model.}
 
 \item{elbow.path}{Path to save the elbow plot. If \code{elbow.path = NULL}
 (default), the plot will be printed.}
+
+\item{seed}{(\code{\link[Seurat]{Seurat}}'s \code{seed.use}) Random seed for 
+\code{\link[Seurat]{RunPCA}} and \code{\link[Seurat]{RunUMAP}} 
+If \code{seed = NULL}, no seed will be set.}
 }
 \value{
 A \code{beyondcell} object with the UMAP reduction in
