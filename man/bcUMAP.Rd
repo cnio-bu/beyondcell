@@ -60,8 +60,8 @@ Whether \code{RunUMAP} will return the \code{uwot} model.}
 (default), the plot will be printed.}
 
 \item{seed}{(\code{\link[Seurat]{Seurat}}'s \code{seed.use}) Random seed for 
-\code{\link[Seurat]{RunPCA}} and \code{\link[Seurat]{RunUMAP}} 
-If \code{seed = NULL}, no seed will be set.}
+\code{\link[Seurat]{RunPCA}} and \code{\link[Seurat]{RunUMAP}}. If 
+\code{seed = NULL}, no seed will be set.}
 }
 \value{
 A \code{beyondcell} object with the UMAP reduction in

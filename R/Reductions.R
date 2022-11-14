@@ -39,8 +39,8 @@
 #' @param elbow.path Path to save the elbow plot. If \code{elbow.path = NULL}
 #' (default), the plot will be printed.
 #' @param seed (\code{\link[Seurat]{Seurat}}'s \code{seed.use}) Random seed for 
-#' \code{\link[Seurat]{RunPCA}} and \code{\link[Seurat]{RunUMAP}} 
-#' If \code{seed = NULL}, no seed will be set.
+#' \code{\link[Seurat]{RunPCA}} and \code{\link[Seurat]{RunUMAP}}. If 
+#' \code{seed = NULL}, no seed will be set.
 #' @details This function performs all the steps required to obtain a UMAP
 #' reduction of the data and cluster the cells according to the BCS.
 #'
