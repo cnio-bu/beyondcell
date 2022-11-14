@@ -104,6 +104,12 @@ bc.corrupt3@regression$order <- rep("", 3)
 bc.corrupt4@regression$order <- rep("subset", 2)
 bc.corrupt5@regression$order <- c("subset", "")
 
+# Beyondcell object with only one signature.
+gs1 <- GetCollection(SSc, n.genes = 100, mode = c("up", "down"),
+                     filters = list(IDs = SSc@info$IDs[1]),
+                     include.pathways = FALSE)
+bc1 <- bcScore(pbmc, gs = gs1, expr.thres = 0.1)
+
 # Test errors.
 testthat::test_that("errors", {
   ### Check bc.
@@ -154,6 +160,10 @@ testthat::test_that("errors", {
     bcRegressOut(bc.object10, vars.to.regress = "nFeature_RNA", add.DSS = FALSE),
     paste('Only 10 drug signatures (excluding pathways) are present in the bc', 
           'object, please set add.DSS = TRUE.'), fixed = TRUE
+  )
+  ### Check that bcRegressOut does not throw any error with only one signature.
+  testthat::expect_no_error(
+    bcRegressOut(bc1, vars.to.regress = "nFeature_RNA", add.DSS = TRUE)
   )
 })
 
@@ -417,8 +427,7 @@ testthat::test_that("default values", {
   testthat::expect_equal(
     bc.regressed.down@scaled, scale.score(bc.regressed.down@normalized)
   )
-  ### Check that the values in the slot @normalized range between -Inf and +Inf 
-  ### when mode is c("up", "down").
+  ### Check that the values in the slot @normalized range between -Inf and +Inf.
   testthat::expect_true(
     min(bc.regressed@normalized, na.rm = TRUE) < 0
   )

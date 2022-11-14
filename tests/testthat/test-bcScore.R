@@ -91,6 +91,11 @@ gs.mouse@genelist <- lapply(gs.mouse@genelist, FUN = function(x) {
 })
 gs.mouse@info <- data.frame()
 
+# Geneset with only one signature.
+gs1 <- GetCollection(SSc, n.genes = 100, mode = c("up", "down"),
+                     filters = list(IDs = SSc@info$IDs[1]),
+                     include.pathways = FALSE)
+
 # Pathways
 load("../../R/sysdata.rda")
 
@@ -164,6 +169,10 @@ testthat::test_that("errors", {
   testthat::expect_error(
     bcScore(pbmc, gs = gs10, expr.thres = -2),
     'expr.thres must be a positive number between 0 and 1.'
+  )
+  ### Check that bcScores does not throw any error with only one signature.
+  testthat::expect_no_error(
+    bcScore(pbmc, gs = gs1, expr.thres = 0.1)
   )
 })
 
