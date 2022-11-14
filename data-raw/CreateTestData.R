@@ -129,8 +129,8 @@ table(colSums(cellsigmatrix < 0.2))
 counts <- Matrix::Matrix(counts)
 
 # Create gmts.
-genesets100 <- head(unique(c(sig.max.unique.genes, names(ssc@genelist)[1:100])), 
-                    n = 100)
+genesets100 <- head(unique(c(sig.max.unique.genes, names(ssc@genelist)[1:101])), 
+                    n = 101)
 
 gmt10 <- unlist(ssc@genelist[genesets100[2:11]], recursive = FALSE)
 names(gmt10) <- gsub(pattern = "\\.", replacement = "_", names(gmt10))
@@ -150,9 +150,6 @@ gmt10duplicated <- c(gmt10[1:18], gmt10[1:2])
 gmt10incorrect <- gmt10
 names(gmt10incorrect)[19] <- gsub(pattern = "_up", replacement = "_bad", 
                                   names(gmt10incorrect)[19])
-
-gmt100 <- unlist(ssc@genelist[genesets100[2:101]], recursive = FALSE)
-names(gmt100) <- gsub(pattern = "\\.", replacement = "_", names(gmt100))
 
 # Save.
 sc.out.dir <- "../tests/testdata/single-cell/"
@@ -181,4 +178,3 @@ output.gmt(gmt10warning, filename = paste0(gmt.out.dir, "score_warning10.gmt"))
 output.gmt(gmt10duplicated, filename = paste0(gmt.out.dir, "duplicated10.gmt"))
 output.gmt(gmt10incorrect, 
            filename = paste0(gmt.out.dir, "incorrect_mode10.gmt"))
-output.gmt(gmt100, filename = paste0(gmt.out.dir, "correct100.gmt"))
