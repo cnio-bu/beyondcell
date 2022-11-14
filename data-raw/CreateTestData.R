@@ -151,6 +151,9 @@ gmt10incorrect <- gmt10
 names(gmt10incorrect)[19] <- gsub(pattern = "_up", replacement = "_bad", 
                                   names(gmt10incorrect)[19])
 
+gmt100 <- unlist(ssc@genelist[genesets100[2:101]], recursive = FALSE)
+names(gmt100) <- gsub(pattern = "\\.", replacement = "_", names(gmt100))
+
 # Save.
 sc.out.dir <- "../tests/testdata/single-cell/"
 Matrix::writeMM(obj = counts, file = paste0(sc.out.dir, "matrix.mtx"))
@@ -178,3 +181,4 @@ output.gmt(gmt10warning, filename = paste0(gmt.out.dir, "score_warning10.gmt"))
 output.gmt(gmt10duplicated, filename = paste0(gmt.out.dir, "duplicated10.gmt"))
 output.gmt(gmt10incorrect, 
            filename = paste0(gmt.out.dir, "incorrect_mode10.gmt"))
+output.gmt(gmt100, filename = paste0(gmt.out.dir, "correct100.gmt"))

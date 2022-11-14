@@ -47,9 +47,7 @@ pbmc <- Seurat::NormalizeData(pbmc.raw, normalization.method = "LogNormalize",
                               scale.factor = 10000)
 
 # Geneset objects.
-gs100 <- GetCollection(SSc, n.genes = 100, mode = c("up", "down"),
-                       filters = list(IDs = unique(SSc@info$IDs)[1:100]), 
-                       include.pathways = FALSE)
+gs100 <- GenerateGenesets("../testdata/gmt/correct100.gmt")
 gs10 <- GenerateGenesets("../testdata/gmt/correct10.gmt")
 
 gs20 <- subset.geneset(gs100, mode = c("up", "down"), n = 20)
