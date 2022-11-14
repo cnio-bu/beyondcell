@@ -545,8 +545,10 @@ testthat::test_that("default values", {
          order.background = c("subset", "regression"))
   )
   testthat::expect_equal(
-    bcRegressOut(bc.reg.bg, add.DSS = FALSE,
-                 vars.to.regress = "nFeature_RNA")@regression[ordering],
+    suppressWarnings(
+      bcRegressOut(bc.reg.bg, add.DSS = FALSE,
+                   vars.to.regress = "nFeature_RNA")@regression[ordering]
+    ),
     list(order = c("regression", ""), vars = "nFeature_RNA", 
          order.background = c("regression", ""))
   )
@@ -559,8 +561,10 @@ testthat::test_that("default values", {
          order.background = rep("", 2))
   )
   testthat::expect_equal(
-    bcRegressOut(bc.corrupt1, add.DSS = TRUE,
-                 vars.to.regress = "nFeature_RNA")@regression[ordering],
+    suppressWarnings(
+      bcRegressOut(bc.corrupt1, add.DSS = TRUE,
+                   vars.to.regress = "nFeature_RNA")@regression[ordering]
+    ),
     list(order = c("regression", ""), vars = "nFeature_RNA", 
          order.background = c("regression", ""))
   )
