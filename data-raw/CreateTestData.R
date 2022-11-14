@@ -137,6 +137,7 @@ names(gmt10) <- gsub(pattern = "\\.", replacement = "_", names(gmt10))
 names(gmt10)[6] <- gsub(pattern = "_down", replacement = "_dn", names(gmt10)[6])
 names(gmt10)[c(7, 8, 9, 10)] <- toupper(names(gmt10)[c(7, 8, 9, 10)])
 names(gmt10)
+
 gmt10up <- gmt10[grep(pattern = "_up", names(gmt10), ignore.case = TRUE)]
 gmt10down <- gmt10[grep(pattern = "_down|_dn", names(gmt10), 
                         ignore.case = TRUE)]
@@ -144,13 +145,12 @@ gmt10down <- gmt10[grep(pattern = "_down|_dn", names(gmt10),
 gmt10warning <- unlist(ssc@genelist[genesets100[1:10]], recursive = FALSE)
 names(gmt10warning) <- gsub(pattern = "\\.", replacement = "_", 
                             names(gmt10warning))
+
 gmt10duplicated <- c(gmt10[1:18], gmt10[1:2])
 gmt10incorrect <- gmt10
 names(gmt10incorrect)[19] <- gsub(pattern = "_up", replacement = "_bad", 
                                   names(gmt10incorrect)[19])
 
-gmt20 <- unlist(ssc@genelist[genesets100[2:21]], recursive = FALSE)
-names(gmt20) <- gsub(pattern = "\\.", replacement = "_", names(gmt20))
 gmt100 <- unlist(ssc@genelist[genesets100[2:101]], recursive = FALSE)
 names(gmt100) <- gsub(pattern = "\\.", replacement = "_", names(gmt100))
 
@@ -181,5 +181,4 @@ output.gmt(gmt10warning, filename = paste0(gmt.out.dir, "score_warning10.gmt"))
 output.gmt(gmt10duplicated, filename = paste0(gmt.out.dir, "duplicated10.gmt"))
 output.gmt(gmt10incorrect, 
            filename = paste0(gmt.out.dir, "incorrect_mode10.gmt"))
-output.gmt(gmt20, filename = paste0(gmt.out.dir, "correct20.gmt"))
 output.gmt(gmt100, filename = paste0(gmt.out.dir, "correct100.gmt"))
