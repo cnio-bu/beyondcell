@@ -55,7 +55,7 @@ gs100up <- subset.geneset(gs100, mode = "up", n = length(gs100@genelist))
 gs100down <- subset.geneset(gs100, mode = "down", n = length(gs100@genelist))
 
 # Beyondcell objects.
-bc.object <- suppressWarnings(bcScore(pbmc, gs = gs100, expr.thres = 0.3))
+bc.object <- suppressWarnings(bcScore(pbmc, gs = gs100, expr.thres = 0.26))
 bc.object.bg <- suppressWarnings(
   bcUMAP(bc.object, pc = 2, add.DSS = TRUE)
 )
@@ -193,8 +193,8 @@ testthat::test_that("errors", {
   testthat::expect_error(
     bcRegressOut(bc.object.norm.complete, vars.to.regress = "nFeature_RNA", 
                  k.neighbors = n.complete.bg, add.DSS = TRUE),
-    paste0('k.neighbors must be lower than the number of complete cases in ', 
-           '@background slot: ', n.complete.bg, '.')
+    paste0('k.neighbors must be lower than the total number of complete ',
+           'cases in @normalized and @background slots: ', n.complete.bg, '.')
   )
   ### Check that bcRegressOut does not throw any error with only one signature.
   testthat::expect_no_error(

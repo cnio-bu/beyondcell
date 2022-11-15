@@ -293,14 +293,9 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
     }
   }
   # Check k.neighbors.
-  n.complete.cases.normalized <- sum(complete.cases(t(bc@normalized)))
   if (!is.numeric(k.neighbors)) stop('k.neighbors must be numeric.')
   if (length(k.neighbors) != 1 | k.neighbors[1]%%1 != 0 | k.neighbors[1] < 1) {
     stop('k.neighbors must be a positive integer.')
-  }
-  if (k.neighbors >= n.complete.cases.normalized) {
-    stop(paste0('k.neighbors must be lower than the number of complete cases ', 
-                'in @normalized slot: ', n.complete.cases.normalized, '.'))
   }
   # Check add.DSS.
   sigs <- rownames(bc@normalized)
@@ -317,6 +312,13 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
       warning(paste('Computing an UMAP reduction for', n.drugs,
                     'drugs. We recommend to set add.DSS = TRUE when the number',
                     'of signatures (excluding pathways) is below or equal to 20.'))
+    }
+    n.complete.normalized <- sum(complete.cases(t(bc@normalized[drugs, , 
+                                                                drop = FALSE])))
+    if (k.neighbors >= n.complete.normalized) {
+      stop(paste0('k.neighbors must be lower than the number of complete ', 
+                  'cases in @normalized slot: ', n.complete.normalized, 
+                  '.'))
     }
   }
   # --- Code ---
@@ -335,8 +337,8 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
         GetCollection(DSS, n.genes = bc@n.genes, mode = bc@mode, 
                       include.pathways = FALSE))
       ### BCS.
-      background <- suppressWarnings(
-        bcScore(bc@expr.matrix, gs = gs.background, expr.thres = bc@thres))
+      background <- suppressMessages(suppressWarnings(
+        bcScore(bc@expr.matrix, gs = gs.background, expr.thres = bc@thres)))
       ### Add metadata.
       background@meta.data <- background@meta.data[, -c(1:ncol(background@meta.data)), 
                                                    drop = FALSE]
@@ -378,17 +380,24 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
                   'beyondcell object.'))
     bc.merged <- beyondcell(normalized = bc@normalized[drugs, , drop = FALSE])
   }
+  # Complete cases for merged BCS.
+  n.complete.merged <- sum(complete.cases(t(bc.merged@normalized)))
+  if (k.neighbors >= n.complete.merged) {
+    stop(paste0('k.neighbors must be lower than the total number of complete ',
+                'cases in @normalized and @background slots: ', 
+                n.complete.merged, '.'))
+  }
   # Complete cases for background BCS.
-  if (all(dim(bc@background) == 0)) n.complete.cases.bg <- length(cells)
-  else n.complete.cases.bg <- sum(complete.cases(t(bc@background)))
-  if (k.neighbors >= n.complete.cases.bg) {
+  if (all(dim(bc@background) == 0)) n.complete.bg <- length(cells)
+  else n.complete.bg <- sum(complete.cases(t(bc@background)))
+  if (k.neighbors >= n.complete.bg) {
     stop(paste0('k.neighbors must be lower than the number of complete cases ', 
-                'in @background slot: ', n.complete.cases.bg, '.'))
+                'in @background slot: ', n.complete.bg, '.'))
   }
   # Latent data.
   latent.data <- bc@meta.data[cells, vars, drop = FALSE]
   # Impute normalized BCS matrix if necessary
-  if (!all(complete.cases(t(bc@normalized)))) {
+  if (!all(complete.cases(t(bc.merged@normalized)))) {
     message('Imputing normalized BCS...')
     imputation <- t(DMwR::knnImputation(t(bc.merged@normalized), 
                                         k = k.neighbors, scale = FALSE, 
