@@ -338,7 +338,8 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
       background <- suppressWarnings(
         bcScore(bc@expr.matrix, gs = gs.background, expr.thres = bc@thres))
       ### Add metadata.
-      background@meta.data <- background@meta.data[, -c(1:ncol(background@meta.data))]
+      background@meta.data <- background@meta.data[, -c(1:ncol(background@meta.data)), 
+                                                   drop = FALSE]
       background <- bcAddMetadata(background, metadata = bc@meta.data)
       ### Subset and regress (if needed).
       if (reg.order[1] == "subset") {
@@ -366,14 +367,16 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
     }
     ### Add background to bc.
     all.rows <- unique(c(drugs, rownames(bc@background)))
-    merged.score <- rbind(bc@normalized, bc@background[, cells])[all.rows, ]
+    merged.score <- rbind(bc@normalized, 
+                          bc@background[, cells, drop = FALSE])[all.rows, , 
+                                                                drop = FALSE]
     bc.merged <- beyondcell(normalized = merged.score)
   } else {
     ### No background BCS.
     message(paste('DSS background not computed. The imputation will be', 
                   'computed with just the drugs (not pathways) in the', 
                   'beyondcell object.'))
-    bc.merged <- beyondcell(normalized = bc@normalized[drugs, ])
+    bc.merged <- beyondcell(normalized = bc@normalized[drugs, , drop = FALSE])
   }
   # Complete cases for background BCS.
   if (all(dim(bc@background) == 0)) n.complete.cases.bg <- length(cells)
@@ -415,8 +418,9 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
                           ### Return residues.
                           return(resid)
                         }))
-  bc@normalized <- round(rbind(bc@normalized[!not.paths, ], 
-                               normalized.regressed)[sigs, cells], digits = 2)
+  bc@normalized <- round(rbind(bc@normalized[!not.paths, , drop = FALSE], 
+                               normalized.regressed)[sigs, cells, drop = FALSE], 
+                         digits = 2)
   # Close the progress bar.
   Sys.sleep(0.1)
   close(pb)
@@ -452,7 +456,8 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
                               ### Return residues.
                               return(resid)
                               }))
-    bc@background <- round(background.regressed[, cells], digits = 2)
+    bc@background <- round(background.regressed[, cells, drop = FALSE], 
+                           digits = 2)
     bc@regression$order.background <- bc@regression$order
     # Close the background progress bar.
     Sys.sleep(0.1)
