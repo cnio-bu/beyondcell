@@ -292,9 +292,15 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
       reg.order[reg.order == "regression"] <- ""
     }
   }
-  # Check k.neighbors
-  if (length(k.neighbors) != 1 | k.neighbors < 1) {
+  # Check k.neighbors.
+  n.complete.cases.normalized <- sum(complete.cases(t(bc@normalized)))
+  if (!is.numeric(k.neighbors)) stop('k.neighbors must be numeric.')
+  if (length(k.neighbors) != 1 | k.neighbors[1]%%1 != 0 | k.neighbors[1] < 1) {
     stop('k.neighbors must be a positive integer.')
+  }
+  if (k.neighbors >= n.complete.cases.normalized) {
+    stop(paste0('k.neighbors must be lower than the number of complete cases ', 
+                'in @normalized slot: ', n.complete.cases.normalized, '.'))
   }
   # Check add.DSS.
   sigs <- rownames(bc@normalized)
@@ -369,10 +375,17 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
                   'beyondcell object.'))
     bc.merged <- beyondcell(normalized = bc@normalized[drugs, ])
   }
+  # Complete cases for background BCS.
+  if (all(dim(bc@background) == 0)) n.complete.cases.bg <- length(cells)
+  else n.complete.cases.bg <- sum(complete.cases(t(bc@background)))
+  if (k.neighbors >= n.complete.cases.bg) {
+    stop(paste0('k.neighbors must be lower than the number of complete cases ', 
+                'in @background slot: ', n.complete.cases.bg, '.'))
+  }
   # Latent data.
   latent.data <- bc@meta.data[cells, vars, drop = FALSE]
   # Impute normalized BCS matrix if necessary
-  if (!all(complete.cases(bc.merged@normalized))) {
+  if (!all(complete.cases(t(bc@normalized)))) {
     message('Imputing normalized BCS...')
     imputation <- t(DMwR::knnImputation(t(bc.merged@normalized), 
                                         k = k.neighbors, scale = FALSE, 
@@ -413,7 +426,7 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
   bc@regression$vars <- vars
   # Regress the background, if needed.
   if (any(dim(bc@background) != 0)) {
-    if (!all(complete.cases(bc@background))) {
+    if (!all(complete.cases(t(bc@background)))) {
       message('Imputing background BCS...')
       imputation.bg <- t(DMwR::knnImputation(t(bc@background), k = k.neighbors,
                                              scale = FALSE, meth = "weighAvg"))

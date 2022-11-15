@@ -68,6 +68,11 @@ bc.object.complete.bg <- suppressWarnings(
   bcUMAP(bc.object.complete, pc = 2, add.DSS = TRUE)
 )
 
+bc.object.norm.complete <- bc.object
+bc.object.norm.complete.bg <- bc.object.bg
+bc.object.norm.complete@normalized <- 
+  bc.object.norm.complete.bg@normalized <- bc.object.complete@normalized
+
 bc.object10 <- bcScore(pbmc, gs = gs10, expr.thres = 0.1)
 bc.object20 <- bcScore(pbmc, gs = gs20, expr.thres = 0.1)
 
@@ -129,23 +134,6 @@ testthat::test_that("errors", {
           'bcSubset() on a new beyondcell object created with', 
           'CreatebcObject(bc).'), fixed = TRUE
   )
-  ### Check k.neighbors.
-  testthat::expect_error(
-    bcRegressOut(bc.object, vars.to.regress = "nFeature_RNA", k.neighbors = "a"),
-    'k.neighbors must be a positive integer.'
-  )
-  testthat::expect_error(
-    bcRegressOut(bc.object, vars.to.regress = "nFeature_RNA", k.neighbors = 1:2),
-    'k.neighbors must be a positive integer.'
-  )
-  testthat::expect_error(
-    bcRegressOut(bc.object, vars.to.regress = "nFeature_RNA", k.neighbors = 1.5),
-    'k.neighbors must be a positive integer.'
-  )
-  testthat::expect_error(
-    bcRegressOut(bc.object, vars.to.regress = "nFeature_RNA", k.neighbors = -2),
-    'k.neighbors must be a positive integer.'
-  )
   ### Check add.DSS.
   testthat::expect_error(
     bcRegressOut(bc.object, vars.to.regress = "nFeature_RNA", 
@@ -160,6 +148,53 @@ testthat::test_that("errors", {
     bcRegressOut(bc.object10, vars.to.regress = "nFeature_RNA", add.DSS = FALSE),
     paste('Only 10 drug signatures (excluding pathways) are present in the bc', 
           'object, please set add.DSS = TRUE.'), fixed = TRUE
+  )
+  ### Check k.neighbors.
+  n.complete.norm <- sum(complete.cases(t(bc.object@normalized)))
+  n.complete.bg <- sum(complete.cases(t(bc.object.bg@background)))
+  testthat::expect_error(
+    bcRegressOut(bc.object, vars.to.regress = "nFeature_RNA", k.neighbors = "a"),
+    'k.neighbors must be numeric.'
+  )
+  testthat::expect_error(
+    bcRegressOut(bc.object, vars.to.regress = "nFeature_RNA", k.neighbors = 1:2),
+    'k.neighbors must be a positive integer.'
+  )
+  testthat::expect_error(
+    bcRegressOut(bc.object, vars.to.regress = "nFeature_RNA", k.neighbors = 1.5),
+    'k.neighbors must be a positive integer.'
+  )
+  testthat::expect_error(
+    bcRegressOut(bc.object, vars.to.regress = "nFeature_RNA", k.neighbors = 0),
+    'k.neighbors must be a positive integer.'
+  )
+  testthat::expect_error(
+    bcRegressOut(bc.object, vars.to.regress = "nFeature_RNA", k.neighbors = -2),
+    'k.neighbors must be a positive integer.'
+  )
+  testthat::expect_error(
+    bcRegressOut(bc.object, vars.to.regress = "nFeature_RNA", 
+                 k.neighbors = n.complete.norm, add.DSS = FALSE),
+    paste0('k.neighbors must be lower than the number of complete cases in ', 
+           '@normalized slot: ', n.complete.norm, '.')
+  )
+  testthat::expect_error(
+    bcRegressOut(bc.object, vars.to.regress = "nFeature_RNA", 
+                 k.neighbors = n.complete.norm + 1, add.DSS = FALSE),
+    paste0('k.neighbors must be lower than the number of complete cases in ', 
+           '@normalized slot: ', n.complete.norm, '.')
+  )
+  testthat::expect_error(
+    bcRegressOut(bc.object.norm.complete.bg, vars.to.regress = "nFeature_RNA", 
+                 k.neighbors = n.complete.bg, add.DSS = FALSE),
+    paste0('k.neighbors must be lower than the number of complete cases in ', 
+           '@background slot: ', n.complete.bg, '.')
+  )
+  testthat::expect_error(
+    bcRegressOut(bc.object.norm.complete, vars.to.regress = "nFeature_RNA", 
+                 k.neighbors = n.complete.bg, add.DSS = TRUE),
+    paste0('k.neighbors must be lower than the number of complete cases in ', 
+           '@background slot: ', n.complete.bg, '.')
   )
   ### Check that bcRegressOut does not throw any error with only one signature.
   testthat::expect_no_error(
@@ -311,6 +346,17 @@ testthat::test_that("messages", {
       'No NaN values were found in bc@background. No imputation needed.\n',
       'Regressing background BCS...\n')
   )
+  testthat::expect_equal(
+    testthat::capture_messages(
+      bcRegressOut(bc.object.norm.complete, vars.to.regress = "nFeature_RNA", 
+                   add.DSS = FALSE)
+    ),
+    c('Computing background BCS using DSS signatures...\n',
+      'No NaN values were found in bc@normalized. No imputation needed.\n',
+      'Regressing scores...\n',
+      'Imputing background BCS...\n',
+      'Regressing background BCS...\n')
+  )
   ### Check the printed messages when using a complete beyondcell object with
   ### background matrix and add.DSS = FALSE as inputs.
   testthat::expect_equal(
@@ -325,6 +371,18 @@ testthat::test_that("messages", {
       'No NaN values were found in bc@background. No imputation needed.\n',
       'Regressing background BCS...\n')
   )
+  testthat::expect_equal(
+    testthat::capture_messages(
+      bcRegressOut(bc.object.norm.complete.bg, add.DSS = FALSE,
+                   vars.to.regress = "nFeature_RNA")
+    ),
+    c(paste('DSS background not computed. The imputation will be computed with',
+            'just the drugs (not pathways) in the beyondcell object.\n'),
+      'No NaN values were found in bc@normalized. No imputation needed.\n',
+      'Regressing scores...\n',
+      'Imputing background BCS...\n',
+      'Regressing background BCS...\n')
+  )
   ### Check the printed messages when using a complete beyondcell object with
   ### background matrix and add.DSS = TRUE as inputs.
   testthat::expect_equal(
@@ -336,6 +394,17 @@ testthat::test_that("messages", {
       'No NaN values were found in bc@normalized. No imputation needed.\n',
       'Regressing scores...\n',
       'No NaN values were found in bc@background. No imputation needed.\n',
+      'Regressing background BCS...\n')
+  )
+  testthat::expect_equal(
+    testthat::capture_messages(
+      bcRegressOut(bc.object.norm.complete.bg, add.DSS = FALSE,
+                   vars.to.regress = "nFeature_RNA")
+    ),
+    c('Background BCS already computed. Skipping this step.\n',
+      'No NaN values were found in bc@normalized. No imputation needed.\n',
+      'Regressing scores...\n',
+      'Imputing background BCS...\n',
       'Regressing background BCS...\n')
   )
 })
