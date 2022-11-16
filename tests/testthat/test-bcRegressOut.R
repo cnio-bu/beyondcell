@@ -291,6 +291,8 @@ testthat::test_that("messages", {
             'just the drugs (not pathways) in the beyondcell object.\n'),
       'Imputing normalized BCS...\n',
       'Regressing scores...\n',
+      'Removing @reductions slot...\n',
+      'Removing therapeutic clusters...\n',
       'Imputing background BCS...\n',
       'Regressing background BCS...\n')
   )
@@ -304,6 +306,8 @@ testthat::test_that("messages", {
     c('Background BCS already computed. Skipping this step.\n',
       'Imputing normalized BCS...\n',
       'Regressing scores...\n',
+      'Removing @reductions slot...\n',
+      'Removing therapeutic clusters...\n',
       'Imputing background BCS...\n',
       'Regressing background BCS...\n')
   )
@@ -349,7 +353,7 @@ testthat::test_that("messages", {
   testthat::expect_equal(
     testthat::capture_messages(
       bcRegressOut(bc.object.norm.complete, vars.to.regress = "nFeature_RNA", 
-                   add.DSS = FALSE)
+                   add.DSS = TRUE)
     ),
     c('Computing background BCS using DSS signatures...\n',
       'No NaN values were found in bc@normalized. No imputation needed.\n',
@@ -368,6 +372,8 @@ testthat::test_that("messages", {
             'just the drugs (not pathways) in the beyondcell object.\n'),
       'No NaN values were found in bc@normalized. No imputation needed.\n',
       'Regressing scores...\n',
+      'Removing @reductions slot...\n',
+      'Removing therapeutic clusters...\n',
       'No NaN values were found in bc@background. No imputation needed.\n',
       'Regressing background BCS...\n')
   )
@@ -380,6 +386,8 @@ testthat::test_that("messages", {
             'just the drugs (not pathways) in the beyondcell object.\n'),
       'No NaN values were found in bc@normalized. No imputation needed.\n',
       'Regressing scores...\n',
+      'Removing @reductions slot...\n',
+      'Removing therapeutic clusters...\n',
       'Imputing background BCS...\n',
       'Regressing background BCS...\n')
   )
@@ -393,6 +401,8 @@ testthat::test_that("messages", {
     c('Background BCS already computed. Skipping this step.\n',
       'No NaN values were found in bc@normalized. No imputation needed.\n',
       'Regressing scores...\n',
+      'Removing @reductions slot...\n',
+      'Removing therapeutic clusters...\n',
       'No NaN values were found in bc@background. No imputation needed.\n',
       'Regressing background BCS...\n')
   )
@@ -404,6 +414,8 @@ testthat::test_that("messages", {
     c('Background BCS already computed. Skipping this step.\n',
       'No NaN values were found in bc@normalized. No imputation needed.\n',
       'Regressing scores...\n',
+      'Removing @reductions slot...\n',
+      'Removing therapeutic clusters...\n',
       'Imputing background BCS...\n',
       'Regressing background BCS...\n')
   )

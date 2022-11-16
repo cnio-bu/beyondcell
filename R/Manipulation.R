@@ -270,7 +270,7 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
     } else if (tail(reg.order[which(reg.order != "")], n = 1) == "regression") {
       warning('bc is an already regressed object.')
       vars <- unique(c(vars, reg.vars))
-      bc <- bcRecompute(bc, slot = "data")
+      bc <- suppressMessages(bcRecompute(bc, slot = "data"))
       bc@regression <- list(order = rep("", 2),  vars = NULL,
                             order.background = rep("", 2))
       if (any(dim(bc@background) != 0)) {
@@ -278,8 +278,8 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
         gs.background <- suppressMessages(
           GetCollection(DSS, n.genes = bc@n.genes, mode = bc@mode,
                         include.pathways = FALSE))
-        background <- suppressWarnings(
-          bcScore(bc@expr.matrix, gs = gs.background, expr.thres = bc@thres))
+        background <- suppressWarnings(suppressMessages(
+          bcScore(bc@expr.matrix, gs = gs.background, expr.thres = bc@thres)))
         bc@background <- background@normalized
       }
       if ("subset" %in% reg.order) {
@@ -337,7 +337,7 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
         GetCollection(DSS, n.genes = bc@n.genes, mode = bc@mode, 
                       include.pathways = FALSE))
       ### BCS.
-      background <- suppressMessages(suppressWarnings(
+      background <- suppressWarnings(suppressMessages(
         bcScore(bc@expr.matrix, gs = gs.background, expr.thres = bc@thres)))
       ### Add metadata.
       background@meta.data <- background@meta.data[, -c(1:ncol(background@meta.data)), 
@@ -434,7 +434,7 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
   Sys.sleep(0.1)
   close(pb)
   # Recompute the beyondcell object
-  bc <- suppressMessages(bcRecompute(bc, slot = "normalized"))
+  bc <- bcRecompute(bc, slot = "normalized")
   # Add vars.to.regress to bc@regression$vars.
   bc@regression$vars <- vars
   # Regress the background, if needed.
