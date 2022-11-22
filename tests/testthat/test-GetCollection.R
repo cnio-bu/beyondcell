@@ -188,42 +188,65 @@ testthat::test_that("default values", {
   ### Check drugs filter.
   bortezomib <- subset(SSc@info, subset = preferred.drug.names == "BORTEZOMIB" |
                          drugs == "BORTEZOMIB")
+  bortezomib <- aggregateInfo(bortezomib)
   testthat::expect_equal(
     GetCollection(SSc, filters = list(drugs = "bortezomib"))@info,
-    aggregateInfo(bortezomib)
+    bortezomib
   )
   ### Check IDs filter.
   sig_21378 <- subset(SSc@info, subset = IDs == "sig-21378")
+  sig_21378 <- aggregateInfo(sig_21378)
   testthat::expect_equal(
     GetCollection(SSc, filters = list(IDs = "sig-21378"))@info,
-    aggregateInfo(sig_21378)
+    sig_21378
   )
   ### Check MoAs filter.
-  NFkB <- subset(SSc@info, subset = MoAs == "NFkB signaling inhibitor")
+  NFkB_drug_ids <- subset(SSc@info, subset = MoAs == "NFkB signaling inhibitor")
+  unique_ids_to_test <- unique(NFkB_drug_ids$IDs)
+  NFkB <- SSc@info[SSc@info$IDs %in% unique_ids_to_test, ]
+  NFkB <- aggregateInfo(NFkB)
+
   testthat::expect_equal(
     GetCollection(SSc, filters = list(MoAs = "NFkB signaling inhibitor"))@info,
-    aggregateInfo(NFkB)
+    NFkB
   )
   ### Check targets filter.
-  PSMB9 <- subset(SSc@info, subset = targets == "PSMB9")
+  has_psmb9 <- grepl(pattern = "PSMB9", x = SSc@info$targets)
+  unique_ids_to_test <- unique(SSc@info[has_psmb9, ]$IDs) ## tibble stuff
+  PSMB9 <- SSc@info[SSc@info$IDs %in% unique_ids_to_test, ]
+  PSMB9 <- aggregateInfo(PSMB9)
+
   testthat::expect_equal(
     GetCollection(SSc, filters = list(targets = "PSMB9"))@info,
-    aggregateInfo(PSMB9)
+    PSMB9
   )
   ### Check studies filter.
   PRISM <- subset(SSc@info, subset = studies == "PRISM")
+  PRISM <- aggregateInfo(PRISM)
   testthat::expect_equal(
     GetCollection(SSc, filters = list(studies = "PRISM"))@info,
-    aggregateInfo(PRISM)
+    PRISM
   )
   ### Check multiple filters.
-  multiple <- merge(bortezomib(merge(sig_21378, merge(NFkB, 
-                                                      merge(PSMB9, PRISM)))))
+  multiple <- merge(bortezomib,
+                    merge(sig_21378, 
+                          merge(NFkB, 
+                                merge(PSMB9, 
+                                      PRISM, 
+                                      all = TRUE
+                                      ),
+                                all = TRUE
+                                ),
+                          all = TRUE
+                          ),
+                    all = TRUE
+                    )
+  
   testthat::expect_equal(
     GetCollection(SSc, 
                   filters = list(drugs = "bortezomib", IDs = "sig-21378",
                                  MoAs = "NFkB signaling inhibitor",
                                  targets = "PSMB9", studies = "PRISM"))@info,
-    aggregateInfo(multiple)
+    multiple
   )
 })
