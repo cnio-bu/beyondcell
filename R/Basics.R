@@ -283,7 +283,7 @@ GetIDs <- function(values, filter) {
                        x = deparse(substitute(filter)))
     warning(paste0('sig IDs were not found for ', length(not.found), ' out of ',
                    length(values), " ", filtername, ': ',
-                   paste0(not.found, collapse = ", "), "."))
+                   paste0(not.found, collapse = ", ")))
   }
   return(ids)
 }

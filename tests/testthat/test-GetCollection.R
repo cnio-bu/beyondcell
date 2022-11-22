@@ -88,19 +88,20 @@ testthat::test_that("warnings", {
   testthat::expect_warning(
     GetCollection(SSc, filters = list(targets = "ERBB2", studies = "CCLE")),
     paste('The following filters\' values yielded no results:\n', 
-          ' - studies: "CCLE".')
+          '- studies: CCLE\n')
   )
   testthat::expect_warning(
     GetCollection(SSc, filters = list(targets = "ERBB2", 
                                       studies = c("CCLE", "PRISM"))),
     paste('The following filters\' values yielded no results:\n', 
-          ' - studies: "CCLE".')
+          '- studies: CCLE\n')
   )
   testthat::expect_warning(
     GetCollection(SSc, filters = list(targets = "DNApol", studies = "CCLE", 
                                       IDs = "sig-20879")),
     paste('The following filters\' values yielded no results:\n', 
-          ' - targets: "DNApol"\n  - studies: "CCLE".')
+          '- targets: DNApol\n',
+          '- studies: CCLE\n')
   )
 })
 
