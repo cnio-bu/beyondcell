@@ -174,7 +174,7 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
       tryCatch(GetIDs(values = filters[[y]], filter = y), 
                error = function(cond) {
                  err <- paste0(y, ": ", paste0(filters[[y]], 
-                                               collapse = ", "), ".\n")
+                                               collapse = ", "), "\n")
                  return(err)
                }, warning = function(cond) {
                  warn <- as.character(cond)
@@ -188,7 +188,7 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
       stop('Couldn\'t find signatures that matched any of the filters.')
     } else if (length(warnings) > 0) {
       warning(paste('The following filters\' values yielded no results:\n',
-                    paste0("   - ", warnings, " ", collapse = "")))
+                    paste0("- ", warnings, " ", collapse = "")))
     }
   } else ids <- names(x@genelist)
   
