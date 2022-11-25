@@ -50,8 +50,8 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
   sc.gene.case <- names(which.max(CaseFraction(rownames(expr.matrix))))
   gs.gene.case <- names(which.max(CaseFraction(unique(unlist(gs@genelist)))))
   if (sc.gene.case != gs.gene.case) {
-    warning(paste0('gs genes are ', sc.gene.case, ' and sc genes are ',
-                   gs.gene.case, '. Please check your ', input,
+    warning(paste0('gs genes are ', gs.gene.case, ' and sc genes are ',
+                   sc.gene.case, '. Please check your ', input,
                    ' and translate the genes if necessary.'))
   }
   # --- Code ---
