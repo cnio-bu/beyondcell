@@ -141,7 +141,7 @@ testthat::test_that("errors", {
   )
   testthat::expect_error(
     bcScore(pbmc.raw, gs = gs10),
-    'Default assay must include a normalized data (@data) slot.',
+    '@counts and @data matrices are identical. Is @data normalized?.',
     fixed = TRUE
   )
   testthat::expect_error(
