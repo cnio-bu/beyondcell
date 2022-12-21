@@ -261,11 +261,11 @@ GetIDs <- function(values, filter) {
   if (length(filter) != 1) {
     stop('You must specify a single filter.')
   }
-  all_filters <- c("Synonyms", "IDs", "Moas", "Targets", "IDs")
+  all_filters <- c("Synonyms", "IDs", "MoAs", "Targets", "IDs")
   names(all_filters) <- c("drugs", "IDs", "MoAs", "targets", "studies")
 
   df <- drugInfo[[all_filters[filter]]]
-
+  
   # --- Code ---
   upper.values <- toupper(values)
   selected <- subset(df, subset = toupper(df[[filter]]) %in% upper.values)
@@ -283,7 +283,7 @@ GetIDs <- function(values, filter) {
                        x = deparse(substitute(filter)))
     warning(paste0('sig IDs were not found for ', length(not.found), ' out of ',
                    length(values), " ", filtername, ': ',
-                   paste0(not.found, collapse = ", "), "."))
+                   paste0(not.found, collapse = ", ")))
   }
   return(ids)
 }
