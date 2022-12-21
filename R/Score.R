@@ -194,31 +194,28 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
 #' @description This function computes the fraction of of each case type
 #' (uppercase, lowercase or capitalized) in a character vector.
 #' @name CaseFraction
-#' @import useful
+#' @import stringr
 #' @param x Character vector.
 #' @return A named numeric vector with the fraction of each case type.
 #' @examples
 #' @export
 
 CaseFraction <- function(x) {
-  # --- Checks ---
-  if(!is.character(x)) stop('x must be a character vector.')
-  # --- Code ---
-  perc <- sapply(c("upper", "lower", "capitalized"), function(case) {
-    if (case == "upper" | case == "lower") {
-      p <- sum(useful::find.case(x, case = case))/length(x)
-    } else {
-      splitted <- strsplit(x, split = "")
-      first.letter <- sapply(splitted, `[[`, 1)
-      rest.letters <- sapply(splitted, function(y) paste0(y[2:length(y)],
-                                                          collapse = ""))
-      p <- sum(useful::upper.case(first.letter) &
-                 useful::lower.case(rest.letters))/length(x)
-    }
-    return(round(p, digits = 2))
-  })
-  names(perc)[1:2] <- paste0("in ", names(perc)[1:2], "case")
-  return(perc)
+    # --- Checks ---
+    if(!is.character(x)) stop('x must be a character vector.')
+    # --- Code ---
+    all_up <- sum(stringr::str_detect(string = x, pattern = "^[:upper:]+$"))
+    all_dn <- sum(stringr::str_detect(string = x, pattern = "^[:lower:]+$"))
+    is_cap <- sum(stringr::str_detect(string = x, pattern = "^[:upper:][:lower:]+$"))
+    
+    p <- c(
+        "in uppercase" = all_up,
+        "in lowercase" = all_dn,
+        "capitalized" = is_cap
+        )
+    
+    p_fraction <- round(p / length(x), digits = 2)
+    return(p_fraction)
 }
 
 #' @title Computes the switch point
