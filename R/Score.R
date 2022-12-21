@@ -94,20 +94,27 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
       setTxtProgressBar(pb, value = i)
     }
     ### Is n.expr.genes < all.genes * expr.thres?
-    return(n.expr.genes < (length(all.genes) * expr.thres))
+    return(n.expr.genes <= min(0, length(all.genes) * expr.thres))
   }))
   rownames(below.thres) <- names(gs@genelist)
   below.thres <- below.thres[, colnames(expr.matrix), drop = FALSE]
   # If all cells are below the threshold, remove that signature and raise a
-  # warning
+  # warning.
   nan.rows.idx <- which(rowSums(below.thres) == ncol(below.thres))
-  if (length(nan.rows.idx) > 0) {
-    warning(paste0("The following signatures have no cells that pass the ", 
-                   "expr.thres and will be removed: ", 
-                   paste0(rownames(below.thres)[nan.rows.idx], collapse = ", "), 
-                   "."))
-    below.thres <- below.thres[-nan.rows.idx, , drop = FALSE]
-    gs@genelist <- gs@genelist[-nan.rows.idx]
+  if (length(nan.rows.idx) == nrow(below.thres)) {
+    stop(paste('No cell in any signature passes the expr.thres. Stopping the', 
+               'execution.'))
+  } else if (length(nan.rows.idx) > 0) {
+    warning(paste0('The following signatures have no cells that pass the', 
+                   'expr.thres and will be removed:', 
+                    paste0(rownames(below.thres)[nan.rows.idx], collapse = ", "), 
+                    '.'))
+      below.thres <- below.thres[-c(nan.rows.idx), , drop = FALSE]
+      gs@genelist <- gs@genelist[-c(nan.rows.idx)]
+  }
+  # If there is no signature that passes the threshold, raise an error.
+  if (length(gs@genelist) == 0) {
+    stop('No signature left. Stopping the execution.')
   }
   # BCS.
   bcs <- lapply(seq_along(gs@mode), function(j) {

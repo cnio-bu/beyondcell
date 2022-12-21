@@ -170,9 +170,14 @@ testthat::test_that("errors", {
     bcScore(pbmc, gs = gs10, expr.thres = -2),
     'expr.thres must be a positive number between 0 and 1.'
   )
-  ### Check that bcScores does not throw any error with only one signature.
+  ### Check that bcScore does not throw any error with only one signature.
   testthat::expect_no_error(
     bcScore(pbmc, gs = gs1, expr.thres = 0.1)
+  )
+  ### Check that bcScore throws an error when no signature passes the threshold.
+  testthat::expect_error(
+    bcScore(pbmc, gs = gs1, expr.thres = 1),
+    'No cell in any signature passes the expr.thres. Stopping the execution.'
   )
 })
 
