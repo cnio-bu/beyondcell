@@ -3,7 +3,6 @@
 #' object.
 #' @name GenerateGenesets
 #' @importFrom qusage read.gmt
-#' @importFrom gdata trim
 #' @param x A path to a GMT file with custom gene sets. 
 #' See Details for more information.
 #' @param perform.reversal Logical. Return \code{beyoncell}'s pre-computed
@@ -82,7 +81,6 @@ GenerateGenesets <- function(x, perform.reversal = FALSE) {
 #' @description This function creates a \code{\link[beyondcell]{geneset}}
 #' object from one of the default collections available.
 #' @name GetCollection
-#' @importFrom gdata trim
 #' @param x Either PSc, SSc or DSS.
 #' See Details for more information.
 #' @param n.genes Number of up and/or down-regulated genes used to compute each
