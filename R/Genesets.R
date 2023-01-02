@@ -2,8 +2,7 @@
 #' @description This function creates a \code{\link[beyondcell]{geneset}}
 #' object.
 #' @name GenerateGenesets
-#' @importFrom qusage read.gmt
-#' @param x A path to a GMT file with custom gene sets. 
+#' @param x A path to a GMT file. 
 #' See Details for more information.
 #' @param perform.reversal Logical. Return \code{beyoncell}'s pre-computed
 #' signatures as if the signature was reversed.
@@ -20,10 +19,7 @@ GenerateGenesets <- function(x, perform.reversal = FALSE) {
   # --- Global Checks ---
   # Check if x is a path to a GMT file.
   message('Reading gmt file...')
-  gmt.file <- tryCatch(qusage::read.gmt(x), 
-                       error = function(cond) stop(cond$message),
-                       warning = function(cond) stop(cond$message))
-  
+  gmt.file <- readGMT(x)
   ### Check for duplicated gene sets.
   upper.gmt.names <- toupper(names(gmt.file))
   if (anyDuplicated(upper.gmt.names) != 0) {
@@ -253,3 +249,39 @@ ListFilters <- function(entry) {
   return(out)
 }
 
+#' @title Reads a GMT file as a list of gene sets
+#' @description This function parses a GMT file and returns a list of gene sets.
+#' @name readGMT
+#' @importFrom stringr str_detect
+#' @param x A path to a GMT file.
+#' @return A list of gene sets.
+#' @examples
+#' @export
+
+readGMT <- function(x) {
+  # --- Checks ---
+  # Check x.
+  if (length(x) != 1 | !is.character(x[1])) {
+    stop('x must be a single string.')
+  }
+  # Check that x exists.
+  if(!file.exists(x)) stop(paste0(x, ' does not exist.'))
+  # Check that x is a GMT file.
+  is.gmt <- stringr::str_detect(basename(x), pattern = "\\..+$", negate = TRUE)
+  if (is.gmt) stop(paste0(x, 'must be a GMT file.'))
+  # --- Code ---
+  # Read GMT.
+  vector.gmt <- readLines(x)
+  # Create list.
+  list.gmt <- lapply(vector.gmt, FUN = function(x) {
+    unique(unlist(strsplit(x, split = "\t")))
+  })
+  # List of gene sets (without name and description).
+  gmt <- lapply(list.gmt, FUN = function(x) {
+    x <- x[-c(1:2)]
+    unique(x[which(x != "")])
+  })
+  # Add names.
+  names(gmt) <- lapply(list.gmt, FUN = function(x) x[1])
+  return(gmt)
+}

@@ -7,7 +7,7 @@
 GenerateGenesets(x, perform.reversal = FALSE)
 }
 \arguments{
-\item{x}{A path to a GMT file with custom gene sets. 
+\item{x}{A path to a GMT file. 
 See Details for more information.}
 
 \item{perform.reversal}{Logical. Return \code{beyoncell}'s pre-computed
