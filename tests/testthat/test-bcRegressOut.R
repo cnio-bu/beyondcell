@@ -640,7 +640,7 @@ testthat::test_that("default values", {
                    vars.to.regress = "nFeature_RNA")@regression[ordering]
     ),
     list(order = c("subset", "regression"), vars = "nFeature_RNA", 
-         order.background = rep("", 2))
+         order.background = rep("subset", "regression"))
   )
   testthat::expect_equal(
     suppressWarnings(
