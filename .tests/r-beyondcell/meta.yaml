@@ -18,9 +18,6 @@ build:
     - lib/R/lib/
     - lib/
 
-build_platform:
-  osx_arm64: osx_64
-
 requirements:
   build:
     - {{posix}}filesystem        # [win]
