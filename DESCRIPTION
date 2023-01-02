@@ -25,6 +25,7 @@ Encoding: UTF-8
 LazyData: true
 Imports: 
   cowplot (>= 1.1.0),
+  DMwR (>=0.4.1),
   ggrepel (>= 0.8.2),
   patchwork (>= 1.0.1),
   RColorBrewer (>= 1.1-2),

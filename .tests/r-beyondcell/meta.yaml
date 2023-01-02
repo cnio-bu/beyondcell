@@ -30,6 +30,7 @@ requirements:
   host:
     - r-base >=4.0.0
     - r-cowplot >=1.1.0
+    - r-dmwr >=0.4.1
     - r-ggrepel >=0.8.2
     - r-patchwork >=1.0.1
     - r-rcolorbrewer >=1.1-2
@@ -43,6 +44,7 @@ requirements:
   run:
     - r-base >=4.0.0
     - r-cowplot >=1.1.0
+    - r-dmwr >=0.4.1
     - r-ggrepel >=0.8.2
     - r-patchwork >=1.0.1
     - r-rcolorbrewer >=1.1-2
