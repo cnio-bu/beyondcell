@@ -8,8 +8,8 @@ package:
   version: {{ version }}
 
 source:
-   git_url: https://github.com/cnio-bu/beyondcell
-   git_tag: v{{ version }}
+  git_url: /home/sagarcia/Documents/bu_repositories/beyondcell
+#   git_tag: v{{ version }}
 
 build:
   merge_build_host: True  # [win]
@@ -17,6 +17,9 @@ build:
   rpaths:
     - lib/R/lib/
     - lib/
+
+build_platform:
+  osx_arm64: osx_64
 
 requirements:
   build:
@@ -32,8 +35,8 @@ requirements:
     - r-rcolorbrewer >=1.1-2
     - r-scales >=1.1.1
     - r-see
-    - r-tidyverse
-    - r-Seurat >=3.2.2
+    - r-tidyverse >=1.3.2
+    - r-Seurat >=4.0.0
     - r-viridis >=0.5.1
     - umap-learn
 
@@ -45,8 +48,8 @@ requirements:
     - r-rcolorbrewer >=1.1-2
     - r-scales >=1.1.1
     - r-see
-    - r-tidyverse
-    - r-Seurat >=3.2.2
+    - r-tidyverse >=1.3.2
+    - r-Seurat >=4.0.0
     - r-viridis >=0.5.1
     - umap-learn
     
