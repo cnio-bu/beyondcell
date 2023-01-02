@@ -35,6 +35,9 @@ sp.up.down <- function(normalized, scaled) {
 }
 
 # --- Code ---
+# Seed.
+set.seed(1)
+
 # PBMC data.
 pbmc.data <- Seurat::Read10X("../testdata/single-cell/", gene.column = 1)
 
@@ -59,6 +62,8 @@ bc.object <- suppressWarnings(bcScore(pbmc, gs = gs100, expr.thres = 0.26))
 bc.object.bg <- suppressWarnings(
   bcUMAP(bc.object, pc = 2, add.DSS = TRUE)
 )
+indexes <- length(bc.object.bg@background)
+bc.object.bg@background[sample(indexes, size = 100, replace = FALSE)] <- NaN
 
 bc.object.up <- bcScore(pbmc, gs = gs100up, expr.thres = 0.1)
 bc.object.down <- bcScore(pbmc, gs = gs100down, expr.thres = 0.1)
@@ -152,6 +157,8 @@ testthat::test_that("errors", {
   ### Check k.neighbors.
   n.complete.norm <- sum(complete.cases(t(bc.object@normalized)))
   n.complete.bg <- sum(complete.cases(t(bc.object.bg@background)))
+  bc.object.norm.complete.thres1 <- bc.object.norm.complete
+  bc.object.norm.complete.thres1@thres <- 1
   testthat::expect_error(
     bcRegressOut(bc.object, vars.to.regress = "nFeature_RNA", k.neighbors = "a"),
     'k.neighbors must be numeric.'
@@ -191,10 +198,11 @@ testthat::test_that("errors", {
            '@background slot: ', n.complete.bg, '.')
   )
   testthat::expect_error(
-    bcRegressOut(bc.object.norm.complete, vars.to.regress = "nFeature_RNA", 
-                 k.neighbors = n.complete.bg, add.DSS = TRUE),
+    bcRegressOut(bc.object.norm.complete.thres1, 
+                 vars.to.regress = "nFeature_RNA", 
+                 k.neighbors = n.complete.norm, add.DSS = TRUE),
     paste0('k.neighbors must be lower than the total number of complete ',
-           'cases in @normalized and @background slots: ', n.complete.bg, '.')
+           'cases in @normalized and @background slots: ', n.complete.norm, '.')
   )
   ### Check that bcRegressOut does not throw any error with only one signature.
   testthat::expect_no_error(
