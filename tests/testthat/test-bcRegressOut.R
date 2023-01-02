@@ -88,7 +88,7 @@ bc.sub@regression$order <- c("subset", "")
 # Beyondcell object with background matrix that has already been regressed.
 bc.reg.bg <- bc.object.bg
 bc.reg.bg@regression$order <- c("regression", "")
-bc.reg.bg@regression$order.bg <- c("regression", "")
+bc.reg.bg@regression$order.background <- c("regression", "")
 
 # Beyondcell object that has already been subsetted and regressed.
 bc.sub.reg <- bc.object
