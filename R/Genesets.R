@@ -267,8 +267,8 @@ readGMT <- function(x) {
   # Check that x exists.
   if(!file.exists(x)) stop(paste0(x, ' does not exist.'))
   # Check that x is a GMT file.
-  is.gmt <- stringr::str_detect(basename(x), pattern = "\\..+$", negate = TRUE)
-  if (is.gmt) stop(paste0(x, 'must be a GMT file.'))
+  is.gmt <- stringr::str_detect(basename(x), pattern = "\\.gmt$")
+  if (!is.gmt) stop(paste0(x, ' must be a GMT file.'))
   # --- Code ---
   # Read GMT.
   vector.gmt <- readLines(x)
