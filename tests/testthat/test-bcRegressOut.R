@@ -8,6 +8,16 @@ subset.geneset <- function(gs, mode, n) {
   return(gs)
 }
 
+# Function to compute the background matrix of a beyondcell object.
+compute.bg <- function(bc) {
+  gs.background <- suppressMessages(
+    GetCollection(DSS, n.genes = bc@n.genes, mode = bc@mode, 
+                  include.pathways = FALSE))
+  bc.background <- suppressWarnings(suppressMessages(
+    bcScore(bc@expr.matrix, gs = gs.background, expr.thres = bc@thres)))
+  return(bc.background@normalized)
+}
+
 # Function to compute the scaled BCS.
 scale.score <- function(normalized) {
   scaled <- round(t(apply(normalized, 1, scales::rescale, to = 0:1)), 
@@ -58,7 +68,7 @@ gs100up <- subset.geneset(gs100, mode = "up", n = length(gs100@genelist))
 gs100down <- subset.geneset(gs100, mode = "down", n = length(gs100@genelist))
 
 # Beyondcell objects.
-bc.object <- suppressWarnings(bcScore(pbmc, gs = gs100, expr.thres = 0.26))
+bc.object <- suppressWarnings(bcScore(pbmc, gs = gs100, expr.thres = 0.25))
 bc.object.bg <- suppressWarnings(
   bcUMAP(bc.object, pc = 2, add.DSS = TRUE)
 )
@@ -77,6 +87,8 @@ bc.object.norm.complete <- bc.object
 bc.object.norm.complete.bg <- bc.object.bg
 bc.object.norm.complete@normalized <- 
   bc.object.norm.complete.bg@normalized <- bc.object.complete@normalized
+bc.object.norm.complete.thres0.3 <- bc.object.norm.complete
+bc.object.norm.complete.thres0.3@thres <- 0.3
 
 bc.object10 <- bcScore(pbmc, gs = gs10, expr.thres = 0.1)
 bc.object20 <- bcScore(pbmc, gs = gs20, expr.thres = 0.1)
@@ -88,7 +100,7 @@ bc.sub@regression$order <- c("subset", "")
 # Beyondcell object with background matrix that has already been regressed.
 bc.reg.bg <- bc.object.bg
 bc.reg.bg@regression$order <- c("regression", "")
-bc.reg.bg@regression$order.bg <- c("regression", "")
+bc.reg.bg@regression$order.background <- c("regression", "")
 
 # Beyondcell object that has already been subsetted and regressed.
 bc.sub.reg <- bc.object
@@ -157,8 +169,8 @@ testthat::test_that("errors", {
   ### Check k.neighbors.
   n.complete.norm <- sum(complete.cases(t(bc.object@normalized)))
   n.complete.bg <- sum(complete.cases(t(bc.object.bg@background)))
-  bc.object.norm.complete.thres1 <- bc.object.norm.complete
-  bc.object.norm.complete.thres1@thres <- 1
+  bg.thres0.3 <- compute.bg(bc.object.norm.complete.thres0.3)
+  n.complete.thres0.3 <- sum(complete.cases(t(bg.thres0.3)))
   testthat::expect_error(
     bcRegressOut(bc.object, vars.to.regress = "nFeature_RNA", k.neighbors = "a"),
     'k.neighbors must be numeric.'
@@ -198,11 +210,12 @@ testthat::test_that("errors", {
            '@background slot: ', n.complete.bg, '.')
   )
   testthat::expect_error(
-    bcRegressOut(bc.object.norm.complete.thres1, 
+    bcRegressOut(bc.object.norm.complete.thres0.3, 
                  vars.to.regress = "nFeature_RNA", 
                  k.neighbors = n.complete.norm, add.DSS = TRUE),
     paste0('k.neighbors must be lower than the total number of complete ',
-           'cases in @normalized and @background slots: ', n.complete.norm, '.')
+           'cases in @normalized and @background slots: ', 
+           n.complete.thres0.3, '.')
   )
   ### Check that bcRegressOut does not throw any error with only one signature.
   testthat::expect_no_error(
@@ -640,7 +653,7 @@ testthat::test_that("default values", {
                    vars.to.regress = "nFeature_RNA")@regression[ordering]
     ),
     list(order = c("subset", "regression"), vars = "nFeature_RNA", 
-         order.background = rep("", 2))
+         order.background = c("subset", "regression"))
   )
   testthat::expect_equal(
     suppressWarnings(
