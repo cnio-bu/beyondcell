@@ -319,7 +319,7 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
   if (add.DSS) {
     ### DSS (background) BCS.
     if (!identical(sort(rownames(bc@background), decreasing = FALSE),
-                   sort(DSS@info$IDs, decreasing = FALSE)) |
+                   sort(unique(DSS@info$IDs), decreasing = FALSE)) |
         !identical(sort(colnames(bc@background), decreasing = FALSE),
                    sort(cells, decreasing = FALSE)) |
         !identical(bc@regression$order, bc@regression$order.background)) {
