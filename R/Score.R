@@ -94,7 +94,7 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
       setTxtProgressBar(pb, value = i)
     }
     ### Is n.expr.genes < all.genes * expr.thres?
-    return(n.expr.genes <= min(0, length(all.genes) * expr.thres))
+    return(n.expr.genes < (length(all.genes) * expr.thres) | n.expr.genes == 0)
   }))
   rownames(below.thres) <- names(gs@genelist)
   below.thres <- below.thres[, colnames(expr.matrix), drop = FALSE]
