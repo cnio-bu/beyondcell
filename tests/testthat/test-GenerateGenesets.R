@@ -9,12 +9,12 @@ incorrect.mode.gmt.path <- "../testdata/gmt/incorrect_mode10.gmt"
 testthat::test_that("errors", {
   ### Check x.
   testthat::expect_error(
-    GenerateGenesets("a"),
-    'Pathway information must be a .gmt file'
+    GenerateGenesets("../testdata/single-cell/genes.tsv"),
+    '../testdata/single-cell/genes.tsv must be a GMT file.'
   )
   testthat::expect_error(
     GenerateGenesets("a.gmt"),
-    'cannot open file \'a.gmt\': No such file or directory'
+    'a.gmt does not exist.'
   )
   testthat::expect_error(
     GenerateGenesets(duplicated.gmt.path),
