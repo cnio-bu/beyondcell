@@ -193,7 +193,6 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, npcs = 50, res = 0.2,
     bc.merged <- beyondcell(scaled = bc@scaled[drugs, ])
   }
   sc <- Seurat::CreateSeuratObject(bc.merged@scaled[, , drop = FALSE])
-  print(dim(sc))
   # PCA.
   sc <- Seurat::ScaleData(sc, features = rownames(sc), do.scale = FALSE,
                           do.center = FALSE)
