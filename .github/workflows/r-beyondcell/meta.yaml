@@ -8,9 +8,7 @@ package:
   version: {{ version }}
 
 source:
-  git_url: /home/sagarcia/Documents/bu_repositories/beyondcell
-#   git_tag: v{{ version }}
-
+  path: ../../../
 build:
   merge_build_host: True  # [win]
   number: 0
@@ -53,8 +51,11 @@ requirements:
     - umap-learn
     
 test:
+  requires:
+    - r-devtools
   commands:
     - $R -e "library(\"{{ name }}\")"           # [not win]
+    - $R -e "library("devtools");devtools::test()"
     - "\"%R%\" -e \"library(\"{{ name }}\")\""  # [win]
 
 about:
