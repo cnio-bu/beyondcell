@@ -104,7 +104,9 @@ image <- Seurat::Read10X_Image(image.dir = "../testdata/visium/",
                                image.name = "tissue_lowres_image.png")
 pbmc.visium <- Seurat::Load10X_Spatial(data.dir = "../testdata/visium/", 
                                        filename = "matrix.h5", image = image)
-pbmc.visium <- SCTransform(pbmc.visium, assay = "Spatial", verbose = FALSE)
+pbmc.visium <- suppressWarnings(
+  Seurat::SCTransform(pbmc.visium, assay = "Spatial", verbose = FALSE)
+)
 
 # Complete cases.
 gs10.genelist <- lapply(gs10@genelist, FUN = function(x) unique(unlist(x)))
@@ -351,7 +353,7 @@ testthat::test_that("default values", {
   dss <- GetCollection(DSS, n.genes = 100, include.pathways = TRUE)
   ssc <- GetCollection(SSc, n.genes = 100, include.pathways = TRUE)
   bc.object.dss <- bcScore(pbmc, gs = dss, expr.thres = 0)
-  bc.object.ssc <- bcScore(pbmc, gs = ssc, expr.thres = 0)
+  bc.object.ssc <- suppressWarnings(bcScore(pbmc, gs = ssc, expr.thres = 0))
   testthat::expect_equal(
     bc.object.dss@normalized[names(pathways), ], 
     bc.object.ssc@normalized[names(pathways), ]
