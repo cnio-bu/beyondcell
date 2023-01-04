@@ -105,8 +105,8 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
     stop(paste('No cell in any signature passes the expr.thres. Stopping the', 
                'execution.'))
   } else if (length(nan.rows.idx) > 0) {
-    warning(paste0('The following signatures have no cells that pass the', 
-                   'expr.thres and will be removed:', 
+    warning(paste0('The following signatures have no cells that pass the ', 
+                   'expr.thres and will be removed: ', 
                     paste0(rownames(below.thres)[nan.rows.idx], collapse = ", "), 
                     '.'))
       below.thres <- below.thres[-c(nan.rows.idx), , drop = FALSE]
