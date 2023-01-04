@@ -248,12 +248,10 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
       (identical(reg.order[1], reg.order[2]) & reg.order[1] != "") |
       (!identical(reg.order.bg, c("", "")) & !identical(reg.order, reg.order.bg))) {
     warning(paste('Corrupt beyondcell object. Restoring original object before',
-                  'subsetting...'))
+                  'regressing...'))
     bc <- suppressMessages(bcRecompute(bc, slot = "data"))
     bc@background <- matrix(ncol = 0, nrow = 0)
-    bc@regression <- list(order = c("regression", ""), vars = vars,
-                          order.background = rep("", 2))
-    reg.order <- rep("", 2)
+    reg.order <- reg.order.bg <- rep("", 2)
     reg.vars <- NULL
   } else {
     ### If bc was previously regressed and then subsetted, raise an error.
@@ -261,61 +259,82 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
       stop(paste('bc was previously regressed and then subsetted. Please run',
                  'bcSubset() on a new beyondcell object created with',
                  'CreatebcObject(bc).'))
-      ### Else if reg.order == c("", "") or reg.order == c("subset", ""), add
-      ### "regression" to bc@regression$order.
-    } else if (identical(reg.order, rep("", 2)) |
-               identical(reg.order, c("subset", ""))) {
-      bc@regression$order[match("", reg.order)] <- "regression"
-      ### Else if the last step in reg.order is "regression", raise a warning.
-    } else if (tail(reg.order[which(reg.order != "")], n = 1) == "regression") {
-      warning('bc is an already regressed object.')
-      vars <- unique(c(vars, reg.vars))
-      bc <- bcRecompute(bc, slot = "data")
-      bc@regression <- list(order = rep("", 2),  vars = NULL,
-                            order.background = rep("", 2))
-      if (any(dim(bc@background) != 0)) {
-        message('Restoring pre-regressed background matrix...')
-        gs.background <- suppressMessages(
-          GetCollection(DSS, n.genes = bc@n.genes, mode = bc@mode,
-                        include.pathways = FALSE))
-        background <- suppressWarnings(
-          bcScore(bc@expr.matrix, gs = gs.background, expr.thres = bc@thres))
-        bc@background <- background@normalized
+    ### Else if the last step in reg.order is "regression", raise a warning.
+    } else if (!identical(reg.order, rep("", 2))) {
+      if (tail(reg.order[which(reg.order != "")], n = 1) == "regression") {
+        warning('bc is an already regressed object.')
+        vars <- unique(c(vars, reg.vars))
+        bc <- suppressMessages(bcRecompute(bc, slot = "data"))
+        bc@regression <- list(order = rep("", 2),  vars = NULL,
+                              order.background = rep("", 2))
+        if (any(dim(bc@background) != 0)) {
+          message('Restoring pre-regressed background matrix...')
+          gs.background <- suppressMessages(
+            GetCollection(DSS, n.genes = bc@n.genes, mode = bc@mode,
+                          include.pathways = FALSE))
+          background <- suppressWarnings(suppressMessages(
+            bcScore(bc@expr.matrix, gs = gs.background, expr.thres = bc@thres)))
+          bc@background <- background@normalized
+        }
+        if ("subset" %in% reg.order) {
+          bc <- suppressWarnings(
+            bcSubset(bc, signatures = rownames(bc@normalized), 
+                     bg.signatures = rownames(bc@background),
+                     cells = colnames(bc@normalized)))
+        }
+        reg.order[reg.order == "regression"] <- ""
+        reg.order.bg[reg.order.bg == "regression"] <- ""
       }
-      if ("subset" %in% reg.order) {
-        bc <- suppressWarnings(
-          bcSubset(bc, signatures = rownames(bc@normalized), 
-                   bg.signatures = rownames(bc@background),
-                   cells = colnames(bc@normalized)))
-      }
-      bc@regression <- list(order = reg.order, order.background = reg.order)
-      reg.order[reg.order == "regression"] <- ""
     }
   }
-  # Check k.neighbors
-  if (length(k.neighbors) != 1 | k.neighbors < 1) {
+  bc@regression <- list(order = reg.order, vars = reg.vars, 
+                        order.background = reg.order.bg)
+  # Check k.neighbors.
+  if (!is.numeric(k.neighbors)) stop('k.neighbors must be numeric.')
+  if (length(k.neighbors) != 1 | k.neighbors[1]%%1 != 0 | k.neighbors[1] < 1) {
     stop('k.neighbors must be a positive integer.')
   }
   # Check add.DSS.
+  cells <- colnames(bc@normalized)
   sigs <- rownames(bc@normalized)
   not.paths <- !(sigs %in% names(pathways))
   drugs <- sigs[not.paths]
   n.drugs <- sum(not.paths)
+  n.complete.normalized <- sum(complete.cases(t(bc@normalized[drugs, , 
+                                                              drop = FALSE])))
+  is.complete.normalized <- n.complete.normalized == length(cells)
   if (length(add.DSS) != 1 | !is.logical(add.DSS)) {
     stop('add.DSS must be TRUE or FALSE.')
+  } else if(add.DSS & is.complete.normalized) {
+    warning('No NaN values were found in bc@normalized. add.DSS is deprecated.')
+    add.DSS <- FALSE
   } else if (!add.DSS) {
-    if (n.drugs <= 10) {
-      stop(paste('Only', n.drugs, 'drug signatures (excluding pathways) are',
-                 'present in the bc object, please set add.DSS = TRUE.'))
-    } else if (n.drugs <= 20) {
-      warning(paste('Computing an UMAP reduction for', n.drugs,
-                    'drugs. We recommend to set add.DSS = TRUE when the number',
-                    'of signatures (excluding pathways) is below or equal to 20.'))
+    if (!is.complete.normalized) {
+      if (n.drugs <= 10) {
+        stop(paste('Only', n.drugs, 'drug signatures (excluding pathways) are',
+                   'present in the bc object, please set add.DSS = TRUE.'))
+      } else if (n.drugs <= 20) {
+        warning(paste('Computing an UMAP reduction for', n.drugs,
+                      'drugs. We recommend to set add.DSS = TRUE when the', 
+                      'number of signatures (excluding pathways) is below or', 
+                      'equal to 20.'))
+      }
+    }
+    ### Complete cases for normalized BCS.
+    if (k.neighbors >= n.complete.normalized) {
+      stop(paste0('k.neighbors must be lower than the number of complete ', 
+                  'cases in @normalized slot: ', n.complete.normalized, 
+                  '.'))
+    }
+    ### Complete cases for background BCS.
+    if (all(dim(bc@background) == 0)) n.complete.bg <- length(cells)
+    else n.complete.bg <- sum(complete.cases(t(bc@background)))
+    if (k.neighbors >= n.complete.bg) {
+      stop(paste0('k.neighbors must be lower than the number of complete ', 
+                  'cases in @background slot: ', n.complete.bg, '.'))
     }
   }
   # --- Code ---
-  # Cells in bc.
-  cells <- colnames(bc@normalized)
   if (add.DSS) {
     ### DSS (background) BCS.
     if (!identical(sort(rownames(bc@background), decreasing = FALSE),
@@ -329,58 +348,55 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
         GetCollection(DSS, n.genes = bc@n.genes, mode = bc@mode, 
                       include.pathways = FALSE))
       ### BCS.
-      background <- suppressWarnings(
-        bcScore(bc@expr.matrix, gs = gs.background, expr.thres = bc@thres))
+      background <- suppressWarnings(suppressMessages(
+        bcScore(bc@expr.matrix, gs = gs.background, expr.thres = bc@thres)))
       ### Add metadata.
-      background@meta.data <- background@meta.data[, -c(1:ncol(background@meta.data))]
+      background@meta.data <- background@meta.data[, -c(1:ncol(background@meta.data)), 
+                                                   drop = FALSE]
       background <- bcAddMetadata(background, metadata = bc@meta.data)
-      ### Subset and regress (if needed).
+      ### Subset if needed.
       if (reg.order[1] == "subset") {
         background <- bcSubset(background, cells = cells)
-      } else if (reg.order[1] == "regression") {
-        message('Regressing background BCS...')
-        background <- suppressMessages(
-          bcRegressOut(background, vars.to.regress = reg.vars, 
-                       k.neighbors = k.neighbors, add.DSS = FALSE))
-      }
-      if (reg.order[2] == "subset") {
-        background <- bcSubset(background, cells = cells)
-      } else if (reg.order[2] == "regression") {
-        message('Regressing background BCS...')
-        background <- suppressMessages(
-          bcRegressOut(background, vars.to.regress = reg.vars,
-                       k.neighbors = k.neighbors, add.DSS = FALSE))
       }
       ### Add background@normalized to bc@background.
       bc@background <- background@normalized
-      ### Add order.background to bc@regression.
-      bc@regression[["order.background"]] <- reg.order
+      ### Update reg.order.bg.
+      reg.order.bg <- reg.order
     } else {
       message('Background BCS already computed. Skipping this step.')
     }
     ### Add background to bc.
     all.rows <- unique(c(drugs, rownames(bc@background)))
-    merged.score <- rbind(bc@normalized, bc@background[, cells])[all.rows, ]
+    merged.score <- rbind(bc@normalized, 
+                          bc@background[, cells, drop = FALSE])[all.rows, , 
+                                                                drop = FALSE]
     bc.merged <- beyondcell(normalized = merged.score)
+    ### Complete cases for merged BCS.
+    n.complete.merged <- sum(complete.cases(t(bc.merged@normalized)))
+    if (k.neighbors >= n.complete.merged) {
+      stop(paste0('k.neighbors must be lower than the total number of ', 
+                  'complete cases in @normalized and @background slots: ', 
+                  n.complete.merged, '.'))
+    }
   } else {
     ### No background BCS.
     message(paste('DSS background not computed. The imputation will be', 
                   'computed with just the drugs (not pathways) in the', 
                   'beyondcell object.'))
-    bc.merged <- beyondcell(normalized = bc@normalized[drugs, ])
+    bc.merged <- beyondcell(normalized = bc@normalized[drugs, , drop = FALSE])
   }
   # Latent data.
   latent.data <- bc@meta.data[cells, vars, drop = FALSE]
   # Impute normalized BCS matrix if necessary
-  if (!all(complete.cases(bc.merged@normalized))) {
+  if (!is.complete.normalized) {
     message('Imputing normalized BCS...')
-    imputation <- t(DMwR::knnImputation(t(bc.merged@normalized), 
-                                        k = k.neighbors, scale = FALSE, 
-                                        meth = "weighAvg"))
+    result <- t(DMwR::knnImputation(t(bc.merged@normalized), k = k.neighbors, 
+                                    scale = FALSE, meth = "weighAvg"))
   } else {
-    message('No NaN values were found in bc@normalized. No imputation needed.')
-    imputation <- bc.merged@normalized
+    message('No imputation needed for bc@normalized.')
+    result <- bc.merged@normalized
   }
+  imputation <- result[sigs, cells, drop = FALSE]
   # Limma formula.
   fmla <- as.formula(object = paste('bcscore ~', paste(vars, collapse = '+')))
   # Compute regression and save it in bc@normalized.
@@ -402,24 +418,34 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
                           ### Return residues.
                           return(resid)
                         }))
-  bc@normalized <- round(rbind(bc@normalized[!not.paths, ], 
-                               normalized.regressed)[sigs, cells], digits = 2)
+  bc@normalized <- round(rbind(bc@normalized[!not.paths, , drop = FALSE], 
+                               normalized.regressed)[sigs, cells, drop = FALSE], 
+                         digits = 2)
   # Close the progress bar.
   Sys.sleep(0.1)
   close(pb)
   # Recompute the beyondcell object
-  bc <- suppressMessages(bcRecompute(bc, slot = "normalized"))
+  bc <- bcRecompute(bc, slot = "normalized")
+  # Add "regression" step to bc@regression$order.
+  reg.order[grep("^$", reg.order)[1]] <- "regression"
+  bc@regression$order <- reg.order
   # Add vars.to.regress to bc@regression$vars.
   bc@regression$vars <- vars
   # Regress the background, if needed.
   if (any(dim(bc@background) != 0)) {
-    if (!all(complete.cases(bc@background))) {
-      message('Imputing background BCS...')
-      imputation.bg <- t(DMwR::knnImputation(t(bc@background), k = k.neighbors,
-                                             scale = FALSE, meth = "weighAvg"))
+    if (!add.DSS) {
+      is.complete.bg <- all(complete.cases(t(bc@background)))
+      if (!is.complete.bg) {
+        message('Imputing background BCS...')
+        imputation.bg <- t(DMwR::knnImputation(t(bc@background), k = k.neighbors,
+                                               scale = FALSE, meth = "weighAvg"))
+      } else {
+        message('No imputation needed for bc@background.')
+        imputation.bg <- bc@background
+      }
     } else {
-      message('No NaN values were found in bc@background. No imputation needed.')
-      imputation.bg <- bc@background
+      message('Background BCS already imputed.')
+      imputation.bg <- result[unique(DSS@info$IDs), cells, drop = FALSE]
     }
     message('Regressing background BCS...')
     total.bg <- nrow(imputation.bg)
@@ -439,11 +465,15 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
                               ### Return residues.
                               return(resid)
                               }))
-    bc@background <- round(background.regressed[, cells], digits = 2)
+    bc@background <- round(background.regressed[, cells, drop = FALSE], 
+                           digits = 2)
     bc@regression$order.background <- bc@regression$order
     # Close the background progress bar.
     Sys.sleep(0.1)
     close(pb.bg)
+    # Add "regression" step to bc@regression$order.background.
+    reg.order.bg[grep("^$", reg.order.bg)[1]] <- "regression" 
+    bc@regression$order.background <- reg.order.bg
   }
   # Output.
   return(bc)
