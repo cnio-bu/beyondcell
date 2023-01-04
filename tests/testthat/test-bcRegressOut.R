@@ -141,6 +141,14 @@ testthat::test_that("errors", {
     bcRegressOut(bc.object, vars.to.regress = "a"),
     'vars.to.regress not found.'
   )
+  testthat::expect_error(
+    bcRegressOut(bc.object, vars.to.regress = c("a", "nFeature_RNA")),
+    'Some vars.to.regress not found: a.'
+  )
+  testthat::expect_error(
+    bcRegressOut(bc.object, vars.to.regress = c("a", "b", "nFeature_RNA")),
+    'Some vars.to.regress not found: a, b.'
+  )
   ### Check regression and subset order.
   testthat::expect_error(
     bcRegressOut(bc.reg.sub, vars.to.regress = "nFeature_RNA"),
