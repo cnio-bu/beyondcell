@@ -306,9 +306,8 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
   if (length(add.DSS) != 1 | !is.logical(add.DSS)) {
     stop('add.DSS must be TRUE or FALSE.')
   } else if(add.DSS & is.complete.normalized) {
+    warning('No NaN values were found in bc@normalized. add.DSS is deprecated.')
     add.DSS <- FALSE
-    warning(paste('No NaN values were found in bc@background. add.DSS is', 
-                  'deprecated.'))
   } else if (!add.DSS) {
     if (!is.complete.normalized) {
       if (n.drugs <= 10) {
@@ -389,12 +388,12 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
   # Latent data.
   latent.data <- bc@meta.data[cells, vars, drop = FALSE]
   # Impute normalized BCS matrix if necessary
-  if (is.complete.normalized) {
+  if (!is.complete.normalized) {
     message('Imputing normalized BCS...')
     result <- t(DMwR::knnImputation(t(bc.merged@normalized), k = k.neighbors, 
                                     scale = FALSE, meth = "weighAvg"))
   } else {
-    message('No NaN values were found in bc@normalized. No imputation needed.')
+    message('No imputation needed for bc@normalized.')
     result <- bc.merged@normalized
   }
   imputation <- result[sigs, cells, drop = FALSE]
@@ -428,23 +427,24 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
   # Recompute the beyondcell object
   bc <- bcRecompute(bc, slot = "normalized")
   # Add "regression" step to bc@regression$order.
-  reg.order[grep("", reg.order)[1]] <- "regression" 
+  reg.order[grep("^$", reg.order)[1]] <- "regression"
   bc@regression$order <- reg.order
   # Add vars.to.regress to bc@regression$vars.
   bc@regression$vars <- vars
   # Regress the background, if needed.
   if (any(dim(bc@background) != 0)) {
     if (!add.DSS) {
-      if (!all(complete.cases(t(bc@background)))) {
+      is.complete.bg <- all(complete.cases(t(bc@background)))
+      if (!is.complete.bg) {
         message('Imputing background BCS...')
         imputation.bg <- t(DMwR::knnImputation(t(bc@background), k = k.neighbors,
                                                scale = FALSE, meth = "weighAvg"))
       } else {
-        message(paste('No NaN values were found in bc@background.', 
-                      'No imputation needed.'))
+        message('No imputation needed for bc@background.')
         imputation.bg <- bc@background
       }
     } else {
+      message('Background BCS already imputed.')
       imputation.bg <- result[unique(DSS@info$IDs), cells, drop = FALSE]
     }
     message('Regressing background BCS...')
@@ -472,7 +472,7 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
     Sys.sleep(0.1)
     close(pb.bg)
     # Add "regression" step to bc@regression$order.background.
-    reg.order.bg[grep("", reg.order.bg)[1]] <- "regression" 
+    reg.order.bg[grep("^$", reg.order.bg)[1]] <- "regression" 
     bc@regression$order.background <- reg.order.bg
   }
   # Output.
