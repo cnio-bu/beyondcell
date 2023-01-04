@@ -8,6 +8,16 @@ subset.geneset <- function(gs, mode, n) {
   return(gs)
 }
 
+# Function to compute the background matrix of a beyondcell object.
+compute.bg <- function(bc) {
+  gs.background <- suppressMessages(
+    GetCollection(DSS, n.genes = bc@n.genes, mode = bc@mode, 
+                  include.pathways = FALSE))
+  bc.background <- suppressWarnings(suppressMessages(
+    bcScore(bc@expr.matrix, gs = gs.background, expr.thres = bc@thres)))
+  return(bc.background@normalized)
+}
+
 # Function to compute the scaled BCS.
 scale.score <- function(normalized) {
   scaled <- round(t(apply(normalized, 1, scales::rescale, to = 0:1)), 
@@ -35,6 +45,9 @@ sp.up.down <- function(normalized, scaled) {
 }
 
 # --- Code ---
+# Seed.
+set.seed(1)
+
 # PBMC data.
 pbmc.data <- Seurat::Read10X("../testdata/single-cell/", gene.column = 1)
 
@@ -55,10 +68,12 @@ gs100up <- subset.geneset(gs100, mode = "up", n = length(gs100@genelist))
 gs100down <- subset.geneset(gs100, mode = "down", n = length(gs100@genelist))
 
 # Beyondcell objects.
-bc.object <- suppressWarnings(bcScore(pbmc, gs = gs100, expr.thres = 0.3))
+bc.object <- suppressWarnings(bcScore(pbmc, gs = gs100, expr.thres = 0.25))
 bc.object.bg <- suppressWarnings(
   bcUMAP(bc.object, pc = 2, add.DSS = TRUE)
 )
+indexes <- length(bc.object.bg@background)
+bc.object.bg@background[sample(indexes, size = 100, replace = FALSE)] <- NaN
 
 bc.object.up <- bcScore(pbmc, gs = gs100up, expr.thres = 0.1)
 bc.object.down <- bcScore(pbmc, gs = gs100down, expr.thres = 0.1)
@@ -67,6 +82,9 @@ bc.object.complete <- bcScore(pbmc, gs = gs100, expr.thres = 0)
 bc.object.complete.bg <- suppressWarnings(
   bcUMAP(bc.object.complete, pc = 2, add.DSS = TRUE)
 )
+
+bc.object.norm.complete.bg <- bc.object.bg
+bc.object.norm.complete.bg@normalized <- bc.object.complete@normalized
 
 bc.object10 <- bcScore(pbmc, gs = gs10, expr.thres = 0.1)
 bc.object20 <- bcScore(pbmc, gs = gs20, expr.thres = 0.1)
@@ -78,7 +96,7 @@ bc.sub@regression$order <- c("subset", "")
 # Beyondcell object with background matrix that has already been regressed.
 bc.reg.bg <- bc.object.bg
 bc.reg.bg@regression$order <- c("regression", "")
-bc.reg.bg@regression$order.bg <- c("regression", "")
+bc.reg.bg@regression$order.background <- c("regression", "")
 
 # Beyondcell object that has already been subsetted and regressed.
 bc.sub.reg <- bc.object
@@ -108,7 +126,8 @@ bc.corrupt5@regression$order <- c("subset", "")
 gs1 <- GetCollection(SSc, n.genes = 100, mode = c("up", "down"),
                      filters = list(IDs = SSc@info$IDs[1]),
                      include.pathways = FALSE)
-bc1 <- bcScore(pbmc, gs = gs1, expr.thres = 0.1)
+bc1.complete <- bcScore(pbmc, gs = gs1, expr.thres = 0.1)
+bc1 <- bcScore(pbmc, gs = gs1, expr.thres = 0.31)
 
 # Test errors.
 testthat::test_that("errors", {
@@ -122,6 +141,14 @@ testthat::test_that("errors", {
     bcRegressOut(bc.object, vars.to.regress = "a"),
     'vars.to.regress not found.'
   )
+  testthat::expect_error(
+    bcRegressOut(bc.object, vars.to.regress = c("a", "nFeature_RNA")),
+    'Some vars.to.regress not found: a.'
+  )
+  testthat::expect_error(
+    bcRegressOut(bc.object, vars.to.regress = c("a", "b", "nFeature_RNA")),
+    'Some vars.to.regress not found: a, b.'
+  )
   ### Check regression and subset order.
   testthat::expect_error(
     bcRegressOut(bc.reg.sub, vars.to.regress = "nFeature_RNA"),
@@ -130,9 +157,14 @@ testthat::test_that("errors", {
           'CreatebcObject(bc).'), fixed = TRUE
   )
   ### Check k.neighbors.
+  n.complete.norm <- sum(complete.cases(t(bc.object@normalized)))
+  n.complete.bg <- sum(complete.cases(t(bc.object.bg@background)))
+  cells <- colnames(bc.object@normalized)
+  both <- unique(rbind(bc.object@normalized, compute.bg(bc.object)[, cells]))
+  n.complete.both <- sum(complete.cases(t(both)))
   testthat::expect_error(
     bcRegressOut(bc.object, vars.to.regress = "nFeature_RNA", k.neighbors = "a"),
-    'k.neighbors must be a positive integer.'
+    'k.neighbors must be numeric.'
   )
   testthat::expect_error(
     bcRegressOut(bc.object, vars.to.regress = "nFeature_RNA", k.neighbors = 1:2),
@@ -143,8 +175,36 @@ testthat::test_that("errors", {
     'k.neighbors must be a positive integer.'
   )
   testthat::expect_error(
+    bcRegressOut(bc.object, vars.to.regress = "nFeature_RNA", k.neighbors = 0),
+    'k.neighbors must be a positive integer.'
+  )
+  testthat::expect_error(
     bcRegressOut(bc.object, vars.to.regress = "nFeature_RNA", k.neighbors = -2),
     'k.neighbors must be a positive integer.'
+  )
+  testthat::expect_error(
+    bcRegressOut(bc.object, vars.to.regress = "nFeature_RNA", 
+                 k.neighbors = n.complete.norm, add.DSS = FALSE),
+    paste0('k.neighbors must be lower than the number of complete cases in ', 
+           '@normalized slot: ', n.complete.norm, '.')
+  )
+  testthat::expect_error(
+    bcRegressOut(bc.object, vars.to.regress = "nFeature_RNA", 
+                 k.neighbors = n.complete.norm + 1, add.DSS = FALSE),
+    paste0('k.neighbors must be lower than the number of complete cases in ', 
+           '@normalized slot: ', n.complete.norm, '.')
+  )
+  testthat::expect_error(
+    bcRegressOut(bc.object.norm.complete.bg, vars.to.regress = "nFeature_RNA", 
+                 k.neighbors = n.complete.bg, add.DSS = FALSE),
+    paste0('k.neighbors must be lower than the number of complete cases in ', 
+           '@background slot: ', n.complete.bg, '.')
+  )
+  testthat::expect_error(
+    bcRegressOut(bc.object, vars.to.regress = "nFeature_RNA", 
+                 k.neighbors = n.complete.norm, add.DSS = TRUE),
+    paste0('k.neighbors must be lower than the total number of complete ',
+           'cases in @normalized and @background slots: ', n.complete.both, '.')
   )
   ### Check add.DSS.
   testthat::expect_error(
@@ -163,7 +223,14 @@ testthat::test_that("errors", {
   )
   ### Check that bcRegressOut does not throw any error with only one signature.
   testthat::expect_no_error(
-    bcRegressOut(bc1, vars.to.regress = "nFeature_RNA", add.DSS = TRUE)
+    suppressWarnings(
+      bcRegressOut(bc1.complete, vars.to.regress = "nFeature_RNA", 
+                   add.DSS = TRUE)
+    )
+  )
+  testthat::expect_no_error(
+      bcRegressOut(bc1, vars.to.regress = "nFeature_RNA", 
+                   add.DSS = TRUE)
   )
 })
 
@@ -200,7 +267,13 @@ testthat::test_that("warnings", {
   )
   ### Check add.DSS.
   testthat::expect_warning(
-    bcRegressOut(bc.object20, vars.to.regress = "nFeature_RNA", add.DSS = FALSE),
+    bcRegressOut(bc.object.complete, vars.to.regress = "nFeature_RNA", 
+                 add.DSS = TRUE),
+    'No NaN values were found in bc@normalized. add.DSS is deprecated.'
+  )
+  testthat::expect_warning(
+    bcRegressOut(bc.object20, vars.to.regress = "nFeature_RNA", 
+                 add.DSS = FALSE),
     paste('Computing an UMAP reduction for 20 drugs. We recommend to set', 
           'add.DSS = TRUE when the number of signatures (excluding pathways)', 
           'is below or equal to 20.'), fixed = TRUE
@@ -224,12 +297,13 @@ testthat::test_that("messages", {
   ### background matrix and add.DSS = TRUE as inputs.
   testthat::expect_equal(
     testthat::capture_messages(
-      bcRegressOut(bc.object, vars.to.regress = "nFeature_RNA", add.DSS = TRUE)
+      bcRegressOut(bc.object, 
+                   vars.to.regress = "nFeature_RNA", add.DSS = TRUE)
     ),
     c('Computing background BCS using DSS signatures...\n',
       'Imputing normalized BCS...\n',
       'Regressing scores...\n',
-      'Imputing background BCS...\n',
+      'Background BCS already imputed.\n',
       'Regressing background BCS...\n')
   )
   testthat::expect_equal(
@@ -242,7 +316,7 @@ testthat::test_that("messages", {
     c('Computing background BCS using DSS signatures...\n',
       'Imputing normalized BCS...\n',
       'Regressing scores...\n',
-      'Imputing background BCS...\n',
+      'Background BCS already imputed.\n',
       'Regressing background BCS...\n')
   )
   ### Check the printed messages when using a beyondcell object with
@@ -256,6 +330,8 @@ testthat::test_that("messages", {
             'just the drugs (not pathways) in the beyondcell object.\n'),
       'Imputing normalized BCS...\n',
       'Regressing scores...\n',
+      'Removing @reductions slot...\n',
+      'Removing therapeutic clusters...\n',
       'Imputing background BCS...\n',
       'Regressing background BCS...\n')
   )
@@ -269,7 +345,9 @@ testthat::test_that("messages", {
     c('Background BCS already computed. Skipping this step.\n',
       'Imputing normalized BCS...\n',
       'Regressing scores...\n',
-      'Imputing background BCS...\n',
+      'Removing @reductions slot...\n',
+      'Removing therapeutic clusters...\n',
+      'Background BCS already imputed.\n',
       'Regressing background BCS...\n')
   )
   testthat::expect_equal(
@@ -283,33 +361,36 @@ testthat::test_that("messages", {
       'Background BCS already computed. Skipping this step.\n',
       'Imputing normalized BCS...\n',
       'Regressing scores...\n',
-      'Imputing background BCS...\n',
+      'Background BCS already imputed.\n',
       'Regressing background BCS...\n')
   )
   ### Check the printed messages when using a complete beyondcell object without
   ### background matrix and add.DSS = FALSE as inputs.
   testthat::expect_equal(
     testthat::capture_messages(
-      bcRegressOut(bc.object.complete, vars.to.regress = "nFeature_RNA", 
-                   add.DSS = FALSE)
+      suppressWarnings(
+        bcRegressOut(bc.object.complete, vars.to.regress = "nFeature_RNA", 
+                     add.DSS = FALSE)
+      )
     ),
     c(paste('DSS background not computed. The imputation will be computed with',
             'just the drugs (not pathways) in the beyondcell object.\n'),
-      'No NaN values were found in bc@normalized. No imputation needed.\n',
+      'No imputation needed for bc@normalized.\n',
       'Regressing scores...\n')
   )
   ### Check the printed messages when using a complete beyondcell object without
   ### background matrix and add.DSS = TRUE as inputs.
   testthat::expect_equal(
     testthat::capture_messages(
-      bcRegressOut(bc.object.complete, vars.to.regress = "nFeature_RNA", 
-                   add.DSS = TRUE)
+      suppressWarnings(
+        bcRegressOut(bc.object.complete, vars.to.regress = "nFeature_RNA", 
+                     add.DSS = TRUE)
+      )
     ),
-    c('Computing background BCS using DSS signatures...\n',
-      'No NaN values were found in bc@normalized. No imputation needed.\n',
-      'Regressing scores...\n',
-      'No NaN values were found in bc@background. No imputation needed.\n',
-      'Regressing background BCS...\n')
+    c(paste('DSS background not computed. The imputation will be computed with',
+            'just the drugs (not pathways) in the beyondcell object.\n'),
+      'No imputation needed for bc@normalized.\n',
+      'Regressing scores...\n')
   )
   ### Check the printed messages when using a complete beyondcell object with
   ### background matrix and add.DSS = FALSE as inputs.
@@ -320,22 +401,59 @@ testthat::test_that("messages", {
     ),
     c(paste('DSS background not computed. The imputation will be computed with',
             'just the drugs (not pathways) in the beyondcell object.\n'),
-      'No NaN values were found in bc@normalized. No imputation needed.\n',
+      'No imputation needed for bc@normalized.\n',
       'Regressing scores...\n',
-      'No NaN values were found in bc@background. No imputation needed.\n',
+      'Removing @reductions slot...\n',
+      'Removing therapeutic clusters...\n',
+      'No imputation needed for bc@background.\n',
+      'Regressing background BCS...\n')
+  )
+  testthat::expect_equal(
+    testthat::capture_messages(
+      suppressWarnings(
+        bcRegressOut(bc.object.norm.complete.bg, add.DSS = FALSE,
+                     vars.to.regress = "nFeature_RNA")
+      )
+    ),
+    c(paste('DSS background not computed. The imputation will be computed with',
+            'just the drugs (not pathways) in the beyondcell object.\n'),
+      'No imputation needed for bc@normalized.\n',
+      'Regressing scores...\n',
+      'Removing @reductions slot...\n',
+      'Removing therapeutic clusters...\n',
+      'Imputing background BCS...\n',
       'Regressing background BCS...\n')
   )
   ### Check the printed messages when using a complete beyondcell object with
   ### background matrix and add.DSS = TRUE as inputs.
   testthat::expect_equal(
     testthat::capture_messages(
-      bcRegressOut(bc.object.complete.bg, add.DSS = TRUE,
+      suppressWarnings(
+        bcRegressOut(bc.object.complete.bg, add.DSS = TRUE,
+                     vars.to.regress = "nFeature_RNA")
+      )
+    ),
+    c(paste('DSS background not computed. The imputation will be computed with',
+            'just the drugs (not pathways) in the beyondcell object.\n'),
+      'No imputation needed for bc@normalized.\n',
+      'Regressing scores...\n',
+      'Removing @reductions slot...\n',
+      'Removing therapeutic clusters...\n',
+      'No imputation needed for bc@background.\n',
+      'Regressing background BCS...\n')
+  )
+  testthat::expect_equal(
+    testthat::capture_messages(
+      bcRegressOut(bc.object.norm.complete.bg, add.DSS = FALSE,
                    vars.to.regress = "nFeature_RNA")
     ),
-    c('Background BCS already computed. Skipping this step.\n',
-      'No NaN values were found in bc@normalized. No imputation needed.\n',
+    c(paste('DSS background not computed. The imputation will be computed with',
+            'just the drugs (not pathways) in the beyondcell object.\n'),
+      'No imputation needed for bc@normalized.\n',
       'Regressing scores...\n',
-      'No NaN values were found in bc@background. No imputation needed.\n',
+      'Removing @reductions slot...\n',
+      'Removing therapeutic clusters...\n',
+      'Imputing background BCS...\n',
       'Regressing background BCS...\n')
   )
 })

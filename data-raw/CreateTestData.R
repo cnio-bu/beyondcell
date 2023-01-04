@@ -80,7 +80,7 @@ sig.max.unique.genes <- names(sort(sig.max.unique.genes, decreasing = TRUE))
 cellsigmatrix <- proportion.expressed(counts, genelist = all.genelists)
 hist(cellsigmatrix)
 
-# Get a distribution with the values !=0 in the original matrix
+# Get a distribution with the values != 0 in the original matrix
 hist(counts)
 table.counts <- table(counts)
 values <- unlist(sapply(2:length(table.counts), FUN = function(i) {
