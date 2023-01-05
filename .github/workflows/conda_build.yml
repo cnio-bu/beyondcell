@@ -46,16 +46,18 @@ jobs:
           mamba install boa -y
           mamba mambabuild ./.github/workflows/r-beyondcell
 
-      - name: Install rcmdcheck
+      - name: Install devtools
         shell: bash -l {0}
         run: |
           conda activate bc_builds
-          mamba install -c conda-forge r-rcmdcheck
+          mamba install -c conda-forge r-devtools
 
       - name: Test beyondcell
-        uses: r-lib/actions/check-r-package@v2
-        with:
-          upload-snapshots: true
+        shell: bash -l {0}
+        run: |
+          conda activate bc_builds
+          mamba install -c conda-forge r-devtools
+          $R -e "devtools::test()""
 
       - name: Show testthat output
         if: always()
