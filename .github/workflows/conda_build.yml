@@ -46,8 +46,9 @@ jobs:
           mamba install boa -y
           mamba mambabuild ./.github/workflows/r-beyondcell
 
-      - name: Test coverage
-        run: |
-          install.packages("covr")
-          covr::codecov(quiet = FALSE)
-        shell: Rscript {0}
+      - uses: r-lib/actions/check-r-package@v1
+
+      - name: Show testthat output
+        if: always()
+        run: find check -name 'testthat.Rout*' -exec cat '{}' \; || true
+        shell: bash
