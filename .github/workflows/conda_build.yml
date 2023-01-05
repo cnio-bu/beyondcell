@@ -46,18 +46,12 @@ jobs:
           mamba install boa -y
           mamba mambabuild ./.github/workflows/r-beyondcell
 
-      - name: Install devtools
-        shell: bash -l {0}
-        run: |
-          conda activate bc_builds
-          mamba install -c conda-forge r-devtools
-
       - name: Test beyondcell
         shell: bash -l {0}
         run: |
           conda activate bc_builds
           mamba install -c conda-forge r-devtools
-          $R -e "devtools::test()""
+          $R -e "devtools::test()"
 
       - name: Show testthat output
         if: always()
