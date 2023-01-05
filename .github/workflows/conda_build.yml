@@ -50,7 +50,7 @@ jobs:
         shell: bash -l {0}
         run: |
           conda activate bc_builds
-          mamba install r-rcmdcheck
+          mamba install -c conda-forge r-rcmdcheck
 
       - name: Test beyondcell
         uses: r-lib/actions/check-r-package@v2
