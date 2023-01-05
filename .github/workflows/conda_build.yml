@@ -39,12 +39,18 @@ jobs:
       - name: Update beyondcell environment
         run: mamba update -n bc_builds -f mambabuild.yml
       
-      - name: Install beyondcell package
+      - name: Build beyondcell package
         shell: bash -l {0}
         run: |
           conda activate bc_builds
           mamba install boa -y
           mamba mambabuild ./.github/workflows/r-beyondcell
+
+      - name: Install beyondcell package
+        shell: bash -l {0}
+        run: |
+          conda activate bc_builds
+          mamba install --use-local r-beyondcell
 
       - name: Test beyondcell
         shell: bash -l {0}
