@@ -45,6 +45,8 @@ jobs:
           conda activate bc_builds
           mamba install boa -y
           mamba mambabuild ./.github/workflows/r-beyondcell
+          mamba install -c conda-forge r-devtools
+          R -e "library(beyondcell);devtools::test()"
 
       - name: Test beyondcell
         shell: bash -l {0}
