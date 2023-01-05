@@ -51,6 +51,5 @@ jobs:
         shell: bash -l {0}
         run: |
           conda activate bc_builds
-          mamba install -c conda-forge r-hdf5r
           mamba install -c conda-forge r-devtools
-          R -e "library(beyondcell);devtools::test()"
+          R -e "library(beyondcell);devtools::test(stop_on_failure = TRUE)"
