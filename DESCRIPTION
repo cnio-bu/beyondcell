@@ -5,7 +5,7 @@ Title: A Tool for the Analysis of Tumour Therapeutic Heterogeneity in
 Version: 2.0.0
 Authors@R: c(
     person("Maria Jose", "Jimenez-Santos", , "mjjimenez@cnio.es", role = c("aut", "cre")),
-    person("Santiago", "Garcia-Martin", , "sagarcia@cnio.es", role = c("aut", "cre")),
+    person("Santiago", "Garcia-Martin", , "sagarcia@cnio.es", role = "aut"),
     person("Coral", "Fustero-Torre", , "cfustero@cnio.es", role = "aut"),
     person("Lucas", "Friedman", , "lucasbfriedman@gmail.com", role = "ctb"),
     person("Gonzalo", "Gomez-Lopez", , "ggomez@cnio.es", role = "ths"),
