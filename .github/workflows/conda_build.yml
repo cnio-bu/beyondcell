@@ -51,7 +51,7 @@ jobs:
         run: |
           conda activate bc_builds
           mamba install -c conda-forge r-devtools
-          R -e devtools::test()
+          R -e "devtools::test()"
 
       - name: Show testthat output
         if: always()
