@@ -46,7 +46,14 @@ jobs:
           mamba install boa -y
           mamba mambabuild ./.github/workflows/r-beyondcell
 
-      - uses: r-lib/actions/check-r-package@v1
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          packages: any::rcmdcheck
+          needs: check
+
+      - uses: r-lib/actions/check-r-package@v2
+        with:
+          upload-snapshots: true
 
       - name: Show testthat output
         if: always()
