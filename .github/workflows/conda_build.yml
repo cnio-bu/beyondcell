@@ -2,9 +2,9 @@ name: conda_build
 
 on:
   push:
-    branches: [master, bc2_rc0]
+    branches: [master, bc2_rc0, bc2_rc0_ci]
   pull_request:
-    branches:  [master, bc2_rc0]
+    branches:  [master, bc2_rc0, bc2_rc0_ci]
 
 
 env:
@@ -46,7 +46,14 @@ jobs:
           mamba install boa -y
           mamba mambabuild ./.github/workflows/r-beyondcell
 
-      - uses: r-lib/actions/check-r-package@v2
+      - name: Install rcmdcheck
+        shell: bash -l {0}
+        run: |
+          conda activate bc_builds
+          mamba install r-rcmdcheck
+
+      - name: Test beyondcell
+        uses: r-lib/actions/check-r-package@v2
         with:
           upload-snapshots: true
 
