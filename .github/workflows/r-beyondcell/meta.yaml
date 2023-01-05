@@ -50,6 +50,11 @@ requirements:
     - r-viridis >=0.5.1
     - umap-learn
 
+test:
+  commands:
+    - $R -e "library(\"{{ name }}\")"           # [not win]
+    - "\"%R%\" -e \"library(\"{{ name }}\")\""  # [win]
+    
 about:
   home: https://github.com/cnio-bu/beyondcell
   license: GPL-3
