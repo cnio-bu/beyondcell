@@ -449,7 +449,7 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
     }
     message('Regressing background BCS...')
     total.bg <- nrow(imputation.bg)
-    pb.bg <- txtProgressBar(min = 0, max = total.bg, style = 3)
+    pb.bg <- txtProgressBar(min = 0, max = total.bg, style = 3, file = stderr())
     bins.bg <- ceiling(total.bg / 100)
     background.regressed <- t(apply(cbind(seq_len(nrow(imputation.bg)),
                                           imputation.bg), 1, function(y) {
