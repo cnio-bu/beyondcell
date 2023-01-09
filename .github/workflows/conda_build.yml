@@ -59,4 +59,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: test-report
-          path: test.txt
+          path: test_summary.txt
