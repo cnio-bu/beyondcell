@@ -402,7 +402,7 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
   # Compute regression and save it in bc@normalized.
   message('Regressing scores...')
   total <- nrow(imputation)
-  pb <- txtProgressBar(min = 0, max = total, style = 3)
+  pb <- txtProgressBar(min = 0, max = total, style = 3, file = stderr())
   bins <- ceiling(total / 100)
   normalized.regressed <- t(apply(cbind(seq_len(nrow(imputation)),
                                         imputation), 1, function(x) {
