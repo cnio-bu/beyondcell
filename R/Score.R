@@ -78,7 +78,7 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
   # Progress bar.
   len.gs <- length(gs@genelist)
   total <- len.gs + (length(gs@mode) * len.gs)
-  pb <- txtProgressBar(min = 0, max = total, style = 3)
+  pb <- txtProgressBar(min = 0, max = total, style = 3, file = stderr())
   bins <- ceiling(total / 100)
   # Below expr.thres (common for "up" and "down" modes).
   below.thres <- t(sapply(1:len.gs, function(i) {
