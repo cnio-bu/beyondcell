@@ -34,6 +34,7 @@ requirements:
     - r-tidyverse >=1.3.2
     - r-Seurat >=4.0.0
     - r-viridis >=0.5.1
+    - umap-learn
 
   run:
     - r-base >=4.0.0
@@ -47,6 +48,7 @@ requirements:
     - r-tidyverse >=1.3.2
     - r-Seurat >=4.0.0
     - r-viridis >=0.5.1
+    - umap-learn
     
 test:
   commands:
