@@ -45,12 +45,12 @@ jobs:
           conda activate bc_builds
           mamba install boa -y
           mamba mambabuild ./.github/workflows/r-beyondcell
+          mamba install --use-local r-beyondcell
 
-      - uses: r-lib/actions/check-r-package@v2
-        with:
-          upload-snapshots: true
-
-      - name: Show testthat output
-        if: always()
-        run: find check -name 'testthat.Rout*' -exec cat '{}' \; || true
-        shell: bash
+      - name: Test beyondcell
+        shell: bash -l {0}
+        run: |
+          conda activate bc_builds
+          mamba install -c conda-forge r-hdf5r
+          mamba install -c conda-forge r-devtools
+          R -e "library(beyondcell);devtools::test(stop_on_failure = TRUE, stop_on_warning = TRUE)"

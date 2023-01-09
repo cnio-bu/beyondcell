@@ -30,7 +30,7 @@ requirements:
     - r-patchwork >=1.0.1
     - r-rcolorbrewer >=1.1-2
     - r-scales >=1.1.1
-    - r-see
+    - r-see >=0.7.4
     - r-tidyverse >=1.3.2
     - r-Seurat >=4.0.0
     - r-viridis >=0.5.1
@@ -43,14 +43,12 @@ requirements:
     - r-patchwork >=1.0.1
     - r-rcolorbrewer >=1.1-2
     - r-scales >=1.1.1
-    - r-see
+    - r-see >=0.7.4
     - r-tidyverse >=1.3.2
     - r-Seurat >=4.0.0
     - r-viridis >=0.5.1
     
 test:
-  requires:
-    - r-rcmdcheck
   commands:
     - $R -e "library(\"{{ name }}\")"           # [not win]
     - "\"%R%\" -e \"library(\"{{ name }}\")\""  # [win]
