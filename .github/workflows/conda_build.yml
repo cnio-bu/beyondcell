@@ -1,0 +1,62 @@
+name: conda_build
+
+on:
+  push:
+    branches: [master, developing]
+  pull_request:
+    branches:  [master, developing]
+
+
+env:
+  CACHE_NUMBER: 0
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            label: linux-64
+            prefix: /usr/share/miniconda3/envs/bc_builds
+
+          - os: macos-latest
+            label: osx-64
+            prefix: /Users/runner/miniconda3/envs/bc_builds
+
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Mambaforge
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+            miniforge-variant: Mambaforge
+            miniforge-version: latest
+            activate-environment: bc_builds
+            use-mamba: true
+
+      - name: Update beyondcell environment
+        run: mamba update -n bc_builds -f mambabuild.yml
+      
+      - name: Install beyondcell package
+        shell: bash -l {0}
+        run: |
+          conda activate bc_builds
+          mamba install boa -y
+          mamba mambabuild ./.github/workflows/r-beyondcell
+          mamba install --use-local r-beyondcell
+
+      - name: Test beyondcell
+        shell: bash -l {0}
+        run: |
+          conda activate bc_builds
+          mamba install -c conda-forge r-hdf5r
+          mamba install -c conda-forge r-devtools
+          Rscript --vanilla ./.github/workflows/call_tests.R
+
+      - name: Archive package test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-report
+          path: test_summary.txt

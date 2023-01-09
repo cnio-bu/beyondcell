@@ -56,7 +56,7 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE) {
   if (is.null(idents)) {
     # Progress bar.
     total <- n.rows * n
-    pb <- txtProgressBar(min = 0, max = total, style = 3)
+    pb <- txtProgressBar(min = 0, max = total, style = 3, file = stderr())
     # Name of the output.
     idents <- "general"
     # Column to order by.
@@ -76,7 +76,7 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE) {
     lvls <- sort(unique(as.factor(meta)), decreasing = FALSE)
     # Progress bar.
     total <- n.rows * n * length(lvls)
-    pb <- txtProgressBar(min = 0, max = total, style = 3)
+    pb <- txtProgressBar(min = 0, max = total, style = 3, file = stderr())
     # Column to order by.
     order.col <- paste0("rank.", lvls[1])
     # For each level...
