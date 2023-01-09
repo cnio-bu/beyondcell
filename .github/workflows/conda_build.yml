@@ -53,4 +53,4 @@ jobs:
           conda activate bc_builds
           mamba install -c conda-forge r-hdf5r
           mamba install -c conda-forge r-devtools
-          R -e "library(beyondcell);devtools::test(stop_on_failure = TRUE, stop_on_warning = TRUE)"
+          RScript --vanilla ./call_tests.R
