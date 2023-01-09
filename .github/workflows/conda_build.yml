@@ -54,3 +54,9 @@ jobs:
           mamba install -c conda-forge r-hdf5r
           mamba install -c conda-forge r-devtools
           Rscript --vanilla ./.github/workflows/call_tests.R
+
+      - name: Archive package test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-report
+          path: test.txt
