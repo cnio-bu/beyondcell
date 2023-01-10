@@ -1,3 +1,18 @@
+# [2.0.0] - 2023-01-10
+* **Added** functions to analyze spatial transcriptomics data along with a dedicated vignette. 
+* **Added** a function to load our collection of drug signatures: `GetCollection`.
+* **Added** a set of functional pathways related to cancer disease: these are available using _include.pathways_ in `GetCollection`.
+* **Added** two new optional arguments to  `bc4Squares`: `x.cutoff` and `_y.cutoff_` to set custom quadrant thresholds. 
+* **Added** two new opptional arguments to `bcUMAP`: `npcs` and `seed` to allow users to both set the number of components to compute in the PCA step and reproduce a given UMAP by specifying the seed.
+* **Changed** the KNN imputation methodology in `bcRegressOut`. Beyondcell now relies on **DMwR** instead of **bnstruct**.
+* **Fixed** multiple issues in the package when only a single signature was being provided by the user. 
+* **Updated** the SSc collection. A previous source of drug signatures (CCLE) have been replaced by those from the PRISM study. CTRP and GDSC derived signatures have been updated to the latests releases of the aforementioned projects' data. 
+* **Updated** all of our preloaded collections are stored as geneset objects. 
+* **Updated** `GenerateGenesets`  to work on user provided genesets stored in GMT format.
+* **Updated** beyondcell's dependencies.
+* **Updated** binned scales in `bcSignatures` to improve visualizations.
+* **Removed** the `method` argument from `bcUMAP`. Only the UWOT library implementation of UMAP is available.
+
 # [1.3.3] - 2022-01-12
 * **Fixed** an error in `bcSubset` when filtering by the proportion of `NaN` values. Previously, the beyondcell object wasn't subset when using `nan.sigs` or `nan.cells`. Now those signatures/cells below or equal to the `NaN` threshold are kept. Related to issue #21.
 # [1.3.2] - 2021-12-20
