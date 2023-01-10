@@ -2,9 +2,9 @@ name: conda_build
 
 on:
   push:
-    branches: [master, developing]
+    branches: [master, developing, bc2_rc1]
   pull_request:
-    branches:  [master, developing]
+    branches:  [master, developing, bc2_rc1]
 
 
 env:
