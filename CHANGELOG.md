@@ -7,6 +7,7 @@
 * **Changed** the KNN imputation methodology in `bcRegressOut`. Beyondcell now relies on **DMwR** instead of **bnstruct**.
 * **Fixed** multiple issues in the package when only a single signature was being provided by the user. 
 * **Updated** the SSc collection. A previous source of drug signatures (CCLE) have been replaced by those from the PRISM study. CTRP and GDSC derived signatures have been updated to the latests releases of the aforementioned projects' data. 
+* **Updated** the drug annotation to harmonize the mechanism of action for the compounds in the _SSc_ collection.
 * **Updated** all of our preloaded collections are stored as geneset objects. 
 * **Updated** `GenerateGenesets`  to work on user provided genesets stored in GMT format.
 * **Updated** beyondcell's dependencies.
