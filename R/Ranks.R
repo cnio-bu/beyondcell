@@ -2,6 +2,7 @@
 #' @description  This function computes the beyondcell score's (BCS) statistics
 #' of each signature and ranks them according to the switch point and mean.
 #' @name bcRanks
+#' @importFrom dplyr left_join
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
 #' @param idents Name of the metadata column of interest. If
 #' \code{idents = NULL}, the function computes the ranks using all cells. If
@@ -137,7 +138,21 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE) {
   }
   # Add Drug name and MoA to final.stats.
   cols <- colnames(final.stats)
-  info <- subset(drugInfo, subset = drugInfo$IDs %in% rownames(final.stats))
+  info <- subset(
+    drugInfo[["IDs"]],
+    subset = drugInfo[["IDs"]]$IDs %in% rownames(final.stats)
+    )
+  
+  info <- info %>%
+    dplyr::select(IDs, preferred.drug.names, studies) %>%
+    dplyr::left_join(y = drugInfo$MoAs[, c("IDs", "MoAs")], by = "IDs") %>%
+    dplyr::left_join(y = drugInfo$Targets, by = "IDs") %>%
+    dplyr::left_join(y = drugInfo$Synonyms, by = "IDs") %>%
+    dplyr::mutate(
+      sources = studies
+    ) %>%
+    as.data.frame()
+
   if (dim(info)[1] > 0) {
     info <- aggregate(.~ IDs, data = info, na.action = NULL, FUN = function(x) {
       paste(na.omit(unique(x)), collapse = "; ")

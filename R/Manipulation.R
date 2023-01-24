@@ -396,7 +396,7 @@ bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
     message('No imputation needed for bc@normalized.')
     result <- bc.merged@normalized
   }
-  imputation <- result[sigs, cells, drop = FALSE]
+  imputation <- result[drugs, cells, drop = FALSE]
   # Limma formula.
   fmla <- as.formula(object = paste('bcscore ~', paste(vars, collapse = '+')))
   # Compute regression and save it in bc@normalized.
