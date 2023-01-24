@@ -24,6 +24,7 @@ Depends:
 Imports: 
     cowplot (>= 1.1.1),
     DMwR (>= 0.4.1),
+    dplyr (>= 1.0.9),
     ggplot2 (>= 3.4.0),
     ggrepel (>= 0.9.2),
     patchwork (>= 1.1.2),
