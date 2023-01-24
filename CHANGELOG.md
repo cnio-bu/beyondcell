@@ -1,5 +1,5 @@
-# [2.0.0] - 2023-01-10
-* **Added** functions to analyze spatial transcriptomics data along with a dedicated vignette. 
+# [2.0.0] - 2023-01-25
+* **Added** functions to plot spatial transcriptomics data on top of selected images. 
 * **Added** a function to load our collection of drug signatures: `GetCollection`.
 * **Added** a set of functional pathways related to cancer disease: these are available using _include.pathways_ in `GetCollection`.
 * **Added** two new optional arguments to  `bc4Squares`: `x.cutoff` and `_y.cutoff_` to set custom quadrant thresholds. 
