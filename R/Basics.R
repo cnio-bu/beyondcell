@@ -293,6 +293,7 @@ GetIDs <- function(values, filter) {
 #' \code{beyondcell} matrices and returns a dataframe with drug information,
 #' including drug synonyms and MoAs.
 #' @name FindDrugs
+#' @importFrom dplyr left_join
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
 #' @param x A character vector with drug names and/or sig IDs.
 #' @param na.rm Logical. Should \code{x} entries with no available drug 
@@ -323,13 +324,25 @@ FindDrugs <- function(bc, x, na.rm = TRUE) {
     stop('na.rm must be TRUE or FALSE.')
   }
   # --- Code ---
+  # workaround to expose a facade of the old database to this function
+  # instead of the list of data.frames that we have now.
+  old_db <- drugInfo$IDs %>%
+    dplyr::select(IDs, preferred.drug.names, studies) %>%
+    dplyr::left_join(y = drugInfo$MoAs[, c("IDs", "MoAs")], by = "IDs") %>%
+    dplyr::left_join(y = drugInfo$Targets, by = "IDs") %>%
+    dplyr::left_join(y = drugInfo$Synonyms, by = "IDs") %>%
+    dplyr::mutate(
+      sources = studies
+    ) %>%
+    as.data.frame()
+  
   # bc signatures.
   sigs <- rownames(bc@normalized)
   # Match x with bc signatures and get the indexes of matching elements.
   indexes <- lapply(x, function(y) {
     idx <- match(toupper(y), table = toupper(sigs), nomatch = 0)
     if (idx == 0) {
-      idx <- unique(match(drugInfo$IDs[drugInfo$drugs == toupper(y)],
+      idx <- unique(match(old_db$IDs[old_db$drugs == toupper(y)],
                           table = sigs))
     }
     return(idx[!is.na(idx)])
@@ -345,17 +358,19 @@ FindDrugs <- function(bc, x, na.rm = TRUE) {
     df <- rbind(df, empty.df)
   }
   # Get the names and pathways of the selected signatures.
-  info <- subset(drugInfo, subset = IDs %in% df$IDs)
+  info <- subset(old_db, subset = IDs %in% df$IDs)
   if (all(dim(info) != 0)) {
     info <- aggregate(.~ IDs, data = info, na.action = NULL, FUN = function(w) {
       paste(na.omit(unique(w)), collapse = ", ")
     })
   }
-  info.not.found <- !(df$IDs %in% drugInfo$IDs)
+  info.not.found <- !(df$IDs %in% old_db$IDs)
   if (any(info.not.found)) {
-    empty.info <- matrix(rep(NA, times = sum(info.not.found)*6), ncol = 6,
+    empty.info <- matrix(rep(NA,
+                             times = sum(info.not.found)*ncol(old_db)),
+                         ncol = ncol(old_db),
                          dimnames = list(1:sum(info.not.found),
-                                         colnames(drugInfo)))
+                                         colnames(old_db)))
     info <- rbind(info, as.data.frame(empty.info))
   }
   # Merge df and info.
@@ -364,7 +379,7 @@ FindDrugs <- function(bc, x, na.rm = TRUE) {
   # Add bc.names column and remove names that are not sig IDs from sig_id
   # column.
   df$bc.names <- df$IDs
-  df$IDs[!startsWith(df$IDs, prefix = "sig_")] <- NA
+  df$IDs[!startsWith(df$IDs, prefix = "sig-")] <- NA
   # Create preferred.and.sigs column: Preferred name and sig_id.
   df$preferred.and.sigs <- sapply(1:nrow(df), function(j) {
     return(ifelse(test = !is.na(df$preferred.drug.names[j]),
