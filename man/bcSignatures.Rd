@@ -8,6 +8,7 @@ bcSignatures(
   bc,
   UMAP = "beyondcell",
   spatial = FALSE,
+  images = NULL,
   signatures = list(values = NULL, colorscale = NULL, alpha = 0.7, na.value = "grey50",
     limits = c(0, 1), center = NULL, breaks = 0.1),
   genes = list(values = NULL, limits = c(NA, NA), share.limits = FALSE),
@@ -27,6 +28,9 @@ using \code{\link[beyondcell]{bcUMAP}}, or \code{"Seurat"}, obtained using
 \item{spatial}{Logical indicating if a \code{\link[Seurat]{SpatialPlot}}
 should be drawn. If \code{spatial = TRUE}, the \code{UMAP} and \code{blend} 
 values will be ignored.}
+
+\item{images}{(\code{\link[Seurat]{SpatialDimPlot}}'s \code{images}) Name of 
+the images to use in the plot(s).}
 
 \item{signatures}{List with plot parameters to colour the UMAP by BCS:
 \itemize{
