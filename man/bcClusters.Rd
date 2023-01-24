@@ -9,6 +9,7 @@ bcClusters(
   idents,
   UMAP = "beyondcell",
   spatial = FALSE,
+  images = NULL,
   factor.col = TRUE,
   mfrow = c(1, 1),
   ...
@@ -26,6 +27,9 @@ using \code{\link[beyondcell]{bcUMAP}}, or \code{"Seurat"}, obtained using
 \item{spatial}{Logical indicating if a \code{\link[Seurat]{SpatialPlot}}
 should be drawn. If \code{spatial = TRUE}, the \code{UMAP} value will be 
 ignored.}
+
+\item{images}{(\code{\link[Seurat]{SpatialDimPlot}}'s \code{images}) Name of 
+the images to use in the plot(s).}
 
 \item{factor.col}{Logical indicating if \code{idents} column is a factor or
 not. Set \code{factor.col = FALSE} if \code{idents} is a numeric column (such

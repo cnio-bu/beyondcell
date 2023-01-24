@@ -16,6 +16,8 @@
 #' @param spatial Logical indicating if a \code{\link[Seurat]{SpatialPlot}}
 #' should be drawn. If \code{spatial = TRUE}, the \code{UMAP} value will be 
 #' ignored.
+#' @param images (\code{\link[Seurat]{SpatialDimPlot}}'s \code{images}) Name of 
+#' the images to use in the plot(s).
 #' @param factor.col Logical indicating if \code{idents} column is a factor or
 #' not. Set \code{factor.col = FALSE} if \code{idents} is a numeric column (such
 #' as \code{percent.mt} or \code{nFeature_RNA}).
@@ -33,8 +35,8 @@
 #' @examples
 #' @export
 
-bcClusters <- function(bc, idents, UMAP = "beyondcell", spatial = FALSE, 
-                       factor.col = TRUE, mfrow = c(1, 1), ...) {
+bcClusters <- function(bc, idents, UMAP = "beyondcell", spatial = FALSE,
+                       images = NULL, factor.col = TRUE, mfrow = c(1, 1), ...) {
   # --- Checks ---
   # Check that bc is a beyondcell object.
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
@@ -63,13 +65,28 @@ bcClusters <- function(bc, idents, UMAP = "beyondcell", spatial = FALSE,
   } else {
     stop('Incorrect UMAP argument. Please use either "Seurat" or "beyondcell".')
   }
-  # Check spatial
+  # Check spatial.
   if (spatial) {
     if (bc@SeuratInfo$assays == "RNA") {
       stop("bc wasn't created from spatial data.")
     } else {
       if (length(bc@SeuratInfo$images) == 0) {
         stop("Image not found.")
+      }
+    }
+  }
+  # Check images.
+  if (!is.null(images)) {
+    if (!spatial) {
+      images <- NULL
+      warning(paste('images parameter is only valid when spatial = TRUE.', 
+                    'Setting images = NULL.'))
+    } else {
+      in.images <- images %in% names(bc@SeuratInfo$images)
+      if (all(!in.images)) stop('None of the specified slides were found.')
+      else if (any(!in.images)) {
+        warning(paste0('These images were not found in bc: ',
+                       paste0(images[!in.images], collapse = ", "), "."))
       }
     }
   }
@@ -91,12 +108,17 @@ bcClusters <- function(bc, idents, UMAP = "beyondcell", spatial = FALSE,
     if (spatial) {
       if (identical(mfrow, c(1, 1))) scale <- NULL
       else scale <- ggplot2::scale_fill_discrete(drop = FALSE)
-      p <- lapply(seq_along(bc@SeuratInfo$images), function(i) {
-        suppressMessages(Seurat::SpatialDimPlot(sc, ...)[[i]] + 
-                           ggplot2::theme_minimal() +
-                           ggplot2::theme(legend.title = element_blank(), 
-                                          axis.title = element_blank(), 
-                                          axis.text = element_blank()) + scale)
+      p <- Seurat::SpatialDimPlot(sc, images = images[in.images], 
+                                  combine = FALSE, ...)
+      p <- lapply(seq_along(p), FUN = function(i) {
+        suppressMessages(
+          p[[i]] + ggplot2::theme_minimal() +
+            ggplot2::theme(plot.title = element_text(face = "bold", hjust = 0.5),
+                           legend.title = element_blank(), 
+                           axis.title = element_blank(), 
+                           axis.text = element_blank()) + 
+            ggtitle(images[in.images][i]) + scale
+        )
       })
     } else {
       p <- Seurat::DimPlot(sc, reduction = "umap", ...) + 
@@ -112,9 +134,16 @@ bcClusters <- function(bc, idents, UMAP = "beyondcell", spatial = FALSE,
         scale <- ggplot2::scale_fill_gradientn(colours = SpatialColors(n = 100),
                                                limits = c(min(values), max(values)))
       }
-      p <- lapply(seq_along(bc@SeuratInfo$images), function(i) {
-        suppressMessages(Seurat::SpatialFeaturePlot(sc, features = idents, ...)[[i]] + 
-                           ggplot2:: theme(legend.position = "right") + scale)
+      p <- Seurat::SpatialFeaturePlot(sc, features = idents, 
+                                      images = images[in.images], 
+                                      combine = FALSE, ...)
+      p <- lapply(seq_along(p), FUN = function(i) {
+        suppressMessages(
+          p[[i]] + 
+            ggplot2::theme(plot.title = element_text(face = "bold", hjust = 0.5),
+                           legend.position = "right") + 
+            ggtitle(images[in.images][i]) + scale
+        )
       })
     } else {
       p <- Seurat::FeaturePlot(sc, reduction = "umap", features = idents, ...) +
@@ -271,6 +300,8 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
 #' @param spatial Logical indicating if a \code{\link[Seurat]{SpatialPlot}}
 #' should be drawn. If \code{spatial = TRUE}, the \code{UMAP} and \code{blend} 
 #' values will be ignored.
+#' @param images (\code{\link[Seurat]{SpatialDimPlot}}'s \code{images}) Name of 
+#' the images to use in the plot(s).
 #' @param signatures List with plot parameters to colour the UMAP by BCS:
 #' \itemize{
 #' \item{\code{values}:} {Vector with the names of the signatures of interest.
@@ -330,7 +361,8 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
 #' @examples
 #' @export
 
-bcSignatures <- function(bc, UMAP = "beyondcell", spatial = FALSE,
+bcSignatures <- function(bc, UMAP = "beyondcell", spatial = FALSE, 
+                         images = NULL,
                          signatures = list(values = NULL, colorscale = NULL,
                                            alpha = 0.7, na.value = "grey50",
                                            limits = c(0, 1), center = NULL,
@@ -366,6 +398,21 @@ bcSignatures <- function(bc, UMAP = "beyondcell", spatial = FALSE,
       if (length(bc@SeuratInfo$images) == 0) {
         stop("Image not found.")
       } else blend <- FALSE
+    }
+  }
+  # Check images.
+  if (!is.null(images)) {
+    if (!spatial) {
+      images <- NULL
+      warning(paste('images parameter is only valid when spatial = TRUE.', 
+                    'Setting images = NULL.'))
+    } else {
+      in.images <- images %in% names(bc@SeuratInfo$images)
+      if (all(!in.images)) stop('None of the specified slides were found.')
+      else if (any(!in.images)) {
+        warning(paste0('These images were not found in bc: ',
+                       paste0(images[!in.images], collapse = ", "), "."))
+      }
     }
   }
   # Check signatures' list values.
@@ -631,16 +678,18 @@ bcSignatures <- function(bc, UMAP = "beyondcell", spatial = FALSE,
       }
       ### Plot.
       if (spatial) {
-        fp <- lapply(seq_along(bc@SeuratInfo$images), function(i) {
+        fp <- Seurat::SpatialFeaturePlot(sc, combine = FALSE, images = images[in.images],
+                                         features = gsub(pattern = "_", replacement = "-", 
+                                                         x = y), ...)
+        fp <- lapply(seq_along(fp), FUN = function(i) {
           suppressMessages(
-            Seurat::SpatialFeaturePlot(sc, combine = FALSE,
-                                       features = gsub(pattern = "_", replacement = "-", 
-                                                       x = y), ...)[[i]] +
-              ggplot2:: theme(legend.text = element_text(size = 8, face = "bold"),
-                              legend.key.height = unit(1, "cm"), 
-                              legend.position = "right") + 
-              ggplot2::labs(title = title, subtitle = subtitle) +
-              colors + switchpoint)
+            fp[[i]] + ggplot2::theme(plot.title = element_text(face = "bold", hjust = 0.5),
+                                     legend.text = element_text(size = 8, face = "bold"),
+                                     legend.key.height = unit(1, "cm"), 
+                                     legend.position = "right") + 
+              ggplot2::labs(title = paste0(images[in.images][i], ": ", title), 
+                            subtitle = subtitle) + colors + switchpoint
+          )
         })
       } else {
         fp <- list(suppressMessages(
