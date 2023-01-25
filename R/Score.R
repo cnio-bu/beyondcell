@@ -16,22 +16,24 @@
 bcScore <- function(sc, gs, expr.thres = 0.1) {
   # --- Checks ---
   # Check if sc is a Seurat object or an expression matrix.
-  if ("Seurat"%in% class(sc)) {
+  if ("Seurat" %in% class(sc)) {
     input <- "Seurat object"
     default <- Seurat::DefaultAssay(sc)
-    if(default %in% c("RNA", "SCT")) {
-      if("data" %in% slotNames(sc@assays[[default]])) {
-        message(paste0('Using ', default, ' assay as input.'))
+    if(default %in% c("RNA", "SCT", "Spatial")) {
+      message(paste0('Using ', default, ' assay as input.'))
+      # If counts == data, then the sc obj. is not normalized
+      if(all(sc[[default]]@counts@x != sc[[default]]@data@x)) {
         expr.matrix <- as.matrix(Seurat::GetAssayData(sc, slot = "data",
                                                       assay = default))
-      } else {
-        stop('Default assay must include a normalized data (@data) slot.')
-      }
+        } else {
+          stop('@counts and @data matrices are identical. Is @data normalized?.')
+        }
     } else {
-      stop('Seurat default assay must be either RNA or SCT.')
+      stop('Seurat default assay must be either RNA, Spatial or SCT.')
     }
   } else if ("matrix" %in% class(sc) & is.numeric(sc)) {
     input <- "expression matrix"
+    default <- list()
     warning(paste('Using count matrix as input. Please, check that this matrix',
                   'is normalized and unscaled.'))
     expr.matrix <- sc
@@ -48,17 +50,20 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
   sc.gene.case <- names(which.max(CaseFraction(rownames(expr.matrix))))
   gs.gene.case <- names(which.max(CaseFraction(unique(unlist(gs@genelist)))))
   if (sc.gene.case != gs.gene.case) {
-    warning(paste0('gs genes are ', sc.gene.case, ' and sc genes are ',
-                   gs.gene.case, '. Please check your ', input,
+    warning(paste0('gs genes are ', gs.gene.case, ' and sc genes are ',
+                   sc.gene.case, '. Please check your ', input,
                    ' and translate the genes if necessary.'))
   }
   # --- Code ---
   # Create beyondcell object.
   bc <- beyondcell(expr.matrix = expr.matrix, meta.data = sc@meta.data,
-                   SeuratInfo = list(reductions = sc@reductions),
+                   SeuratInfo = list(assays = default, reductions = sc@reductions),
                    regression = list(order = rep("", 2), vars = NULL,
                                      order.background = rep("", 2)),
                    n.genes = gs@n.genes, mode = gs@mode, thres = expr.thres)
+  # Add images if it is a spatial object.
+  is.spatial <- "images" %in% slotNames(sc)
+  if (is.spatial) bc@SeuratInfo$images <- sc@images
   # Convert genes in expr.matrix and gs to lowercase.
   rownames(expr.matrix) <- tolower(rownames(expr.matrix))
   gs@genelist <- lapply(gs@genelist, function(x) {
@@ -73,7 +78,7 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
   # Progress bar.
   len.gs <- length(gs@genelist)
   total <- len.gs + (length(gs@mode) * len.gs)
-  pb <- txtProgressBar(min = 0, max = total, style = 3)
+  pb <- txtProgressBar(min = 0, max = total, style = 3, file = stderr())
   bins <- ceiling(total / 100)
   # Below expr.thres (common for "up" and "down" modes).
   below.thres <- t(sapply(1:len.gs, function(i) {
@@ -89,20 +94,27 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
       setTxtProgressBar(pb, value = i)
     }
     ### Is n.expr.genes < all.genes * expr.thres?
-    return(n.expr.genes < (length(all.genes) * expr.thres))
+    return(n.expr.genes < (length(all.genes) * expr.thres) | n.expr.genes == 0)
   }))
   rownames(below.thres) <- names(gs@genelist)
-  below.thres <- below.thres[, colnames(expr.matrix)]
+  below.thres <- below.thres[, colnames(expr.matrix), drop = FALSE]
   # If all cells are below the threshold, remove that signature and raise a
-  # warning
+  # warning.
   nan.rows.idx <- which(rowSums(below.thres) == ncol(below.thres))
-  if (length(nan.rows.idx) > 0) {
-    warning(paste0("The following signatures have no cells that pass the ", 
-                   "expr.thres and will be removed: ", 
-                   paste0(rownames(below.thres)[nan.rows.idx], collapse = ", "), 
-                   "."))
-    below.thres <- below.thres[-nan.rows.idx, ]
-    gs@genelist <- gs@genelist[-nan.rows.idx]
+  if (length(nan.rows.idx) == nrow(below.thres)) {
+    stop(paste('No cell in any signature passes the expr.thres. Stopping the', 
+               'execution.'))
+  } else if (length(nan.rows.idx) > 0) {
+    warning(paste0('The following signatures have no cells that pass the ', 
+                   'expr.thres and will be removed: ', 
+                    paste0(rownames(below.thres)[nan.rows.idx], collapse = ", "), 
+                    '.'))
+      below.thres <- below.thres[-c(nan.rows.idx), , drop = FALSE]
+      gs@genelist <- gs@genelist[-c(nan.rows.idx)]
+  }
+  # If there is no signature that passes the threshold, raise an error.
+  if (length(gs@genelist) == 0) {
+    stop('No signature left. Stopping the execution.')
   }
   # BCS.
   bcs <- lapply(seq_along(gs@mode), function(j) {
@@ -151,9 +163,8 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
       scoring.matrix <- -1 * scoring.matrix[, , drop = FALSE]
     }
   }
-  # If genesets were obtained in a TREATED vs CONTROL comparison, invert BCS
-  # sign (exclude pathways).
-  if (gs@comparison == "treated_vs_control") {
+  # Invert the sign of BCS if necessary (exclude pathways).
+  if (gs@inverse.score) {
     not.paths <- which(!(rownames(scoring.matrix) %in% names(pathways)))
     paths <- which(rownames(scoring.matrix) %in% names(pathways))
     if (length(paths) > 0) {
@@ -172,6 +183,10 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
   slot(bc, "switch.point") <- switch.point
   # Close the progress bar.
   close(pb)
+  # Report the number of complete cases in the BCS matrix.
+  complete <- sum(complete.cases(t(bc@normalized)))
+  message(paste0("There are ", complete, "/", ncol(bc@normalized), 
+                 " cells without missing values in your beyondcell object."))
   return(bc)
 }
 
@@ -179,31 +194,28 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
 #' @description This function computes the fraction of of each case type
 #' (uppercase, lowercase or capitalized) in a character vector.
 #' @name CaseFraction
-#' @import useful
+#' @import stringr
 #' @param x Character vector.
 #' @return A named numeric vector with the fraction of each case type.
 #' @examples
 #' @export
 
 CaseFraction <- function(x) {
-  # --- Checks ---
-  if(!is.character(x)) stop('x must be a character vector.')
-  # --- Code ---
-  perc <- sapply(c("upper", "lower", "capitalized"), function(case) {
-    if (case == "upper" | case == "lower") {
-      p <- sum(useful::find.case(x, case = case))/length(x)
-    } else {
-      splitted <- strsplit(x, split = "")
-      first.letter <- sapply(splitted, `[[`, 1)
-      rest.letters <- sapply(splitted, function(y) paste0(y[2:length(y)],
-                                                          collapse = ""))
-      p <- sum(useful::upper.case(first.letter) &
-                 useful::lower.case(rest.letters))/length(x)
-    }
-    return(round(p, digits = 2))
-  })
-  names(perc)[1:2] <- paste0("in ", names(perc)[1:2], "case")
-  return(perc)
+    # --- Checks ---
+    if(!is.character(x)) stop('x must be a character vector.')
+    # --- Code ---
+    all_up <- sum(stringr::str_detect(string = x, pattern = "^[:upper:]+$"))
+    all_dn <- sum(stringr::str_detect(string = x, pattern = "^[:lower:]+$"))
+    is_cap <- sum(stringr::str_detect(string = x, pattern = "^[:upper:][:lower:]+$"))
+    
+    p <- c(
+        "in uppercase" = all_up,
+        "in lowercase" = all_dn,
+        "capitalized" = is_cap
+        )
+    
+    p_fraction <- round(p / length(x), digits = 2)
+    return(p_fraction)
 }
 
 #' @title Computes the switch point

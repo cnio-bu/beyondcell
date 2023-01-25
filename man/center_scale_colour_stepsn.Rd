@@ -7,11 +7,12 @@
 center_scale_colour_stepsn(
   x,
   colorscale,
-  alpha = 0.7,
+  alpha = 0,
   na.value = "grey50",
   limits = c(NA, NA),
   center = NULL,
-  breaks = 0.1
+  breaks = 0.1,
+  aesthetics = "colour"
 )
 }
 \arguments{
@@ -34,6 +35,13 @@ If \code{center = NULL} (default), the centre is set to the middle point of
 \item{breaks}{A single number indicating the break size of the
 \code{colorscale}. Alternatively, it can be a vector with the desired breaks
 (which don't have to be symmetric or equally distributed).}
+
+\item{aesthetics}{(\code{\link[ggplot2]{scale_colour_stepsn}}'s 
+\code{aesthetics}) Character string or vector of character strings listing 
+the name(s) of the aesthetic(s) that this scale works with. This can be 
+useful, for example, to apply colour settings to the \code{colour} and 
+\code{fill} aesthetics at the same time, via \code{aesthetics = c("colour", 
+"fill")}.}
 }
 \value{
 A centred sequential binned colour gradient that can be used to

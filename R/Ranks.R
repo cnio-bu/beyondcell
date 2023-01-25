@@ -2,6 +2,7 @@
 #' @description  This function computes the beyondcell score's (BCS) statistics
 #' of each signature and ranks them according to the switch point and mean.
 #' @name bcRanks
+#' @importFrom dplyr left_join
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
 #' @param idents Name of the metadata column of interest. If
 #' \code{idents = NULL}, the function computes the ranks using all cells. If
@@ -56,7 +57,7 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE) {
   if (is.null(idents)) {
     # Progress bar.
     total <- n.rows * n
-    pb <- txtProgressBar(min = 0, max = total, style = 3)
+    pb <- txtProgressBar(min = 0, max = total, style = 3, file = stderr())
     # Name of the output.
     idents <- "general"
     # Column to order by.
@@ -76,7 +77,7 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE) {
     lvls <- sort(unique(as.factor(meta)), decreasing = FALSE)
     # Progress bar.
     total <- n.rows * n * length(lvls)
-    pb <- txtProgressBar(min = 0, max = total, style = 3)
+    pb <- txtProgressBar(min = 0, max = total, style = 3, file = stderr())
     # Column to order by.
     order.col <- paste0("rank.", lvls[1])
     # For each level...
@@ -137,20 +138,34 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE) {
   }
   # Add Drug name and MoA to final.stats.
   cols <- colnames(final.stats)
-  info <- subset(drugInfo, subset = drugInfo$IDs %in% rownames(final.stats))
+  info <- subset(
+    drugInfo[["IDs"]],
+    subset = drugInfo[["IDs"]]$IDs %in% rownames(final.stats)
+    )
+  
+  info <- info %>%
+    dplyr::select(IDs, preferred.drug.names, studies) %>%
+    dplyr::left_join(y = drugInfo$MoAs[, c("IDs", "MoAs")], by = "IDs") %>%
+    dplyr::left_join(y = drugInfo$Targets, by = "IDs") %>%
+    dplyr::left_join(y = drugInfo$Synonyms, by = "IDs") %>%
+    dplyr::mutate(
+      sources = studies
+    ) %>%
+    as.data.frame()
+
   if (dim(info)[1] > 0) {
     info <- aggregate(.~ IDs, data = info, na.action = NULL, FUN = function(x) {
       paste(na.omit(unique(x)), collapse = "; ")
     })
   }
   rownames(info) <- info$IDs
-  info <- info[, c("drugs", "preferred.drug.names", "MoAs", "targets", "sources")]
+  info <- info[, c("drugs", "preferred.drug.names", "MoAs", "targets", "studies")]
   final.stats <- transform(merge(final.stats, info, by = 0, all.x = TRUE),
                            row.names = Row.names, Row.names = NULL)
   # Order by rank and reorder columns.
   final.stats <- final.stats[order(final.stats[, order.col], decreasing = FALSE),
                              c("drugs", "preferred.drug.names", "MoAs",
-                               "targets", "sources", cols)]
+                               "targets", "studies", cols)]
   # Add to beyondcell object.
   bc@ranks[[idents]] <- final.stats
   # Close the progress bar.

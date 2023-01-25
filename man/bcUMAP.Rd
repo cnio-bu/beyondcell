@@ -8,11 +8,12 @@ bcUMAP(
   bc,
   pc = NULL,
   k.neighbors = 20,
+  npcs = 50,
   res = 0.2,
   add.DSS = FALSE,
-  method = "uwot",
   return.model = FALSE,
-  elbow.path = NULL
+  elbow.path = NULL,
+  seed = 42
 )
 }
 \arguments{
@@ -25,6 +26,9 @@ more information.}
 
 \item{k.neighbors}{(\code{\link[Seurat]{FindNeighbors}}' \code{k.param})
 Defines \emph{k} for the k-Nearest Neighbour algorithm.}
+
+\item{npcs}{(\code{\link[Seurat]{RunPCA}}'s \code{npcs}) Total Number of PCs 
+to compute and store.}
 
 \item{res}{(\code{\link[Seurat]{FindClusters}}' \code{resolution}) Value of
 the resolution parameter, use a value above/below 1.0 if you want to obtain
@@ -39,20 +43,15 @@ therapeutic clusters. If the number of drugs in \code{bc}
 Note that if \code{add.DSS = TRUE}, the regression and subset steps that have
 been applied on \code{bc} will also be applied on the background BCS.}
 
-\item{method}{(\code{\link[Seurat]{RunUMAP}}'s \code{umap.method}) UMAP
-implementation to run. Can be:
-\itemize{
-\item{\code{uwot}}: Runs the UMAP via the \code{\link[uwot]{umap}} function
-of the \code{uwot} package.
-\item{\code{umap-learn}}: Runs the UMAP via the \code{Seurat} wrapper of the
-python \code{umap-learn} package.
-}}
-
 \item{return.model}{(\code{\link[Seurat]{RunUMAP}}'s \code{return.model})
 Whether \code{RunUMAP} will return the \code{uwot} model.}
 
 \item{elbow.path}{Path to save the elbow plot. If \code{elbow.path = NULL}
 (default), the plot will be printed.}
+
+\item{seed}{(\code{\link[Seurat]{Seurat}}'s \code{seed.use}) Random seed for 
+\code{\link[Seurat]{RunPCA}} and \code{\link[Seurat]{RunUMAP}}. If 
+\code{seed = NULL}, no seed will be set.}
 }
 \value{
 A \code{beyondcell} object with the UMAP reduction in
@@ -63,8 +62,9 @@ object) is printed (if \code{elbow.path = NULL}) or saved (if
 }
 \description{
 This function uses the beyondcell scores (BCS) to compute a
-UMAP projection of the data and to cluster cells according to their
-sensitivity to the tested drugs (therapeutic clusters).
+UMAP projection of the data using \code{uwot}'s \code{\link[uwot]{umap}} 
+method. Moreover, \code{bcUMAP} clusters cells according to their 
+predicted sensitivity to the tested drugs (therapeutic clusters).
 }
 \details{
 This function performs all the steps required to obtain a UMAP

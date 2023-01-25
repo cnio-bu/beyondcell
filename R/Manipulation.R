@@ -82,10 +82,27 @@ bcSubset <- function(bc, signatures = NULL, bg.signatures = NULL, cells = NULL,
     if (all(!in.cells)) {
       stop('None of the specified cells were found.')
     } else if (any(!in.cells)) {
-      warning(paste0('These cells were not found in bc: ',
+      warning(paste0('These cells were not found in bc matrices: ',
                      paste0(unique(cells[!in.cells]), collapse = ", "), '.'))
     }
     pass.cells <- unique(cells[in.cells])
+  }
+  # If there is spatial info, check cells in the slices too.
+  is.spatial <- exists(x = "images", where = bc@SeuratInfo)
+  if (is.spatial) {
+    if(length(bc@SeuratInfo$images) > 0) {
+    spots <- lapply(bc@SeuratInfo$images, FUN = function(x) {
+      return(rownames(x@coordinates))
+    })
+    spots <- unique(unlist(spots))
+    in.pass.cells <- pass.cells %in% spots
+    if (all(!in.pass.cells)) {
+      stop('None of the specified cells were found in the image slices.')
+    } else if (any(!in.pass.cells)) {
+      warning(paste0('These cells were not found in the image slices: ',
+                     paste0(pass.cells[!in.pass.cells], collapse = ", "), '.'))
+      }
+    }
   }
   # Check nan.sigs.
   if (length(nan.sigs) != 1 | nan.sigs[1] < 0 | nan.sigs[1] > 1) {
@@ -159,6 +176,16 @@ bcSubset <- function(bc, signatures = NULL, bg.signatures = NULL, cells = NULL,
       bc@normalized <- round(bc@normalized[final.sigs, final.cells,
                                            drop = FALSE], digits = 2)
       bc <- bcRecompute(bc, slot = "normalized")
+
+      ### If there is spatial info, then subset the cells in the slices too
+      if (is.spatial) {
+        bc@SeuratInfo$images <- lapply(bc@SeuratInfo$images, FUN = function(x) {
+          slice.cells <- rownames(x@coordinates)
+          final.slice.cells <- intersect(slice.cells, final.cells)
+          x@coordinates <- x@coordinates[final.slice.cells, , drop = FALSE]
+          return(x)
+        })
+      }
     }
     if (any(dim(bc@background) != 0)) {
       if (length(final.sigs.bg) == 0) {
@@ -179,15 +206,25 @@ bcSubset <- function(bc, signatures = NULL, bg.signatures = NULL, cells = NULL,
 #' @description This function regresses out unwanted effects from normalized
 #' beyondcell scores (BCS).
 #' @name bcRegressOut
-#' @importFrom bnstruct knn.impute
+#' @importFrom DMwR knnImputation
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
 #' @param vars.to.regress Vector of metadata columns to regress out the BCS.
+#' @param k.neighbors (\code{\link[DMwR]{knnImputation}}'s \code{k}) Number of 
+#' nearest neighbors to use.
+#' @param add.DSS Use background BCS computed with \code{DSS} signatures
+#' (\code{add.DSS = TRUE}) or just use the signatures included in the \code{bc}
+#' object (\code{add.DSS = FALSE}) to do the imputation of \code{NaN} BCS. If 
+#' the number of drugs in \code{bc} (excluding pathways) is <= 20, it is 
+#' recomended to set \code{add.DSS = TRUE}. Note that if \code{add.DSS = TRUE}, 
+#' the regression and subset steps that have been applied on \code{bc} will 
+#' also be applied on the background BCS.
 #' @return Returns a \code{beyondcell} object with regressed normalized BCS,
 #' regressed scaled BCS and regressed switch points.
 #' @examples
 #' @export
 
-bcRegressOut <- function(bc, vars.to.regress) {
+bcRegressOut <- function(bc, vars.to.regress, k.neighbors = 10,
+                         add.DSS = FALSE) {
   # --- Checks ---
   # Check that bc is a beyondcell object.
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
@@ -205,116 +242,238 @@ bcRegressOut <- function(bc, vars.to.regress) {
   # Check regression and subset order.
   reg.order <- bc@regression$order
   reg.order.bg <- bc@regression$order.background
+  reg.vars <- bc@regression$vars
   if (any(!(reg.order %in% c("regression", "subset", ""))) |
       reg.order[1] == "" & reg.order[2] != "" | length(reg.order) != 2 |
       (identical(reg.order[1], reg.order[2]) & reg.order[1] != "") |
       (!identical(reg.order.bg, c("", "")) & !identical(reg.order, reg.order.bg))) {
     warning(paste('Corrupt beyondcell object. Restoring original object before',
-                  'subsetting...'))
+                  'regressing...'))
     bc <- suppressMessages(bcRecompute(bc, slot = "data"))
     bc@background <- matrix(ncol = 0, nrow = 0)
-    bc@regression <- list(order = c("regression", ""), vars = vars,
-                          order.background = rep("", 2))
+    reg.order <- reg.order.bg <- rep("", 2)
+    reg.vars <- NULL
   } else {
     ### If bc was previously regressed and then subsetted, raise an error.
     if (identical(reg.order, c("regression", "subset"))) {
       stop(paste('bc was previously regressed and then subsetted. Please run',
                  'bcSubset() on a new beyondcell object created with',
                  'CreatebcObject(bc).'))
-      ### Else if reg.order == c("", "") or reg.order == c("subset", ""), add
-      ### "regression" to bc@regression$order.
-    } else if (identical(reg.order, rep("", 2)) |
-               identical(reg.order, c("subset", ""))) {
-      bc@regression$order[match("", reg.order)] <- "regression"
-      ### Else if the last step in reg.order is "subset", raise a warning.
-    } else if (tail(reg.order[which(reg.order != "")], n = 1) == "regression") {
-      warning('bc is an already regressed object.')
-      vars <- unique(c(vars, bc@regression$vars))
-      sigs <- rownames(bc@scaled)
-      bg.sigs <- rownames(bc@background)
-      cells <- colnames(bc@scaled)
-      bc <- bcRecompute(bc, slot = "data")
-      bc@regression <- list(order = rep("", 2),  vars = NULL,
-                            order.background = rep("", 2))
-      if (any(dim(bc@background) != 0)) {
-        message('Restoring pre-regressed background matrix...')
-        gs.background <- suppressMessages(
-          GenerateGenesets(DSS, n.genes = bc@n.genes, mode = bc@mode,
-                           include.pathways = FALSE))
-        background <- suppressWarnings(
-          bcScore(bc@expr.matrix, gs = gs.background, expr.thres = bc@thres))
-        bc@background <- background@normalized
+    ### Else if the last step in reg.order is "regression", raise a warning.
+    } else if (!identical(reg.order, rep("", 2))) {
+      if (tail(reg.order[which(reg.order != "")], n = 1) == "regression") {
+        warning('bc is an already regressed object.')
+        vars <- unique(c(vars, reg.vars))
+        bc <- suppressMessages(bcRecompute(bc, slot = "data"))
+        bc@regression <- list(order = rep("", 2),  vars = NULL,
+                              order.background = rep("", 2))
+        if (any(dim(bc@background) != 0)) {
+          message('Restoring pre-regressed background matrix...')
+          gs.background <- suppressMessages(
+            GetCollection(DSS, n.genes = bc@n.genes, mode = bc@mode,
+                          include.pathways = FALSE))
+          background <- suppressWarnings(suppressMessages(
+            bcScore(bc@expr.matrix, gs = gs.background, expr.thres = bc@thres)))
+          bc@background <- background@normalized
+        }
+        if ("subset" %in% reg.order) {
+          bc <- suppressWarnings(
+            bcSubset(bc, signatures = rownames(bc@normalized), 
+                     bg.signatures = rownames(bc@background),
+                     cells = colnames(bc@normalized)))
+        }
+        reg.order[reg.order == "regression"] <- ""
+        reg.order.bg[reg.order.bg == "regression"] <- ""
       }
-      if ("subset" %in% reg.order) {
-        bc <- suppressWarnings(
-          bcSubset(bc, signatures = sigs, bg.signatures = bg.sigs,
-                   cells = cells))
+    }
+  }
+  bc@regression <- list(order = reg.order, vars = reg.vars, 
+                        order.background = reg.order.bg)
+  # Check k.neighbors.
+  if (!is.numeric(k.neighbors)) stop('k.neighbors must be numeric.')
+  if (length(k.neighbors) != 1 | k.neighbors[1]%%1 != 0 | k.neighbors[1] < 1) {
+    stop('k.neighbors must be a positive integer.')
+  }
+  # Check add.DSS.
+  cells <- colnames(bc@normalized)
+  sigs <- rownames(bc@normalized)
+  not.paths <- !(sigs %in% names(pathways))
+  drugs <- sigs[not.paths]
+  n.drugs <- sum(not.paths)
+  n.complete.normalized <- sum(complete.cases(t(bc@normalized[drugs, , 
+                                                              drop = FALSE])))
+  is.complete.normalized <- n.complete.normalized == length(cells)
+  if (length(add.DSS) != 1 | !is.logical(add.DSS)) {
+    stop('add.DSS must be TRUE or FALSE.')
+  } else if(add.DSS & is.complete.normalized) {
+    warning('No NaN values were found in bc@normalized. add.DSS is deprecated.')
+    add.DSS <- FALSE
+  } else if (!add.DSS) {
+    if (!is.complete.normalized) {
+      if (n.drugs <= 10) {
+        stop(paste('Only', n.drugs, 'drug signatures (excluding pathways) are',
+                   'present in the bc object, please set add.DSS = TRUE.'))
+      } else if (n.drugs <= 20) {
+        warning(paste('Computing an UMAP reduction for', n.drugs,
+                      'drugs. We recommend to set add.DSS = TRUE when the', 
+                      'number of signatures (excluding pathways) is below or', 
+                      'equal to 20.'))
       }
-      bc@regression <- list(order = reg.order, order.background = reg.order)
+    }
+    ### Complete cases for normalized BCS.
+    if (k.neighbors >= n.complete.normalized) {
+      stop(paste0('k.neighbors must be lower than the number of complete ', 
+                  'cases in @normalized slot: ', n.complete.normalized, 
+                  '.'))
+    }
+    ### Complete cases for background BCS.
+    if (all(dim(bc@background) == 0)) n.complete.bg <- length(cells)
+    else n.complete.bg <- sum(complete.cases(t(bc@background)))
+    if (k.neighbors >= n.complete.bg) {
+      stop(paste0('k.neighbors must be lower than the number of complete ', 
+                  'cases in @background slot: ', n.complete.bg, '.'))
     }
   }
   # --- Code ---
+  if (add.DSS) {
+    ### DSS (background) BCS.
+    if (!identical(sort(rownames(bc@background), decreasing = FALSE),
+                   sort(unique(DSS@info$IDs), decreasing = FALSE)) |
+        !identical(sort(colnames(bc@background), decreasing = FALSE),
+                   sort(cells, decreasing = FALSE)) |
+        !identical(bc@regression$order, bc@regression$order.background)) {
+      message('Computing background BCS using DSS signatures...')
+      ### Genesets.
+      gs.background <- suppressMessages(
+        GetCollection(DSS, n.genes = bc@n.genes, mode = bc@mode, 
+                      include.pathways = FALSE))
+      ### BCS.
+      background <- suppressWarnings(suppressMessages(
+        bcScore(bc@expr.matrix, gs = gs.background, expr.thres = bc@thres)))
+      ### Add metadata.
+      background@meta.data <- background@meta.data[, -c(1:ncol(background@meta.data)), 
+                                                   drop = FALSE]
+      background <- bcAddMetadata(background, metadata = bc@meta.data)
+      ### Subset if needed.
+      if (reg.order[1] == "subset") {
+        background <- bcSubset(background, cells = cells)
+      }
+      ### Add background@normalized to bc@background.
+      bc@background <- background@normalized
+      ### Update reg.order.bg.
+      reg.order.bg <- reg.order
+    } else {
+      message('Background BCS already computed. Skipping this step.')
+    }
+    ### Add background to bc.
+    all.rows <- unique(c(drugs, rownames(bc@background)))
+    merged.score <- rbind(bc@normalized, 
+                          bc@background[, cells, drop = FALSE])[all.rows, , 
+                                                                drop = FALSE]
+    bc.merged <- beyondcell(normalized = merged.score)
+    ### Complete cases for merged BCS.
+    n.complete.merged <- sum(complete.cases(t(bc.merged@normalized)))
+    if (k.neighbors >= n.complete.merged) {
+      stop(paste0('k.neighbors must be lower than the total number of ', 
+                  'complete cases in @normalized and @background slots: ', 
+                  n.complete.merged, '.'))
+    }
+  } else {
+    ### No background BCS.
+    message(paste('DSS background not computed. The imputation will be', 
+                  'computed with just the drugs (not pathways) in the', 
+                  'beyondcell object.'))
+    bc.merged <- beyondcell(normalized = bc@normalized[drugs, , drop = FALSE])
+  }
   # Latent data.
-  latent.data <- bc@meta.data[colnames(bc@normalized), vars, drop = FALSE]
-  # Impute normalized BCS matrix
-  message('Imputing normalized BCS...')
-  bc@normalized <- bnstruct::knn.impute(bc@normalized)
+  latent.data <- bc@meta.data[cells, vars, drop = FALSE]
+  # Impute normalized BCS matrix if necessary
+  if (!is.complete.normalized) {
+    message('Imputing normalized BCS...')
+    result <- t(DMwR::knnImputation(t(bc.merged@normalized), k = k.neighbors, 
+                                    scale = FALSE, meth = "weighAvg"))
+  } else {
+    message('No imputation needed for bc@normalized.')
+    result <- bc.merged@normalized
+  }
+  imputation <- result[drugs, cells, drop = FALSE]
   # Limma formula.
   fmla <- as.formula(object = paste('bcscore ~', paste(vars, collapse = '+')))
   # Compute regression and save it in bc@normalized.
   message('Regressing scores...')
-  total <- nrow(bc@normalized)
-  pb <- txtProgressBar(min = 0, max = total, style = 3)
+  total <- nrow(imputation)
+  pb <- txtProgressBar(min = 0, max = total, style = 3, file = stderr())
   bins <- ceiling(total / 100)
-  normalized.regressed <- t(apply(cbind(seq_len(nrow(bc@normalized)),
-                                        bc@normalized), 1, function(x) {
-                                          regression.mat <- cbind(latent.data, x[-1])
-                                          colnames(regression.mat) <- c(colnames(latent.data), "bcscore")
-                                          qr <- lm(fmla, data = regression.mat, qr = TRUE, na.action = na.exclude)$qr
-                                          resid <- qr.resid(qr = qr, y = x[-1])
-                                          ### Update the progress bar.
-                                          if (x[1]%%bins == 0 | x[1] == total) {
-                                            Sys.sleep(0.1)
-                                            setTxtProgressBar(pb, value = x[1])
-                                          }
-                                          ### Return residues.
-                                          return(resid)
-                                        }))
-  bc@normalized <- round(normalized.regressed, digits = 2)
+  normalized.regressed <- t(apply(cbind(seq_len(nrow(imputation)),
+                                        imputation), 1, function(x) {
+                            regression.mat <- cbind(latent.data, x[-1])
+                            colnames(regression.mat) <- c(colnames(latent.data), "bcscore")
+                            qr <- lm(fmla, data = regression.mat, qr = TRUE, na.action = na.exclude)$qr
+                            resid <- qr.resid(qr = qr, y = x[-1])
+                            ### Update the progress bar.
+                            if (x[1]%%bins == 0 | x[1] == total) {
+                              Sys.sleep(0.1)
+                              setTxtProgressBar(pb, value = x[1])
+                            }
+                          ### Return residues.
+                          return(resid)
+                        }))
+  bc@normalized <- round(rbind(bc@normalized[!not.paths, , drop = FALSE], 
+                               normalized.regressed)[sigs, cells, drop = FALSE], 
+                         digits = 2)
   # Close the progress bar.
   Sys.sleep(0.1)
   close(pb)
   # Recompute the beyondcell object
-  bc <- suppressMessages(bcRecompute(bc, slot = "normalized"))
+  bc <- bcRecompute(bc, slot = "normalized")
+  # Add "regression" step to bc@regression$order.
+  reg.order[grep("^$", reg.order)[1]] <- "regression"
+  bc@regression$order <- reg.order
   # Add vars.to.regress to bc@regression$vars.
   bc@regression$vars <- vars
   # Regress the background, if needed.
   if (any(dim(bc@background) != 0)) {
-    message('Imputing background BCS...')
-    bc@background <- bnstruct::knn.impute(bc@background)
+    if (!add.DSS) {
+      is.complete.bg <- all(complete.cases(t(bc@background)))
+      if (!is.complete.bg) {
+        message('Imputing background BCS...')
+        imputation.bg <- t(DMwR::knnImputation(t(bc@background), k = k.neighbors,
+                                               scale = FALSE, meth = "weighAvg"))
+      } else {
+        message('No imputation needed for bc@background.')
+        imputation.bg <- bc@background
+      }
+    } else {
+      message('Background BCS already imputed.')
+      imputation.bg <- result[unique(DSS@info$IDs), cells, drop = FALSE]
+    }
     message('Regressing background BCS...')
-    total.bg <- nrow(bc@background)
-    pb.bg <- txtProgressBar(min = 0, max = total.bg, style = 3)
+    total.bg <- nrow(imputation.bg)
+    pb.bg <- txtProgressBar(min = 0, max = total.bg, style = 3, file = stderr())
     bins.bg <- ceiling(total.bg / 100)
-    background.regressed <- t(apply(cbind(seq_len(nrow(bc@background)),
-                                          bc@background), 1, function(y) {
-                                            regression.mat <- cbind(latent.data, y[-1])
-                                            colnames(regression.mat) <- c(colnames(latent.data), "bcscore")
-                                            qr <- lm(fmla, data = regression.mat, qr = TRUE, na.action = na.exclude)$qr
-                                            resid <- qr.resid(qr = qr, y = y[-1])
-                                            ### Update the progress bar.
-                                            if (y[1]%%bins == 0 | y[1] == total.bg) {
-                                              Sys.sleep(0.1)
-                                              setTxtProgressBar(pb.bg, value = y[1])
-                                            }
-                                            ### Return residues.
-                                            return(resid)
-                                          }))
-    bc@background <- background.regressed
+    background.regressed <- t(apply(cbind(seq_len(nrow(imputation.bg)),
+                                          imputation.bg), 1, function(y) {
+                                regression.mat <- cbind(latent.data, y[-1])
+                                colnames(regression.mat) <- c(colnames(latent.data), "bcscore")
+                                qr <- lm(fmla, data = regression.mat, qr = TRUE, na.action = na.exclude)$qr
+                                resid <- qr.resid(qr = qr, y = y[-1])
+                                ### Update the progress bar.
+                                if (y[1]%%bins == 0 | y[1] == total.bg) {
+                                  Sys.sleep(0.1)
+                                  setTxtProgressBar(pb.bg, value = y[1])
+                                }
+                              ### Return residues.
+                              return(resid)
+                              }))
+    bc@background <- round(background.regressed[, cells, drop = FALSE], 
+                           digits = 2)
     bc@regression$order.background <- bc@regression$order
     # Close the background progress bar.
     Sys.sleep(0.1)
     close(pb.bg)
+    # Add "regression" step to bc@regression$order.background.
+    reg.order.bg[grep("^$", reg.order.bg)[1]] <- "regression" 
+    bc@regression$order.background <- reg.order.bg
   }
   # Output.
   return(bc)
@@ -370,6 +529,7 @@ bcRecompute <- function(bc, slot = "data") {
     message('Removing therapeutic clusters...')
     bc@meta.data <- bc@meta.data[, -c(therapeutic.clusters), drop = FALSE]
   }
+  bc@meta.data <- bc@meta.data[colnames(bc@data), , drop = FALSE]
   # Return bc object.
   return(bc)
 }
@@ -380,8 +540,7 @@ bcRecompute <- function(bc, slot = "data") {
 #' @name bcAddMetadata
 #' @param bc \code{beyondcell} object.
 #' @param metadata Matrix or dataframe with metadata to add. Rownames should be
-#' cell names and colnames should not be already present in
-#' \code{bc@@meta.data}.
+#' cell names and colnames should be numeric or categorical variables.
 #' @return Returns a \code{beyondcell} object with updated metadata.
 #' @examples
 #' @export
@@ -401,8 +560,12 @@ bcAddMetadata <- function(bc, metadata) {
   }
   # Check that columns in metadata are different from the existing columns in
   # bc@meta.data.
-  if (any(colnames(metadata) %in% colnames(bc@meta.data))) {
-    stop('Some metadata columns are already present in bc@meta.data slot.')
+  in.metadata <- colnames(metadata) %in% colnames(bc@meta.data)
+  if (any(in.metadata)) {
+    warning(paste0('Some metadata columns are already present in bc@meta.data ', 
+                   'slot and will be overwritten: ',
+                   paste0(colnames(metadata)[in.metadata], collapse = ", "), 
+                   '.'))
   }
   # --- Code ---
   metadata <- metadata[rownames(bc@meta.data), , drop = FALSE]
@@ -414,34 +577,51 @@ bcAddMetadata <- function(bc, metadata) {
 #' @description This function merges two \code{\link[beyondcell]{beyondcell}}
 #' objects obtained from the same single-cell matrix using the same
 #' \code{expr.thres} (see \code{\link[beyondcell]{bcScore}} for more
-#' information). It binds signatures, not cells.
+#' information). It binds signatures, not cells. If \code{bc1} is a subset of 
+#' \code{bc2}, the resulting \code{beyondcell} object will contain just the 
+#' subsetted cells and the \code{SeuratInfo} stored in \code{bc1}.
 #' @name bcMerge
 #' @importFrom plyr join
-#' @param bc1 First \code{beyondcell} object to merge.
+#' @param bc1 First \code{beyondcell} object to merge. Can be a subset of 
+#' \code{bc2}.
 #' @param bc2 Second \code{beyondcell} object to merge.
+#' @param keep.bc.clusters Whether to keep \code{bc1} reductions or not. 
+#' Choose \code{keep.bc.clusters = TRUE} when \code{bc2} is formed by functional
+#' pathways and \code{bc1} is a drug-containing \code{beyondcell} object.
 #' @return A merged \code{beyondcell} object.
 #' @examples
 #' @export
 
-bcMerge <- function(bc1, bc2) {
+bcMerge <- function(bc1, bc2, keep.bc.clusters = TRUE) {
   # --- Checks ---
   # Check that bc1 and bc2 are beyondcell objects.
   if (class(bc1) != "beyondcell") stop('bc1 must be a beyondcell object.')
   if (class(bc2) != "beyondcell") stop('bc2 must be a beyondcell object.')
+  # Check keep.bc.clusters.
+  if (length(keep.bc.clusters) != 1 | !is.logical(keep.bc.clusters[1])) {
+    stop('keep.bc.clusters must be TRUE or FALSE.')
+  }
   # Check both thres.
   if (!identical(bc1@thres, bc2@thres)) {
     stop('bc objects weren\'t obtained using the same expression threshold.')
   }
   # Check both Seurat experiments.
-  if (!identical(bc1@expr.matrix, bc2@expr.matrix) |
-      !identical(bc1@SeuratInfo, bc2@SeuratInfo)) {
+  if (!identical(bc1@expr.matrix, bc2@expr.matrix)) {
     stop('bc objects weren\'t obtained from the same single-cell experiment.')
+  }
+  # Check subsetted cells.
+  common.cells <- intersect(colnames(bc1@data), colnames(bc2@data))
+  if (length(common.cells) == 0) {
+    stop('bc1 and bc2 do not contain the same cells.')
+  } else if (!all(common.cells %in% colnames(bc1@data))) {
+    stop('bc1 is not a subset of bc2.')
   }
   # Check for duplicated signatures.
   duplicated.sigs <- intersect(rownames(bc1@data), rownames(bc2@data))
   if (length(duplicated.sigs) > 0) {
     identical.sigs <- sapply(duplicated.sigs, function(x) {
-      identical(bc1@data[x, ], bc2@data[x, ])
+      identical(bc1@data[x, common.cells, drop = FALSE], 
+                bc2@data[x, common.cells, drop = FALSE])
     })
     if (any(!identical.sigs)) {
       stop(paste0('Duplicated signatures: ',
@@ -450,47 +630,56 @@ bcMerge <- function(bc1, bc2) {
     }
   }
   # Check regression steps.
-  if (!identical(bc1@regression, bc2@regression)) {
-    stop(paste('The two objects were not subsetted and/or regressed in the same',
-               'order and with the same variables.'))
-  }
-  # Check subsetted cells.
-  if (!identical(colnames(bc1@normalized), colnames(bc2@normalized))) {
-    stop('bc1 and bc2 do not contain the same cells.')
+  if (!identical(bc1@regression, bc2@regression) & 
+      (!identical(bc1@regression$order, c("subset", "")) & 
+       !identical(bc2@regression$order, rep("", 2)))) {
+    stop(paste('The two objects must be subsetted and/or regressed in the same',
+               'order and with the same variales. Alternatively, bc1 can be a', 
+               'subset of bc2 (with no regression).'))
   }
   # --- Code ---
-  # Cells
-  cells <- colnames(bc1@normalized)
+  # Suset bc2
+  bc2 <- suppressWarnings(suppressMessages(bcSubset(bc2, cells = common.cells)))
   # Create a new beyondcell object.
   bc <- beyondcell(expr.matrix = bc1@expr.matrix, SeuratInfo = bc1@SeuratInfo,
                    regression = bc1@regression,
                    n.genes = unique(c(bc1@n.genes, bc2@n.genes)),
                    mode = unique(c(bc1@mode, bc2@mode)), thres = bc1@thres)
   # rbind scaled BCS.
-  bc@scaled <- unique(rbind(bc1@scaled, bc2@scaled[, cells]))[, cells]
+  bc@scaled <- unique(rbind(bc1@scaled[, common.cells, drop = FALSE], 
+                            bc2@scaled[, common.cells, drop = FALSE]))
   # rbind normalized BCS.
-  bc@normalized <- unique(rbind(bc1@normalized, bc2@normalized[, cells]))[, cells]
+  bc@normalized <- unique(rbind(bc1@normalized[, common.cells, drop = FALSE], 
+                                bc2@normalized[, common.cells, drop = FALSE]))
   # rbind data.
-  bc@data <- unique(rbind(bc1@data, bc2@data[, colnames(bc1@data)]))[, colnames(bc1@data)]
+  bc@data <- unique(rbind(bc1@data[, common.cells, drop = FALSE], 
+                          bc2@data[, common.cells, drop = FALSE]))
   # Merge switch.points.
   bc@switch.point <- c(bc1@switch.point, bc2@switch.point)[rownames(bc@scaled)]
   # Merge meta.data.
-  bc@meta.data <- suppressMessages(plyr::join(bc1@meta.data, bc2@meta.data))
-  rownames(bc@meta.data) <- rownames(bc1@meta.data)
-  # Remove therapeutic clusters from bc@meta.data.
-  therapeutic.clusters <- grep(pattern = "bc_clusters_res.", x = colnames(bc@meta.data))
-  if (length(therapeutic.clusters) > 0) {
-    bc@meta.data <- bc@meta.data[, -c(therapeutic.clusters), drop = FALSE]
+  bc@meta.data <- suppressMessages(plyr::join(bc1@meta.data[common.cells, , drop = FALSE], 
+                                              bc2@meta.data[common.cells, , drop = FALSE]))
+  rownames(bc@meta.data) <- common.cells
+  # If keep.bc.clusters, keep bc1 reductions.
+  if (keep.bc.clusters) {
+    bc@reductions <- bc1@reductions
+  # Else, remove the therapeutic clusters from bc@meta.data.
+  } else {
+    therapeutic.clusters <- grep(pattern = "bc_clusters_res.", x = colnames(bc@meta.data))
+    if (length(therapeutic.clusters) > 0) {
+      bc@meta.data <- bc@meta.data[, -c(therapeutic.clusters), drop = FALSE]
+    }
   }
   # Merge backgrounds.
   bg <- list(bc1 = as.data.frame(bc1@background), bc2 = as.data.frame(bc2@background))
   is.empty.bg <- sapply(bg, FUN = function(x) dim(x)[2] == 0)
-  if(all(is.empty.bg)) {
+  if (all(is.empty.bg)) {
     bc@background <- matrix(ncol = 0, nrow = 0)
-  }else{
+  } else {
+    bg <- lapply(bg, FUN = function(y) y[, common.cells, drop = FALSE])
     background <- as.matrix(do.call("rbind", bg[!is.empty.bg]))
     rownames(background) <- gsub("bc[1|2]\\.", "", rownames(background))
-    bc@background <- background[unique(rownames(background)), ]
+    bc@background <- background[unique(rownames(background)), , drop = FALSE]
   } 
   return(bc)
 }
