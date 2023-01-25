@@ -199,9 +199,11 @@ bcUMAP <- function(bc, pc = NULL, k.neighbors = 20, npcs = 50, res = 0.2,
     sc <- Seurat::FindClusters(sc, resolution = res)
     ### UMAP.
     message('Computing beyondcell\'s UMAP reduction...')
-    sc <- Seurat::RunUMAP(sc, dims = 1:pc, umap.method = "uwot",
-                          return.model = return.model, n.components = 2,
-                          verbose = FALSE, seed.use = seed)
+    sc <- suppressWarnings(
+      Seurat::RunUMAP(sc, dims = 1:pc, umap.method = "uwot", 
+                      return.model = return.model, n.components = 2,
+                      verbose = FALSE, seed.use = seed)
+    )
     bc@reductions <- sc@reductions
     ### Therapeutic clusters.
     message('Adding therapeutic clusters to metadata...')
