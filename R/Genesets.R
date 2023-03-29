@@ -117,7 +117,7 @@ GetCollection <- function(x, n.genes = 250, mode = c("up", "down"),
   # --- Global Checks ---
   # Check if x is a pre-loaded collection.
   is.D <- c(identical(x, PSc), identical(x, SSc), identical(x, DSS))
-  n.max <- 500 # Our collections have at max 500 genes.
+  n.max <- 250 # Our collections have at max 250 genes.
 
   if (!any(is.D)) {
    stop(paste('x must be either PSc, SSc or DSS.'))
