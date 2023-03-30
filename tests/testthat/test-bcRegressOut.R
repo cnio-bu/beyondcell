@@ -127,7 +127,7 @@ gs1 <- GetCollection(SSc, n.genes = 100, mode = c("up", "down"),
                      filters = list(IDs = SSc@info$IDs[1]),
                      include.pathways = FALSE)
 bc1.complete <- bcScore(pbmc, gs = gs1, expr.thres = 0.1)
-bc1 <- bcScore(pbmc, gs = gs1, expr.thres = 0.25)
+bc1 <- bcScore(pbmc, gs = gs1, expr.thres = 0.3)
 
 # Test errors.
 testthat::test_that("errors", {
