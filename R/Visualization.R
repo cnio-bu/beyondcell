@@ -88,8 +88,9 @@ bcClusters <- function(bc, idents, UMAP = "beyondcell", spatial = FALSE,
         warning(paste0('These images were not found in bc: ',
                        paste0(images[!in.images], collapse = ", "), "."))
       }
+      images <- images[in.images]
     }
-  }
+  } else if (spatial) images <- names(bc@SeuratInfo$images)
   # Check factor.col.
   if (length(factor.col) != 1 | !is.logical(factor.col)) {
     stop('factor.col must be TRUE or FALSE.')
@@ -108,8 +109,7 @@ bcClusters <- function(bc, idents, UMAP = "beyondcell", spatial = FALSE,
     if (spatial) {
       if (identical(mfrow, c(1, 1))) scale <- NULL
       else scale <- ggplot2::scale_fill_discrete(drop = FALSE)
-      p <- Seurat::SpatialDimPlot(sc, images = images[in.images], 
-                                  combine = FALSE, ...)
+      p <- Seurat::SpatialDimPlot(sc, images = images, combine = FALSE, ...)
       p <- lapply(seq_along(p), FUN = function(i) {
         suppressMessages(
           p[[i]] + ggplot2::theme_minimal() +
@@ -117,7 +117,7 @@ bcClusters <- function(bc, idents, UMAP = "beyondcell", spatial = FALSE,
                            legend.title = element_blank(), 
                            axis.title = element_blank(), 
                            axis.text = element_blank()) + 
-            ggtitle(images[in.images][i]) + scale
+            ggtitle(images[i]) + scale
         )
       })
     } else {
@@ -134,15 +134,14 @@ bcClusters <- function(bc, idents, UMAP = "beyondcell", spatial = FALSE,
         scale <- ggplot2::scale_fill_gradientn(colours = SpatialColors(n = 100),
                                                limits = c(min(values), max(values)))
       }
-      p <- Seurat::SpatialFeaturePlot(sc, features = idents, 
-                                      images = images[in.images], 
+      p <- Seurat::SpatialFeaturePlot(sc, features = idents, images = images, 
                                       combine = FALSE, ...)
       p <- lapply(seq_along(p), FUN = function(i) {
         suppressMessages(
           p[[i]] + 
             ggplot2::theme(plot.title = element_text(face = "bold", hjust = 0.5),
                            legend.position = "right") + 
-            ggtitle(images[in.images][i]) + scale
+            ggtitle(images[i]) + scale
         )
       })
     } else {
@@ -413,8 +412,9 @@ bcSignatures <- function(bc, UMAP = "beyondcell", spatial = FALSE,
         warning(paste0('These images were not found in bc: ',
                        paste0(images[!in.images], collapse = ", "), "."))
       }
+      images <- images[in.images]
     }
-  }
+  } else if (spatial) images <- names(bc@SeuratInfo$images)
   # Check signatures' list values.
   default.sigs <- list(values = NULL, colorscale = NULL, alpha = 0.7,
                        na.value = "grey", limits = c(0, 1), center = NULL,
@@ -678,7 +678,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell", spatial = FALSE,
       }
       ### Plot.
       if (spatial) {
-        fp <- Seurat::SpatialFeaturePlot(sc, combine = FALSE, images = images[in.images],
+        fp <- Seurat::SpatialFeaturePlot(sc, combine = FALSE, images = images,
                                          features = gsub(pattern = "_", replacement = "-", 
                                                          x = y), ...)
         fp <- lapply(seq_along(fp), FUN = function(i) {
@@ -687,7 +687,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell", spatial = FALSE,
                                      legend.text = element_text(size = 8, face = "bold"),
                                      legend.key.height = unit(1, "cm"), 
                                      legend.position = "right") + 
-              ggplot2::labs(title = paste0(images[in.images][i], ": ", title), 
+              ggplot2::labs(title = paste0(images[i], ": ", title), 
                             subtitle = subtitle) + colors + switchpoint
           )
         })
