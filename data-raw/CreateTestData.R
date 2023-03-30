@@ -56,6 +56,9 @@ all.genelists <- c(ssc.genelist, dss.genelist)
 # All unique genes.
 all.genes <- unique(unlist(all.genelists))
 
+# Genes not found in genelists.
+not.found <- rownames(counts)[!rownames(counts) %in% all.genes]
+
 # Subset and rename rows.
 counts <- counts[1:length(all.genes), ]
 rownames(counts) <- all.genes
@@ -96,7 +99,6 @@ while (any(cellsigmatrix <= 0.1)) {
   cellsigmatrix <- proportion.expressed(counts, genelist = all.genelists)
   hist(cellsigmatrix)
 }
-
 hist(counts)
 
 # Make the expression values of all the genes in the signature with most unique 
@@ -143,9 +145,12 @@ gmt10up <- gmt10[grep(pattern = "_up", names(gmt10), ignore.case = TRUE)]
 gmt10down <- gmt10[grep(pattern = "_down|_dn", names(gmt10), 
                         ignore.case = TRUE)]
 
-gmt10warning <- unlist(ssc@genelist[genesets100[1:10]], recursive = FALSE)
-names(gmt10warning) <- gsub(pattern = "\\.", replacement = "_", 
-                            names(gmt10warning))
+gmt10warning.nogenes <- gmt10warning.thres <- 
+  unlist(ssc@genelist[genesets100[1:10]], recursive = FALSE)
+gmt10warning.nogenes[1:2] <- list(not.found[1:100], not.found[101:200]) 
+names(gmt10warning.nogenes) <- names(gmt10warning.thres) <- 
+  gsub(pattern = "\\.", replacement = "_", 
+       names(gmt10warning.nogenes))
 
 gmt10duplicated <- c(gmt10[1:18], gmt10[1:2])
 gmt10incorrect <- gmt10
@@ -158,7 +163,7 @@ names(gmt100) <- gsub(pattern = "\\.", replacement = "_", names(gmt100))
 special_sigs <- data.frame(sig = c(sig.max.unique.genes[1], 
                                     str_remove(names(gmt10)[1], 
                                                pattern = "_.*$")),
-                           event = c("below_thres", "duplicated"))
+                           event = c("warning", "duplicated"))
 
 # Save.
 sc.out.dir <- "../tests/testdata/single-cell/"
@@ -189,7 +194,10 @@ write.table(special_sigs, row.names = FALSE, col.names = TRUE,
 output.gmt(gmt10, filename = paste0(gmt.out.dir, "correct10.gmt"))
 output.gmt(gmt10up, filename = paste0(gmt.out.dir, "correct10up.gmt"))
 output.gmt(gmt10down, filename = paste0(gmt.out.dir, "correct10down.gmt"))
-output.gmt(gmt10warning, filename = paste0(gmt.out.dir, "score_warning10.gmt"))
+output.gmt(gmt10warning.nogenes, 
+           filename = paste0(gmt.out.dir, "score_warning10_nogenes.gmt"))
+output.gmt(gmt10warning.thres, 
+           filename = paste0(gmt.out.dir, "score_warning10_thres.gmt"))
 output.gmt(gmt10duplicated, filename = paste0(gmt.out.dir, "duplicated10.gmt"))
 output.gmt(gmt10incorrect, 
            filename = paste0(gmt.out.dir, "incorrect_mode10.gmt"))
