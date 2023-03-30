@@ -3,6 +3,7 @@ library(Seurat)
 library(beyondcell)
 library(Matrix)
 library(DropletUtils)
+library(tidyverse)
 
 # --- Functions ---
 # Proportion of expressed genes per cell and signature.
@@ -48,7 +49,7 @@ ssc <- beyondcell::GetCollection(SSc, n.genes = 100, include.pathways = TRUE)
 dss <- beyondcell::GetCollection(DSS, n.genes = 100, include.pathways = FALSE)
 
 # Genelists with up and down genes all together.
-ssc.genelist <- lapply(ssc@genelist[c(1:100, 585:613)], FUN = function(x) unlist(x))
+ssc.genelist <- lapply(ssc@genelist[c(1:100, 582:610)], FUN = function(x) unlist(x))
 dss.genelist <- lapply(dss@genelist, FUN = function(x) unlist(x))
 all.genelists <- c(ssc.genelist, dss.genelist)
 
@@ -154,6 +155,11 @@ names(gmt10incorrect)[19] <- gsub(pattern = "_up", replacement = "_bad",
 gmt100 <- unlist(ssc@genelist[genesets100[2:101]], recursive = FALSE)
 names(gmt100) <- gsub(pattern = "\\.", replacement = "_", names(gmt100))
 
+special_sigs <- data.frame(sig = c(sig.max.unique.genes[1], 
+                                    str_remove(names(gmt10)[1], 
+                                               pattern = "_.*$")),
+                           event = c("below_thres", "duplicated"))
+
 # Save.
 sc.out.dir <- "../tests/testdata/single-cell/"
 Matrix::writeMM(obj = counts, file = paste0(sc.out.dir, "matrix.mtx"))
@@ -174,6 +180,12 @@ write.table(visium.positions, row.names = FALSE, col.names = FALSE,
             file = paste0(visium.out.dir, "tissue_positions_list.csv"))
 
 gmt.out.dir <- "../tests/testdata/gmt/"
+write.table(names(gmt10), row.names = FALSE, col.names = FALSE, 
+            quote = FALSE, sep = "\n",
+            file = paste0(gmt.out.dir, "correct10_names.txt"))
+write.table(special_sigs, row.names = FALSE, col.names = TRUE, 
+            quote = FALSE, sep = "\t",
+            file = paste0(gmt.out.dir, "special_sigs.tsv"))
 output.gmt(gmt10, filename = paste0(gmt.out.dir, "correct10.gmt"))
 output.gmt(gmt10up, filename = paste0(gmt.out.dir, "correct10up.gmt"))
 output.gmt(gmt10down, filename = paste0(gmt.out.dir, "correct10down.gmt"))

@@ -134,6 +134,12 @@ scaled <- scale.score(norm)
 scaled.up <- scale.score(norm.up)
 scaled.down <- scale.score(norm.down)
 
+# Sig below threshold
+below.thres.sig <- read.table("../testdata/gmt/special_sigs.tsv", header = TRUE,
+                              sep = "\t") %>%
+  filter(event == "below_thres") %>%
+  pull(sig)
+
 # Test errors.
 testthat::test_that("errors", {
   ### Check sc.
@@ -199,8 +205,8 @@ testthat::test_that("warnings", {
   ### Check signatures for which no cells pass the expr.thres.
   testthat::expect_warning(
     bcScore(pbmc, gs = gs.warning),
-    paste('The following signatures have no cells that pass the expr.thres and',
-          'will be removed: sig-20965.')
+    paste0('The following signatures have no cells that pass the expr.thres ',
+           'and will be removed: ', below.thres.sig, '.'), fixed = TRUE
   )
 })
 
