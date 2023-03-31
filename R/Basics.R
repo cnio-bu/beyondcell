@@ -152,7 +152,7 @@ GetStatistics <- function(bc, signatures, cells, pb, total, i, n.rows,
   if (extended) {
     # Dataframe with mean, median and sd per signature.
     data <- cbind(seq_len(n.rows) + (n.rows * 6) * (i - 1),
-                  bc@data[signatures, cells])
+                  bc@normalized[signatures, cells])
     mean.med.sd <- as.data.frame(t(apply(data, 1, function(u) {
       mms <- round(Mean.Med.SD(u[-1]), digits = 2)
       ### Update the progress bar.
@@ -217,7 +217,7 @@ GetStatistics <- function(bc, signatures, cells, pb, total, i, n.rows,
                         row.names = signatures)
   } else {
     # Mean BCS per signature.
-    mean.bc <- round(rowMeans(bc@data[signatures, cells], na.rm = TRUE),
+    mean.bc <- round(rowMeans(bc@normalized[signatures, cells], na.rm = TRUE),
                      digits = 2)
     # Residuals.
     normalized <- cbind(seq_len(n.rows) + (n.rows * (i - 1)),
