@@ -229,7 +229,7 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
   # Metadata levels.
   lvls <- levels(as.factor(meta))
   # Subset bc to the selected signatures.
-  sub.bc <- bc@data[signatures[in.signatures], , drop = FALSE]
+  sub.bc <- bc@normalized[signatures[in.signatures], , drop = FALSE]
   # Get maximum and minimum normalized BCS (for common x axis in all plots).
   limits <- c(min(as.vector(sub.bc), na.rm = TRUE),
               max(as.vector(sub.bc), na.rm = TRUE))
@@ -775,7 +775,7 @@ bcCellCycle <- function(bc, signatures) {
   # For each signature...
   p <- lapply(signatures[in.signatures], function(x) {
     ### Data frame of normalized BCS and phase metadata.
-    sub.df <- na.omit(data.frame(bcscore = bc@data[x, cells],
+    sub.df <- na.omit(data.frame(bcscore = bc@normalized[x, cells],
                                  phase = bc@meta.data[cells, "Phase"],
                                  row.names = cells))
     ### Drug name and MoA.
