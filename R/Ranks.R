@@ -74,7 +74,7 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE) {
     final.stats <- final.stats[c("rank", colnames(final.stats)[-ncol(final.stats)])]
   } else {
     # Metadata levels.
-    lvls <- sort(unique(as.factor(meta)), decreasing = FALSE)
+    lvls <- levels(as.factor(meta))
     # Progress bar.
     total <- n.rows * n * length(lvls)
     pb <- txtProgressBar(min = 0, max = total, style = 3, file = stderr())
@@ -85,7 +85,7 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE) {
       ### Cells belonging to that level.
       group.cells <- rownames(bc@meta.data)[row.names(bc@meta.data) %in% cells &
                                               bc@meta.data[, idents] == lvls[i]]
-      group.cells <- group.cells[!is.na( group.cells)]
+      group.cells <- group.cells[!is.na(group.cells)]
       ### Subset bc with group.cells.
       sub.bc <- bc
       sub.bc@regression <- list(order = rep("", 2), vars = NULL,
