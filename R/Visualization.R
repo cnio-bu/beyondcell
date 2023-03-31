@@ -851,7 +851,7 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3, topnames = NULL,
   }
   # Check lvl.
   if (is.null(lvl)) {
-    lvl <- unique(bc@meta.data[, idents])
+    lvl <- levels(as.factor(bc@meta.data[, idents]))
     in.lvl <- rep(TRUE, times = length(lvl))
   } else {
     in.lvl <- lvl %in% unique(bc@meta.data[, idents])
@@ -1019,7 +1019,7 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3, topnames = NULL,
       geom_hline(yintercept = y.cutoff[1], linetype = "dotted") +
       geom_hline(yintercept = y.cutoff[2], linetype = "dotted") +
       geom_hline(yintercept = y.cutoff[3], linetype = "dotted") + ylim(0, 1) +
-      labs(title = paste(idents, "=", lvl),
+      labs(title = paste(idents, "=", l),
            caption = paste0("x cut-offs: ", x.cutoff.caption, "; y cut-offs: ",
                             y.cutoff.caption)) + 
       xlab("Residuals' Mean") + ylab("Switch Point") +
