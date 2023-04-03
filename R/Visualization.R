@@ -868,8 +868,15 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3, topnames = NULL,
   }
   # Check topnames.
   if (!is.null(topnames)) {
-    in.topnames <- toupper(topnames) %in% drugInfo$drugs |
-      tolower(topnames) %in% drugInfo$IDs |
+    info <- drugInfo$IDs %>%
+      dplyr::select(IDs, preferred.drug.names, studies) %>%
+      dplyr::left_join(y = drugInfo$MoAs[, c("IDs", "MoAs")], by = "IDs") %>%
+      dplyr::left_join(y = drugInfo$Targets, by = "IDs") %>%
+      dplyr::left_join(y = drugInfo$Synonyms, by = "IDs") %>%
+      dplyr::mutate(sources = studies) %>%
+      as.data.frame()
+    in.topnames <- toupper(topnames) %in% info$drugs |
+      tolower(topnames) %in% info$IDs |
       toupper(topnames) %in% toupper(rownames(bc@normalized))
     if (all(!in.topnames)) {
       warning('None of the specified topname drugs were found in bc.')
