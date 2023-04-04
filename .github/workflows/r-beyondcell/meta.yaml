@@ -57,7 +57,7 @@ about:
   home: https://github.com/cnio-bu/beyondcell
   license: GPL-3
   summary: Beyondcell is a methodology for the identification of drug vulnerabilities 
-    in single cell RNA-seq data. To this end, Beyondcell focuses on the analysis of drug-related 
+    in single cell RNA-seq and Spatial Transcriptomics data. To this end, Beyondcell focuses on the analysis of drug-related 
     commonalities between cells by classifying them into distinct therapeutic clusters.
   license_file:
     - LICENSE
