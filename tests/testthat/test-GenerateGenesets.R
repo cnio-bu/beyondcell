@@ -1,9 +1,17 @@
+library(tidyverse)
+
 # GMT filepaths.
 correct.gmt.path <- "../testdata/gmt/correct10.gmt"
 correct.gmt.up.path <- "../testdata/gmt/correct10up.gmt"
 correct.gmt.down.path <- "../testdata/gmt/correct10down.gmt"
 duplicated.gmt.path <- "../testdata/gmt/duplicated10.gmt"
 incorrect.mode.gmt.path <- "../testdata/gmt/incorrect_mode10.gmt"
+
+# Duplicated sig
+duplicated.sig <- read.table("../testdata/gmt/special_sigs.tsv", header = TRUE,
+                             sep = "\t") %>%
+  filter(event == "duplicated") %>%
+  pull(sig)
 
 # Test errors.
 testthat::test_that("errors", {
@@ -18,8 +26,8 @@ testthat::test_that("errors", {
   )
   testthat::expect_error(
     GenerateGenesets(duplicated.gmt.path),
-    paste('The GMT file contains duplicated gene set\'s: sig-20988_up,', 
-          'sig-20988_down.')
+    paste0('The GMT file contains duplicated gene set\'s: ', duplicated.sig,
+           '_up, ', duplicated.sig, '_down.')
   )
   testthat::expect_error(
     GenerateGenesets(incorrect.mode.gmt.path),

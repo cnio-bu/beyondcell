@@ -10,7 +10,7 @@ aggregateInfo <- function(x) {
 
 # --- Code ---
 # Maximum n.genes in a collection.
-n.max <- 500
+n.max <- 250
 
 # Filters names.
 filters.names <- c("drugs", "IDs", "MoAs", "targets", "studies")
@@ -43,7 +43,7 @@ testthat::test_that("errors", {
     'n.genes must be a positive integer.'
   )
   testthat::expect_error(
-    GetCollection(SSc, n.genes = 1000),
+    GetCollection(SSc, n.genes = 500),
     paste0('n.genes exceeds the maximum number of genes in signature (',
            n.max, ').'), fixed = TRUE
   )
@@ -115,15 +115,15 @@ testthat::test_that("default values", {
   ### Check that default GetCollection's output is identical to pre-loaded 
   ### collections.
   testthat::expect_equal(
-    GetCollection(PSc, n.genes = 500, include.pathways = FALSE),
+    GetCollection(PSc, n.genes = 250, include.pathways = FALSE),
     PSc
   )
   testthat::expect_equal(
-    GetCollection(SSc, n.genes = 500, include.pathways = FALSE),
+    GetCollection(SSc, n.genes = 250, include.pathways = FALSE),
     SSc
   )
   testthat::expect_equal(
-    GetCollection(DSS, n.genes = 500, include.pathways = FALSE),
+    GetCollection(DSS, n.genes = 250, include.pathways = FALSE),
     DSS
   )
   ### Check that default GetCollection's pathways output is identical to 

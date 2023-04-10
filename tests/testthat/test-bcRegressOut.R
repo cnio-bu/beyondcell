@@ -53,7 +53,7 @@ pbmc.data <- Seurat::Read10X("../testdata/single-cell/", gene.column = 1)
 
 # Seurat object.
 pbmc.raw <- Seurat::CreateSeuratObject(counts = pbmc.data, project = "pbmc80",
-                                       min.cells = 3, min.features = 20)
+                                       min.cells = 0, min.features = 20)
 
 # Normalize.
 pbmc <- Seurat::NormalizeData(pbmc.raw, normalization.method = "LogNormalize",
@@ -127,7 +127,7 @@ gs1 <- GetCollection(SSc, n.genes = 100, mode = c("up", "down"),
                      filters = list(IDs = SSc@info$IDs[1]),
                      include.pathways = FALSE)
 bc1.complete <- bcScore(pbmc, gs = gs1, expr.thres = 0.1)
-bc1 <- bcScore(pbmc, gs = gs1, expr.thres = 0.31)
+bc1 <- bcScore(pbmc, gs = gs1, expr.thres = 0.3)
 
 # Test errors.
 testthat::test_that("errors", {

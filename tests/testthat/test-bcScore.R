@@ -1,3 +1,5 @@
+library(tidyverse)
+
 # --- Functions ---
 # Function to capitalize genes (mouse symbol-like).
 capitalize <- function(x) {
@@ -64,7 +66,7 @@ pbmc.data <- Seurat::Read10X("../testdata/single-cell/", gene.column = 1)
 
 # Seurat object.
 pbmc.raw <- Seurat::CreateSeuratObject(counts = pbmc.data, project = "pbmc80",
-                                       min.cells = 3, min.features = 20)
+                                       min.cells = 0, min.features = 20)
 
 # Normalize.
 pbmc <- Seurat::NormalizeData(pbmc.raw, normalization.method = "LogNormalize",
@@ -79,10 +81,14 @@ Seurat::DefaultAssay(pbmc.fake) <- "ADT"
 mtx <- as.matrix(pbmc@assays$RNA@data)
 
 # Geneset objects.
-gs10 <- GenerateGenesets("../testdata/gmt/correct10.gmt")
-gs10up <- GenerateGenesets("../testdata/gmt/correct10up.gmt")
-gs10down <- GenerateGenesets("../testdata/gmt/correct10down.gmt")
-gs.warning <- GenerateGenesets("../testdata/gmt/score_warning10.gmt")
+gmt.path <- "../testdata/gmt/"
+gs10 <- GenerateGenesets(paste0(gmt.path, "correct10.gmt"))
+gs10up <- GenerateGenesets(paste0(gmt.path, "correct10up.gmt"))
+gs10down <- GenerateGenesets(paste0(gmt.path,"correct10down.gmt"))
+gs.warning.nogenes <- 
+  GenerateGenesets(paste0(gmt.path, "score_warning10_nogenes.gmt"))
+gs.warning.thres <- 
+  GenerateGenesets(paste0(gmt.path, "score_warning10_thres.gmt"))
 
 # Geneset with "mouse" genes.
 gs.mouse <- gs10
@@ -91,10 +97,12 @@ gs.mouse@genelist <- lapply(gs.mouse@genelist, FUN = function(x) {
 })
 gs.mouse@info <- data.frame()
 
-# Geneset with only one signature.
-gs1 <- GetCollection(SSc, n.genes = 100, mode = c("up", "down"),
-                     filters = list(IDs = SSc@info$IDs[1]),
-                     include.pathways = FALSE)
+# Genesets with only one signature.
+gs1.nogenes <- gs.warning.nogenes
+gs1.nogenes@genelist <- gs1.nogenes@genelist[1]
+gs1.thres <- GetCollection(SSc, n.genes = 100, mode = c("up", "down"),
+                           filters = list(IDs = SSc@info$IDs[1]),
+                           include.pathways = FALSE)
 
 # Pathways
 load("../../R/sysdata.rda")
@@ -133,6 +141,13 @@ norm[nan.01 | is.na(norm.up) & is.na(norm.down)] <- NaN
 scaled <- scale.score(norm)
 scaled.up <- scale.score(norm.up)
 scaled.down <- scale.score(norm.down)
+
+# Sig below threshold
+special.sigs <- read.table("../testdata/gmt/special_sigs.tsv", header = TRUE,
+                           sep = "\t") 
+warning.sig <- special.sigs %>%
+  filter(event == "warning") %>%
+  pull(sig)
 
 # Test errors.
 testthat::test_that("errors", {
@@ -174,11 +189,17 @@ testthat::test_that("errors", {
   )
   ### Check that bcScore does not throw any error with only one signature.
   testthat::expect_no_error(
-    bcScore(pbmc, gs = gs1, expr.thres = 0.1)
+    bcScore(pbmc, gs = gs1.thres, expr.thres = 0.1)
+  )
+  ### Check that bcScore throws an error when no signature shares common genes 
+  ### with the expression matrix.
+  testthat::expect_error(
+    bcScore(pbmc, gs = gs1.nogenes, expr.thres = 1),
+    'No common genes between gs and sc were found. Stopping the execution.'
   )
   ### Check that bcScore throws an error when no signature passes the threshold.
   testthat::expect_error(
-    bcScore(pbmc, gs = gs1, expr.thres = 1),
+    bcScore(pbmc, gs = gs1.thres, expr.thres = 1),
     'No cell in any signature passes the expr.thres. Stopping the execution.'
   )
 })
@@ -196,11 +217,18 @@ testthat::test_that("warnings", {
     paste('gs genes are capitalized and sc genes are in uppercase. Please', 
           'check your Seurat object and translate the genes if necessary.')
   )
+  ### Check for signatures that do not share common genes with the expression 
+  ### matrix.
+  testthat::expect_warning(
+    bcScore(pbmc, gs = gs.warning.nogenes),
+    paste0('The following signatures do not share any gene with sc ', 
+           'and will be removed: ', warning.sig, '.'), fixed = TRUE
+  )
   ### Check signatures for which no cells pass the expr.thres.
   testthat::expect_warning(
-    bcScore(pbmc, gs = gs.warning),
-    paste('The following signatures have no cells that pass the expr.thres and',
-          'will be removed: sig-20965.')
+    bcScore(pbmc, gs = gs.warning.thres),
+    paste0('The following signatures have no cells that pass the expr.thres ',
+           'and will be removed: ', warning.sig, '.'), fixed = TRUE
   )
 })
 

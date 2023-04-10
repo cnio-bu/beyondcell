@@ -75,6 +75,20 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
   })
   # Genes in expr.matrix.
   genes <- rownames(expr.matrix)
+  # Filter out signatures that do not share any gene with sc.
+  in.sc <- sapply(gs@genelist, FUN = function(x) {
+    any(genes %in% unlist(x))
+  })
+  if (all(!in.sc)) {
+    stop(paste('No common genes between gs and sc were found.', 
+               'Stopping the execution.'))
+  }
+  else if (any(!in.sc)) {
+    warning(paste0('The following signatures do not share any gene with sc ', 
+                   'and will be removed: ',
+                  paste0(names(gs@genelist)[!in.sc], collapse = ", "), "."))
+    gs@genelist <- gs@genelist[in.sc]
+  }
   # Progress bar.
   len.gs <- length(gs@genelist)
   total <- len.gs + (length(gs@mode) * len.gs)

@@ -1,24 +1,5 @@
-expected_gene_set_names <- c("sig-20988_up",
-"sig-20988_down",
-"sig-20879_up",
-"sig-20879_down",
-"sig-20880_up",
-"sig-20880_dn",
-"SIG-20881_UP",
-"SIG-20881_DOWN",
-"SIG-20882_UP",
-"SIG-20882_DOWN",
-"sig-20883_up",
-"sig-20883_down",
-"sig-20884_up",
-"sig-20884_down",
-"sig-20885_up",
-"sig-20885_down",
-"sig-20886_up",
-"sig-20886_down",
-"sig-20887_up",
-"sig-20887_down"
-)
+expected_gene_set_names <- scan("../testdata/gmt/correct10_names.txt",
+                                what = character())
 
 total_genesets <- length(expected_gene_set_names)
 expected_genes_geneset <- rep(100, times = total_genesets)

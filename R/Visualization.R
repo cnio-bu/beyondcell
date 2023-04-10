@@ -88,8 +88,9 @@ bcClusters <- function(bc, idents, UMAP = "beyondcell", spatial = FALSE,
         warning(paste0('These images were not found in bc: ',
                        paste0(images[!in.images], collapse = ", "), "."))
       }
+      images <- images[in.images]
     }
-  }
+  } else if (spatial) images <- names(bc@SeuratInfo$images)
   # Check factor.col.
   if (length(factor.col) != 1 | !is.logical(factor.col)) {
     stop('factor.col must be TRUE or FALSE.')
@@ -108,8 +109,7 @@ bcClusters <- function(bc, idents, UMAP = "beyondcell", spatial = FALSE,
     if (spatial) {
       if (identical(mfrow, c(1, 1))) scale <- NULL
       else scale <- ggplot2::scale_fill_discrete(drop = FALSE)
-      p <- Seurat::SpatialDimPlot(sc, images = images[in.images], 
-                                  combine = FALSE, ...)
+      p <- Seurat::SpatialDimPlot(sc, images = images, combine = FALSE, ...)
       p <- lapply(seq_along(p), FUN = function(i) {
         suppressMessages(
           p[[i]] + ggplot2::theme_minimal() +
@@ -117,7 +117,7 @@ bcClusters <- function(bc, idents, UMAP = "beyondcell", spatial = FALSE,
                            legend.title = element_blank(), 
                            axis.title = element_blank(), 
                            axis.text = element_blank()) + 
-            ggtitle(images[in.images][i]) + scale
+            ggtitle(images[i]) + scale
         )
       })
     } else {
@@ -134,15 +134,14 @@ bcClusters <- function(bc, idents, UMAP = "beyondcell", spatial = FALSE,
         scale <- ggplot2::scale_fill_gradientn(colours = SpatialColors(n = 100),
                                                limits = c(min(values), max(values)))
       }
-      p <- Seurat::SpatialFeaturePlot(sc, features = idents, 
-                                      images = images[in.images], 
+      p <- Seurat::SpatialFeaturePlot(sc, features = idents, images = images, 
                                       combine = FALSE, ...)
       p <- lapply(seq_along(p), FUN = function(i) {
         suppressMessages(
           p[[i]] + 
             ggplot2::theme(plot.title = element_text(face = "bold", hjust = 0.5),
                            legend.position = "right") + 
-            ggtitle(images[in.images][i]) + scale
+            ggtitle(images[i]) + scale
         )
       })
     } else {
@@ -230,7 +229,7 @@ bcHistogram <- function(bc, signatures, idents = NULL) {
   # Metadata levels.
   lvls <- levels(as.factor(meta))
   # Subset bc to the selected signatures.
-  sub.bc <- bc@data[signatures[in.signatures], , drop = FALSE]
+  sub.bc <- bc@normalized[signatures[in.signatures], , drop = FALSE]
   # Get maximum and minimum normalized BCS (for common x axis in all plots).
   limits <- c(min(as.vector(sub.bc), na.rm = TRUE),
               max(as.vector(sub.bc), na.rm = TRUE))
@@ -413,8 +412,9 @@ bcSignatures <- function(bc, UMAP = "beyondcell", spatial = FALSE,
         warning(paste0('These images were not found in bc: ',
                        paste0(images[!in.images], collapse = ", "), "."))
       }
+      images <- images[in.images]
     }
-  }
+  } else if (spatial) images <- names(bc@SeuratInfo$images)
   # Check signatures' list values.
   default.sigs <- list(values = NULL, colorscale = NULL, alpha = 0.7,
                        na.value = "grey", limits = c(0, 1), center = NULL,
@@ -678,7 +678,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell", spatial = FALSE,
       }
       ### Plot.
       if (spatial) {
-        fp <- Seurat::SpatialFeaturePlot(sc, combine = FALSE, images = images[in.images],
+        fp <- Seurat::SpatialFeaturePlot(sc, combine = FALSE, images = images,
                                          features = gsub(pattern = "_", replacement = "-", 
                                                          x = y), ...)
         fp <- lapply(seq_along(fp), FUN = function(i) {
@@ -687,7 +687,7 @@ bcSignatures <- function(bc, UMAP = "beyondcell", spatial = FALSE,
                                      legend.text = element_text(size = 8, face = "bold"),
                                      legend.key.height = unit(1, "cm"), 
                                      legend.position = "right") + 
-              ggplot2::labs(title = paste0(images[in.images][i], ": ", title), 
+              ggplot2::labs(title = paste0(images[i], ": ", title), 
                             subtitle = subtitle) + colors + switchpoint
           )
         })
@@ -775,7 +775,7 @@ bcCellCycle <- function(bc, signatures) {
   # For each signature...
   p <- lapply(signatures[in.signatures], function(x) {
     ### Data frame of normalized BCS and phase metadata.
-    sub.df <- na.omit(data.frame(bcscore = bc@data[x, cells],
+    sub.df <- na.omit(data.frame(bcscore = bc@normalized[x, cells],
                                  phase = bc@meta.data[cells, "Phase"],
                                  row.names = cells))
     ### Drug name and MoA.
@@ -851,7 +851,7 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3, topnames = NULL,
   }
   # Check lvl.
   if (is.null(lvl)) {
-    lvl <- unique(bc@meta.data[, idents])
+    lvl <- levels(as.factor(bc@meta.data[, idents]))
     in.lvl <- rep(TRUE, times = length(lvl))
   } else {
     in.lvl <- lvl %in% unique(bc@meta.data[, idents])
@@ -868,8 +868,15 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3, topnames = NULL,
   }
   # Check topnames.
   if (!is.null(topnames)) {
-    in.topnames <- toupper(topnames) %in% drugInfo$drugs |
-      tolower(topnames) %in% drugInfo$IDs |
+    info <- drugInfo$IDs %>%
+      dplyr::select(IDs, preferred.drug.names, studies) %>%
+      dplyr::left_join(y = drugInfo$MoAs[, c("IDs", "MoAs")], by = "IDs") %>%
+      dplyr::left_join(y = drugInfo$Targets, by = "IDs") %>%
+      dplyr::left_join(y = drugInfo$Synonyms, by = "IDs") %>%
+      dplyr::mutate(sources = studies) %>%
+      as.data.frame()
+    in.topnames <- toupper(topnames) %in% info$drugs |
+      tolower(topnames) %in% info$IDs |
       toupper(topnames) %in% toupper(rownames(bc@normalized))
     if (all(!in.topnames)) {
       warning('None of the specified topname drugs were found in bc.')
@@ -1019,7 +1026,7 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3, topnames = NULL,
       geom_hline(yintercept = y.cutoff[1], linetype = "dotted") +
       geom_hline(yintercept = y.cutoff[2], linetype = "dotted") +
       geom_hline(yintercept = y.cutoff[3], linetype = "dotted") + ylim(0, 1) +
-      labs(title = paste(idents, "=", lvl),
+      labs(title = paste(idents, "=", l),
            caption = paste0("x cut-offs: ", x.cutoff.caption, "; y cut-offs: ",
                             y.cutoff.caption)) + 
       xlab("Residuals' Mean") + ylab("Switch Point") +
