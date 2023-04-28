@@ -69,9 +69,9 @@ and apoptosis. PSc and SSc can also be filtered according to several values.
 
 ```r
 # Generate geneset object with one of the ready to use signature collections.
-gs <- GenerateGenesets(PSc)
+gs <- GetCollection(PSc)
 # You can deactivate the functional pathways option if you are not interested in evaluating them.
-nopath <- GenerateGenesets(PSc, include.pathways = FALSE)
+nopath <- GetCollection(PSc, include.pathways = FALSE)
 ```
 
 Moreover, Beyondcell allows the user to input a GMT file containing the functional 
@@ -80,12 +80,12 @@ criteria such as the t-statistic or logFoldChange. If x is a path to a GMT file,
 
 ```r
 # Generate geneset object with a custom GMT file. For direct comparisons:
-gs <- GenerateGenesets(x = "path_to_gmt", comparison = "treated_vs_control")
+gs <- GenerateGenesets(x = "path_to_gmt")
 # For indirect comparisons (the signatures will be reversed):
-gs <- GenerateGenesets(x = "path_to_gmt", comparison = "sensitive_vs_resistant")
+gs <- GenerateGenesets(x = "path_to_gmt", perform.reversal = TRUE)
 ```
 
-<!-- For further information please check [GenerateGenesets](https://gitlab.com/bu_cnio/Beyondcell/-/tree/master/tutorial/GenerateGenesets) tutorial. -->
+<!-- For further information please check [GenerateGenesets](https://github.com/cnio-bu/beyondcell/-/tree/master/tutorial/GenerateGenesets) tutorial. -->
 
 #### Compute the BCS
 ```r
