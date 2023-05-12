@@ -37,6 +37,7 @@ analysis with Beyondcell.
 library("beyondcell")
 library("Seurat")
 set.seed(1)
+path_to_sc <- "~/Downloads/seurat_clusters.rds"
 # Read single-cell experiment.
 sc <- readRDS(path_to_sc)
 ```
@@ -80,12 +81,10 @@ criteria such as the t-statistic or logFoldChange. If x is a path to a GMT file,
 
 ```r
 # Generate geneset object with a custom GMT file. For direct comparisons:
-gs <- GenerateGenesets(x = "path_to_gmt")
+custom <- GenerateGenesets(x = "path_to_file.gmt")
 # For indirect comparisons (the signatures will be reversed):
-gs <- GenerateGenesets(x = "path_to_gmt", perform.reversal = TRUE)
+custom_reversed <- GenerateGenesets(x = "path_to_file.gmt", perform.reversal = TRUE)
 ```
-
-<!-- For further information please check [GenerateGenesets](https://github.com/cnio-bu/beyondcell/-/tree/master/tutorial/GenerateGenesets) tutorial. -->
 
 #### Compute the BCS
 ```r
@@ -113,9 +112,9 @@ computation.
 
 ```r
 # Run the UMAP reduction. 
-bc <- bcUMAP(bc, k.neighbors = 4, res = 0.2, method = "umap-learn")
+bc <- bcUMAP(bc, k.neighbors = 4, res = 0.2)
 # Run the bcUMAP function again, specifying the number of principal components you want to use.
-bc <- bcUMAP(bc, pc = 10, k.neighbors = 4, res = 0.2, method = "umap-learn")
+bc <- bcUMAP(bc, pc = 10, k.neighbors = 4, res = 0.2)
 ```
 
 **Check clustering**\
@@ -131,13 +130,13 @@ recommend checking these sources of variation among others:
 
 ```r
 # Visualize whether the cells are clustered based on the number of genes detected per each cell.
-bcClusters(bc, UMAP = "beyondcell", idents = "nFeature_RNA", factor.col = FALSE)
+bcClusters(bc, UMAP = "beyondcell", idents = "nFeature_RNA", factor.col = FALSE, pt.size = 1.5)
 ```
 <img src=".img/nFeature_variation.png" width="500">
 
 ```r
 # Visualize whether the cells are clustered based on their cell cycle status.
-bcClusters(bc, UMAP = "beyondcell", idents = "Phase", factor.col = TRUE)
+bcClusters(bc, UMAP = "beyondcell", idents = "Phase", factor.col = TRUE, pt.size = 1.5)
 ```
 <img src=".img/Phase_variation.png" width="500">
 
@@ -163,11 +162,11 @@ sample.
 
 ```r
 # Recompute the UMAP.
-bc <- bcUMAP(bc, pc = 10, k.neighbors = 20, res = 0.2, method = "umap-learn")
+bc <- bcUMAP(bc, pc = 10, k.neighbors = 20, res = 0.2)
 # Visualize the UMAP.
-bcClusters(bc, UMAP = "beyondcell", idents = "nFeature_RNA", factor.col = FALSE)
+bcClusters(bc, UMAP = "beyondcell", idents = "nFeature_RNA", factor.col = FALSE, pt.size = 1.5)
 # Visualize the therapeutic clusters.
-bcClusters(bc, UMAP = "beyondcell", idents = "bc_clusters_res.0.2")
+bcClusters(bc, UMAP = "beyondcell", idents = "bc_clusters_res.0.2", pt.size = 1.5)
 ```
 
 <p float="left">

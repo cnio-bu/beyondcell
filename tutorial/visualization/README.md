@@ -29,7 +29,7 @@ the number of features per cell or the cell cycle phase can be analyzed with
 
 ```r
 # Beyondcell UMAP.
-bcClusters(bc, UMAP = "beyondcell", idents = "bc_clusters_res.0.2")
+bcClusters(bc, UMAP = "beyondcell", idents = "bc_clusters_res.0.2", pt.size = 1.5)
 ```
 <img src=".img/bc_clusters.png" width="500">
 
@@ -46,7 +46,7 @@ detect the location of the TCs in the *original* expression UMAP.
 
 ```r
 # Expression UMAP.
-bcClusters(bc, UMAP = "Seurat", idents = "seurat_clusters")
+bcClusters(bc, UMAP = "Seurat", idents = "seurat_clusters", pt.size = 1.5)
 ```
 <img src=".img/seurat_clusters.png" width="500">
 
@@ -65,14 +65,14 @@ FindDrugs(bc, "BORTEZOMIB")
 
 |original.names|bc.names|preferred.drug.names|drugs|IDs|preferred.and.sigs|MoAs|
 |---------------|---------|-------------|------|--------|-----------|---------------| 
-|BORTEZOMIB|sig_1866|BORTEZOMIB|BORTEZOMIB|sig_1866|BORTEZOMIB (sig_1866)|NFKB PATHWAY INHIBITOR, PROTEASOME INHIBITOR|
-|BORTEZOMIB|sig_18868|BORTEZOMIB|BORTEZOMIB|sig_18868|BORTEZOMIB (sig_18868)|NFKB PATHWAY INHIBITOR, PROTEASOME INHIBITOR|
-|BORTEZOMIB|sig_20842|BORTEZOMIB|BORTEZOMIB|sig_20842|BORTEZOMIB (sig_20842)|NFKB PATHWAY INHIBITOR, PROTEASOME INHIBITOR|
+|BORTEZOMIB|sig-1866|BORTEZOMIB|BORTEZOMIB|sig-1866|BORTEZOMIB (sig-1866)|NFKB PATHWAY INHIBITOR, PROTEASOME INHIBITOR|
+|BORTEZOMIB|sig-18868|BORTEZOMIB|BORTEZOMIB|sig-18868|BORTEZOMIB (sig-18868)|NFKB PATHWAY INHIBITOR, PROTEASOME INHIBITOR|
+|BORTEZOMIB|sig-20842|BORTEZOMIB|BORTEZOMIB|sig-20842|BORTEZOMIB (sig-20842)|NFKB PATHWAY INHIBITOR, PROTEASOME INHIBITOR|
 
 Then, we run `bcSignatures` using the `IDs` of the drug.
 
 ```r
-bcSignatures(bc, UMAP = "beyondcell", signatures = list(values = "sig_18868"), pt.size = 1.5)
+bcSignatures(bc, UMAP = "beyondcell", signatures = list(values = "sig-18868"), pt.size = 1.5)
 ```
 <img src=".img/bortezomib_signature_18868.png" width="500">
 
@@ -95,7 +95,7 @@ We can also take a look at the behaviour of specific gene expression markers,
 such a *PSMA5*, a gene targeted by bortezomib.
 
 ```r
-bcSignatures(bc, UMAP = "beyondcell", genes = list(values = "PSMA5"))
+bcSignatures(bc, UMAP = "beyondcell", genes = list(values = "PSMA5"), pt.size = 1.5)
 ```
 <img src=".img/psma5_expr.png" width="500">
 
@@ -129,13 +129,13 @@ for specific signatures.
 
 ```r
 # General view.
-bcHistogram(bc, signatures = "sig_18868", idents = NULL)
+bcHistogram(bc, signatures = "sig-18868", idents = NULL)
 ```
 <img src=".img/bortezomib_histogram_gral.png" width="500">
 
 ```r
 # Condition-based histograms.
-bcHistogram(bc, signatures = "sig_18868", idents = "condition")
+bcHistogram(bc, signatures = "sig-18868", idents = "condition")
 ```
 <img src=".img/bortezomib_histogram.png" width="500">
 
@@ -145,7 +145,7 @@ depending on the cell cycle phase. This aims to help the user understand the
 effect that the cell cycle is having on the predicted drug response.
 
 ```r
-bcCellCycle(bc, signatures = "sig_18868")
+bcCellCycle(bc, signatures = "sig-18868")
 ```
 <img src=".img/cellcycle.png" width="500">
 
