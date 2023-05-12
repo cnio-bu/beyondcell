@@ -38,16 +38,13 @@ status.
 
 ## Installing Beyondcell
 The Beyondcell algorithm is implemented in R (v. 4.0.0 or greater). We recommend 
-running the installation via conda: 
+running the installation via mamba: 
 
 ```r
 # Create a conda environment.
 conda create -n beyondcell 
 # Activate the environment.
 conda activate beyondcell
-# Install mamba and downgrade python to 3.6 (in order to use umap-learn).
-conda install -c conda-forge mamba=0.17.0
-mamba install python=3.6
 # Install Beyondcell package and dependencies.
 mamba install -c bioconda r-beyondcell
 ```
