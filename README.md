@@ -46,7 +46,7 @@ conda create -n beyondcell
 # Activate the environment.
 conda activate beyondcell
 # Install Beyondcell package and dependencies.
-mamba install -c bioconda r-beyondcell
+mamba install -c bu_cnio r-beyondcell
 ```
 
 ## Results
