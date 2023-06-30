@@ -1,20 +1,18 @@
 #' @title Ranks the signatures from most sensitive to least sensitive
 #' @description  This function computes the beyondcell score's (BCS) statistics
-#' of each signature and ranks them according to the switch point and mean.
+#' of each signature and ranks them according to the switch point and 
+#' residual's mean.
 #' @name bcRanks
 #' @importFrom dplyr left_join
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
-#' @param idents Name of the metadata column of interest. If
-#' \code{idents = NULL}, the function computes the ranks using all cells. If
-#' \code{idents != NULL}, the signatures' ranks are computed for each level in
-#' \code{idents}.
+#' @param idents Name of the metadata column of interest. The signatures' ranks 
+#' are computed for each level in \code{idents}.
 #' @param extended If \code{extended = TRUE}, this function returns the switch
 #' point, mean, median, standard deviation, variance, min, max, proportion of
 #' \code{NaN} and residuals' mean per signature. If \code{extended = FALSE},
 #' this function returns only the switch point, mean and residuals' mean.
 #' @return A \code{beyondcell} object with the results in a new entry of
-#' \code{bc@@ranks}: \code{bc@@ranks[["general"]]} (if \code{idents = NULL}) or
-#' \code{bc@@ranks[[idents]]} (if \code{idents != NULL}).
+#' \code{bc@@ranks}.
 #' @examples
 #' @export
 
