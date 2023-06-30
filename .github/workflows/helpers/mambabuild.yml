@@ -7,3 +7,5 @@ channels:
 
 dependencies:
   - boa
+
+channel_priority: strict
