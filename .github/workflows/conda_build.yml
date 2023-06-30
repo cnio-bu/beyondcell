@@ -2,9 +2,9 @@ name: conda_build
 
 on:
   push:
-    branches: [master, development]
+    branches: [master, development, workflow]
   pull_request:
-    branches:  [master, development]
+    branches:  [master, development, workflow]
 
 
 env:
@@ -51,8 +51,8 @@ jobs:
         shell: bash -l {0}
         run: |
           conda activate bc_builds
-          mamba install r-hdf5r
-          mamba install r-devtools
+          mamba install r-hdf5r -y
+          mamba install r-devtools -y
           Rscript --vanilla ./.github/workflows/helpers/call_tests.R
 
       - name: Archive package test results
