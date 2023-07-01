@@ -52,7 +52,7 @@ jobs:
         run: |
           conda activate bc_builds
           mamba install -c conda-forge r-hdf5r
-          mamba install r-devtools
+          mamba install -c conda-forge r-devtools
           Rscript --vanilla ./.github/workflows/helpers/call_tests.R
 
       - name: Archive package test results
