@@ -3,7 +3,8 @@
 #' of each signature and ranks them according to the switch point and 
 #' residual's mean.
 #' @name bcRanks
-#' @importFrom dplyr left_join
+#' @import tidyverse
+#' @importFrom data.table frank
 #' @param bc \code{\link[beyondcell]{beyondcell}} object.
 #' @param idents Name of the metadata column of interest. The signatures' ranks 
 #' are computed for each level in \code{idents}.
@@ -34,9 +35,7 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE) {
       stop('Idents not found.')
     }
   } else {
-    if ("general" %in% names(bc@ranks)) {
-      warning('$general already exists in bc@ranks. Entry has been overwritten.')
-    }
+    stop("You must supply the name of a metadata column to group by.")
   }
   # Check extended.
   if (length(extended) != 1 | !is.logical(extended[1])) {
@@ -45,130 +44,138 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE) {
   # --- Code ---
   # Signatures in bc.
   sigs <- rownames(bc@normalized)
-  n.rows <- length(sigs)
   # Cells in bc.
   cells <- colnames(bc@normalized)
-  # Extended.
-  if (extended) n <- 6
-  else n <- 1
-  # Statistics for all normalized BCS.
-  if (is.null(idents)) {
-    # Progress bar.
-    total <- n.rows * n
-    pb <- txtProgressBar(min = 0, max = total, style = 3, file = stderr())
-    # Name of the output.
-    idents <- "general"
-    # Column to order by.
-    order.col <- "rank"
-    # Get Statistics dataframe.
-    final.stats <- GetStatistics(bc = bc, signatures = sigs, cells = cells,
-                                 pb = pb, total = total, i = 1, n.rows = n.rows,
-                                 extended = extended)
-    # Add rank.
-    sig.order <- order(-1 * final.stats$switch.point, final.stats$mean,
-                       decreasing = TRUE)
-    final.stats$rank[sig.order] <- 1:nrow(final.stats)
-    # Reorder columns.
-    final.stats <- final.stats[c("rank", colnames(final.stats)[-ncol(final.stats)])]
+  # Keep column to group by.
+  meta <- bc@meta.data %>%
+    rownames_to_column("cells") %>%
+    select(cells, all_of(idents)) %>%
+    rename(group.var := !!idents) %>%
+    mutate(group.var = factor(group.var)) %>%
+    unique()
+  lvls <- levels(meta$group.var)
+  # Column to order by.
+  order.col <- paste0("rank.", levels(meta$group.var)[1])
+  # Final column order.
+  if (extended) {
+    cols.additional <- c("median", "sd", "variance", "min", "max", "prop.na")
   } else {
-    # Metadata levels.
-    lvls <- levels(as.factor(meta))
-    # Progress bar.
-    total <- n.rows * n * length(lvls)
-    pb <- txtProgressBar(min = 0, max = total, style = 3, file = stderr())
-    # Column to order by.
-    order.col <- paste0("rank.", lvls[1])
-    # For each level...
-    stats <- lapply(seq_along(lvls), function(i) {
-      ### Cells belonging to that level.
-      group.cells <- rownames(bc@meta.data)[row.names(bc@meta.data) %in% cells &
-                                              bc@meta.data[, idents] == lvls[i]]
-      group.cells <- group.cells[!is.na(group.cells)]
-      ### Subset bc with group.cells.
-      sub.bc <- bc
-      sub.bc@regression <- list(order = rep("", 2), vars = NULL,
-                                order.background = rep("", 2))
-      sub.bc@background <- matrix(ncol = 0, nrow = 0)
-      sub.bc <- suppressWarnings(suppressMessages(
-        bcSubset(sub.bc, cells = group.cells)))
-      ### Get Statistics dataframe.
-      out <- GetStatistics(bc = sub.bc, signatures = sigs, cells = group.cells,
-                           pb = pb, total = total, i = i, n.rows = n.rows,
-                           extended = extended)
-      ### Add 4squares group annotation.
-      # Get info about drugs (their corresponding name in bc, the preferred name
-      # used by beyondcell and the MoA).
-      info <- FindDrugs(sub.bc, x = rownames(sub.bc@scaled), na.rm = FALSE)
-      # Get dataset switch points.
-      sp <- data.frame(switch.point = bc@switch.point[info$bc.names],
-                       row.names = info$bc.names)
-      # Subset residuals' means and switch points.
-      res <- out[, "residuals.mean", drop = FALSE]
-      df <- transform(merge(res, sp, by = 0), row.names = Row.names, Row.names = NULL)
-      # Residual's deciles.
-      res.decil <- quantile(as.numeric(out$residuals.mean), 
-                            prob = seq(from = 0, to = 1, length = 11))
-      # Group annotation.
-      sp_lower_01 <- as.numeric(df$switch.point) < 0.1
-      sp_lower_06 <- as.numeric(df$switch.point) < 0.6
-      sp_higher_04 <- as.numeric(df$switch.point) > 0.4
-      sp_higher_09 <- as.numeric(df$switch.point) > 0.9
-      res_lower_10 <- as.numeric(df$residuals.mean) < res.decil[["10%"]]
-      res_higher_90 <- as.numeric(df$residuals.mean) > res.decil[["90%"]]
-      df$group <- rep("", times = nrow(df))
-      df$group[sp_lower_01 & res_higher_90] <- "TOP-HighSensitivity"
-      df$group[sp_higher_09 & res_lower_10] <- "TOP-LowSensitivity"
-      df$group[sp_higher_04 & sp_lower_06 & res_lower_10] <- "TOP-Differential-LowSensitivity"
-      df$group[sp_higher_04 & sp_lower_06 & res_higher_90] <- "TOP-Differential-HighSensitivity"
-      # Add to dataframe.
-      out$group <- df$group
-      ### Add rank.
-      sig.order <- order(-1 * out$switch.point, out$mean, decreasing = TRUE)
-      out$rank[sig.order] <- 1:nrow(out)
-      ### Reorder columns.
-      out <- out[c("rank", colnames(out)[-ncol(out)])]
-      ### Add level suffix to colnames.
-      colnames(out) <- paste0(colnames(out), ".", lvls[i])
-      return(out)
-    })
-    # Merge dataframes of all levels.
-    final.stats <- do.call(what = cbind.data.frame, args = stats)
+    cols.additional <- NULL
   }
+  cols.druginfo <- c("drugs", "preferred.drug.names", "MoAs", "targets", 
+                     "studies")
+  cols.stats <- c("rank", "switch.point", "mean", cols.additional, 
+                  "residuals.mean", "group")
+  cols.stats.level <- expand_grid(lvls, cols.stats) %>%
+    mutate(col.name = paste(cols.stats, lvls, sep = ".")) %>%
+    pull(col.name)
+  # Get switch points.
+  sp <- data.frame(switch.point = bc@switch.point) %>%
+    rownames_to_column("IDs")
+  # Compute long normalized BCS.
+  normalized.long <- bc@normalized %>%
+    t() %>%
+    as.data.frame() %>%
+    rownames_to_column("cells") %>%
+    pivot_longer(cols = all_of(sigs), names_to = "IDs", 
+                 values_to = "enrichment", values_drop_na = FALSE)
+  # Add grouping information and switch point.
+  normalized.long <- normalized.long %>%
+    dplyr::inner_join(sp, by = "IDs") %>%
+    dplyr::inner_join(meta, by = "cells")
+  # Compute mean BCS and residual's mean per signature.
+  stats.long <- normalized.long %>%
+    group_by(IDs) %>%
+    mutate(mean = round(mean(enrichment), 2)) %>%
+    do(data.frame(., resid = residuals(lm(enrichment ~ group.var, data = .)))) %>%
+    group_by(IDs, group.var) %>%
+    mutate(residuals.mean = mean(resid, na.rm = TRUE)) %>%
+    ungroup()
+  # If extended == TRUE, compute the median, standard deviation, variance, min, 
+  # max and proportion of NaNs per signature.
+  if (extended) {
+    stats.long <- stats.long %>%
+      group_by(IDs) %>%
+      mutate(median = round(median(enrichment, na.rm = TRUE), digits = 2),
+             sd = round(sd(enrichment, na.rm = TRUE), digits = 2),
+             variance = round(var(enrichment, na.rm = TRUE), digits = 2),
+             min = round(min(enrichment, na.rm = TRUE), digits = 2),
+             max = round(max(enrichment, na.rm = TRUE), digits = 2),
+             prop.na = round(sum(is.na(enrichment))/length(cells), digits = 2)) %>%
+      ungroup()
+  }
+  # Residual's deciles.
+  res.decil <- stats.long %>%
+    group_by(group.var) %>%
+    group_modify(~as.data.frame(t(quantile(.$residuals.mean, c(0.1, 0.9))))) %>%
+    ungroup()
+  colnames(res.decil)[2:3] <- c("P10", "P90")
+  stats.long <- stats.long %>%
+    inner_join(res.decil, by = "group.var") %>%
+    select(-cells, -enrichment, -resid) %>%
+    unique()
+  # Group annotation.
+  stats.long.annotated <- stats.long %>%
+    mutate(group = case_when(switch.point < 0.1 & residuals.mean > P90 ~ 
+                               "TOP-HighSensitivity",
+                             switch.point > 0.9 & residuals.mean < P10 ~ 
+                               "TOP-LowSensitivity",
+                             switch.point > 0.4 & switch.point < 0.6 &
+                               residuals.mean < P10 ~ 
+                               "TOP-Differential-LowSensitivity",
+                             switch.point > 0.4 & switch.point < 0.6 & 
+                               residuals.mean > P90 ~ 
+                               "TOP-Differential-HighSensitivity",
+                             TRUE ~ NA_character_))
+  # Order.
+  rank <- stats.long.annotated %>%
+    mutate(in.range = switch.point > 0.4 & switch.point < 0.6,
+           sp.rank = switch.point * as.numeric(in.range)) %>%
+    select(IDs, group.var, sp.rank, residuals.mean, in.range) %>%
+    unique() %>%
+    group_split(group.var)
+  rank <- lapply(rank, FUN = function(x) {
+    dt <- as.data.table(x)
+    dt[, rank := data.table::frank(dt, -sp.rank, -residuals.mean, 
+                                   ties.method = "dense")]
+    return(dt)
+  }) %>%
+    bind_rows() %>%
+    mutate(rank = if_else(in.range, rank, NA_integer_)) %>%
+    select(IDs, group.var, rank) %>%
+    unique()
+  stats.long.ranked <- stats.long.annotated %>%
+    inner_join(rank, by = c("IDs", "group.var"))
+  # Pivot wider
+  final.stats <- stats.long.ranked %>%
+    select(IDs, group.var, all_of(cols.stats)) %>%
+    unique() %>%
+    pivot_wider(names_from = group.var, values_from = all_of(cols.stats),
+                names_sep = ".")
   # Add Drug name and MoA to final.stats.
-  cols <- colnames(final.stats)
-  info <- subset(
-    drugInfo[["IDs"]],
-    subset = drugInfo[["IDs"]]$IDs %in% rownames(final.stats)
-    )
-  
-  info <- info %>%
-    dplyr::select(IDs, preferred.drug.names, studies) %>%
-    dplyr::left_join(y = drugInfo$MoAs[, c("IDs", "MoAs")], by = "IDs") %>%
-    dplyr::left_join(y = drugInfo$Targets, by = "IDs") %>%
-    dplyr::left_join(y = drugInfo$Synonyms, by = "IDs") %>%
-    dplyr::mutate(
-      sources = studies
-    ) %>%
-    as.data.frame()
-
+  info <- drugInfo$IDs %>%
+    filter(IDs %in% final.stats$IDs) %>%
+    select(IDs, preferred.drug.names, studies) %>%
+    dplyr::left_join(y = drugInfo$MoAs[, c("IDs", "MoAs")], by = "IDs",
+                     relationship = "many-to-many") %>%
+    dplyr::left_join(y = drugInfo$Targets, by = "IDs",
+                     relationship = "many-to-many") %>%
+    dplyr::left_join(y = drugInfo$Synonyms, by = "IDs",
+                     relationship = "many-to-many")
   if (dim(info)[1] > 0) {
     info <- aggregate(.~ IDs, data = info, na.action = NULL, FUN = function(x) {
       paste(na.omit(unique(x)), collapse = "; ")
     })
   }
-  rownames(info) <- info$IDs
-  info <- info[, c("drugs", "preferred.drug.names", "MoAs", "targets", "studies")]
-  final.stats <- transform(merge(final.stats, info, by = 0, all.x = TRUE),
-                           row.names = Row.names, Row.names = NULL)
+  final.stats <- final.stats %>%
+    inner_join(info, by = "IDs") %>%
+    column_to_rownames("IDs") %>%
+    unique()
   # Order by rank and reorder columns.
   final.stats <- final.stats[order(final.stats[, order.col], decreasing = FALSE),
-                             c("drugs", "preferred.drug.names", "MoAs",
-                               "targets", "studies", cols)]
+                             c(cols.druginfo, cols.stats.level)]
   # Add to beyondcell object.
   bc@ranks[[idents]] <- final.stats
-  # Close the progress bar.
-  Sys.sleep(0.1)
-  close(pb)
   return(bc)
 }
 
