@@ -144,13 +144,15 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE,
   Sys.sleep(0.1)
   setTxtProgressBar(pb, value = 20)
   # Compute mean BCS and residual's mean per signature.
-  stats.long <- normalized.long %>%
-    group_by(IDs) %>%
-    mutate(mean = round(mean(enrichment), 2)) %>%
-    do(data.frame(., resid = residuals(lm(enrichment ~ group.var, data = .)))) %>%
-    group_by(IDs, group.var) %>%
-    mutate(residuals.mean = mean(resid, na.rm = TRUE)) %>%
-    ungroup()
+  invisible(capture.output(
+    stats.long <- normalized.long %>%
+      group_by(IDs) %>%
+      mutate(mean = round(mean(enrichment), 2)) %>%
+      do(data.frame(., resid = residuals(lm(enrichment ~ group.var, data = .)))) %>%
+      group_by(IDs, group.var) %>%
+      mutate(residuals.mean = mean(resid, na.rm = TRUE)) %>%
+      ungroup()
+  ))
   Sys.sleep(0.1)
   setTxtProgressBar(pb, value = 35)
   # If extended == TRUE, compute the median, standard deviation, variance, min, 
