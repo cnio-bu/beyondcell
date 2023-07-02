@@ -1,7 +1,13 @@
 #' @title Ranks the signatures from most sensitive to least sensitive
 #' @description  This function computes the beyondcell score's (BCS) statistics
-#' of each signature and ranks them according to the switch point and 
-#' residual's mean.
+#' of each signature and ranks them according to the residual's mean and the 
+#' switch point. The signatures that pass the thresholds (see Details) are 
+#' labelled as "TOP-LowSensitivity" or "TOP-HighSensitivity" (drugs to which 
+#' all selected cells are least/most sensitive, respectively) or 
+#' "TOP-Differential-LowSensitivity" and  "TOP-Differential-HighSensitivity" 
+#' (drugs to which the cells of a specific cluster are differentially 
+#' insensitive or sensitive when compared to the other clusters). These groups 
+#' correspond to the quadrants drawn by \code{\link[beyondcell]{bc4Squares}}.
 #' @name bcRanks
 #' @import tidyverse
 #' @importFrom data.table frank
@@ -12,12 +18,35 @@
 #' point, mean, median, standard deviation, variance, min, max, proportion of
 #' \code{NaN} and residuals' mean per signature. If \code{extended = FALSE},
 #' this function returns only the switch point, mean and residuals' mean.
+#' @param resm.cutoff Numeric vector with the 2 desired residuals' mean cut-offs.
+#' @param sp.cutoff Numeric vector with the 4 desired switch point cut-offs.
+#' @details This function categorizes the signatures into 5 groups according to
+#' the chosen residuals' mean (\code{resm.cutoff}) and switch point 
+#' (\code{sp.cutoff}) cut-offs:
+#' 
+#' \itemize{
+#' \item{TOP-LowSensitivity: signatures with a switch point > 
+#' \code{max(sp.cutoff)} and a residuals' mean < \code{min(resm.cutoff)}.}
+#' \item{TOP-HighSensitivity: signatures with a switch point < 
+#' \code{min(sp.cutoff)} and a residuals' mean > \code{max(resm.cutoff)}.}
+#' \item{TOP-Differential-LowSensitivity: signatures with a switch point 
+#' between \code{sp.cutoff[2]} and \code{sp.cutoff[3]} and a residuals' mean <
+#' \code{min(resm.cutoff)}.}
+#' \item{TOP-Differential-HighSensitivity: signatures with a switch point 
+#' between \code{sp.cutoff[2]} and \code{sp.cutoff[3]} and a residuals' mean >
+#' \code{max(resm.cutoff)}.}
+#' \item{\code{NA}: signatures that do not meet the previous criteria.}
+#' }
+#' Default residuals' mean cut-offs: first and last deciles; default switch 
+#' point cut-offs: 0.1, 0.4, 0.6 and 0.9.
 #' @return A \code{beyondcell} object with the results in a new entry of
 #' \code{bc@@ranks}.
 #' @examples
 #' @export
 
-bcRanks <- function(bc, idents = NULL, extended = TRUE) {
+bcRanks <- function(bc, idents = NULL, extended = TRUE, 
+                    resm.cutoff = c(0.1, 0.9), 
+                    sp.cutoff = c(0.1, 0.4, 0.6, 0.9)) {
   # Check that bc is a beyondcell object.
   if (class(bc) != "beyondcell") stop('bc must be a beyondcell object.')
   # Check idents.
@@ -40,6 +69,28 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE) {
   # Check extended.
   if (length(extended) != 1 | !is.logical(extended[1])) {
     stop('extended must be TRUE or FALSE.')
+  }
+  # Check resm.cutoff.
+  if (length(resm.cutoff) != 2 | !is.numeric(resm.cutoff)) {
+    stop('resm.cutoff must be a numeric vector of length 2.')
+  }
+  if (resm.cutoff[2] < resm.cutoff[1]) {
+    warning(paste('Upper residuals\' mean cut-off is smaller than lower', 
+                  'residuals\' mean cut-off. Sorting residuals\' mean cut-offs', 
+                  'in increasing order.'))
+    resm.cutoff <- sort(resm.cutoff, decreasing = FALSE)
+  }
+  # Check sp.cutoff.
+  if (length(sp.cutoff) != 4 | !is.numeric(sp.cutoff)) {
+    stop('sp.cutoff must be a numeric vector of length 4.')
+  }
+  if (any(sp.cutoff < 0 | sp.cutoff > 1)) {
+    stop('sp.cutoff must contain 4 switch point values between 0 and 1.')
+  }
+  sorted.sp.cutoff <- sort(sp.cutoff, decreasing = FALSE)
+  if (!identical(sp.cutoff, sorted.sp.cutoff)) {
+    warning(paste('Sorting switch point cut-offs in increasing order.'))
+    sp.cutoff <- sorted.sp.cutoff
   }
   # --- Code ---
   # Signatures in bc.
@@ -107,29 +158,33 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE) {
   # Residual's deciles.
   res.decil <- stats.long %>%
     group_by(group.var) %>%
-    group_modify(~as.data.frame(t(quantile(.$residuals.mean, c(0.1, 0.9))))) %>%
+    group_modify(~as.data.frame(t(quantile(.$residuals.mean, resm.cutoff)))) %>%
     ungroup()
-  colnames(res.decil)[2:3] <- c("P10", "P90")
+  colnames(res.decil)[2:3] <- c("Pmin", "Pmax")
   stats.long <- stats.long %>%
     inner_join(res.decil, by = "group.var") %>%
     select(-cells, -enrichment, -resid) %>%
     unique()
   # Group annotation.
   stats.long.annotated <- stats.long %>%
-    mutate(group = case_when(switch.point < 0.1 & residuals.mean > P90 ~ 
+    mutate(group = case_when(switch.point < sp.cutoff[1] & 
+                               residuals.mean > Pmax ~ 
                                "TOP-HighSensitivity",
-                             switch.point > 0.9 & residuals.mean < P10 ~ 
+                             switch.point > sp.cutoff[4] & 
+                               residuals.mean < Pmin ~ 
                                "TOP-LowSensitivity",
-                             switch.point > 0.4 & switch.point < 0.6 &
-                               residuals.mean < P10 ~ 
+                             switch.point > sp.cutoff[2] & 
+                               switch.point < sp.cutoff[3] & 
+                               residuals.mean < Pmin ~ 
                                "TOP-Differential-LowSensitivity",
-                             switch.point > 0.4 & switch.point < 0.6 & 
-                               residuals.mean > P90 ~ 
+                             switch.point > sp.cutoff[2] & 
+                               switch.point < sp.cutoff[3] & 
+                               residuals.mean > Pmax ~ 
                                "TOP-Differential-HighSensitivity",
                              TRUE ~ NA_character_))
   # Order.
   rank <- stats.long.annotated %>%
-    mutate(in.range = switch.point > 0.4 & switch.point < 0.6,
+    mutate(in.range = switch.point > sp.cutoff[2] & switch.point < sp.cutoff[3],
            sp.rank = switch.point * as.numeric(in.range)) %>%
     select(IDs, group.var, sp.rank, residuals.mean, in.range) %>%
     unique() %>%

@@ -4,7 +4,13 @@
 \alias{bcRanks}
 \title{Ranks the signatures from most sensitive to least sensitive}
 \usage{
-bcRanks(bc, idents = NULL, extended = TRUE)
+bcRanks(
+  bc,
+  idents = NULL,
+  extended = TRUE,
+  resm.cutoff = c(0.1, 0.9),
+  sp.cutoff = c(0.1, 0.4, 0.6, 0.9)
+)
 }
 \arguments{
 \item{bc}{\code{\link[beyondcell]{beyondcell}} object.}
@@ -16,6 +22,10 @@ are computed for each level in \code{idents}.}
 point, mean, median, standard deviation, variance, min, max, proportion of
 \code{NaN} and residuals' mean per signature. If \code{extended = FALSE},
 this function returns only the switch point, mean and residuals' mean.}
+
+\item{resm.cutoff}{Numeric vector with the 2 desired residuals' mean cut-offs.}
+
+\item{sp.cutoff}{Numeric vector with the 4 desired switch point cut-offs.}
 }
 \value{
 A \code{beyondcell} object with the results in a new entry of
@@ -23,6 +33,33 @@ A \code{beyondcell} object with the results in a new entry of
 }
 \description{
 This function computes the beyondcell score's (BCS) statistics
-of each signature and ranks them according to the switch point and 
-residual's mean.
+of each signature and ranks them according to the residual's mean and the 
+switch point. The signatures that pass the thresholds (see Details) are 
+labelled as "TOP-LowSensitivity" or "TOP-HighSensitivity" (drugs to which 
+all selected cells are least/most sensitive, respectively) or 
+"TOP-Differential-LowSensitivity" and  "TOP-Differential-HighSensitivity" 
+(drugs to which the cells of a specific cluster are differentially 
+insensitive or sensitive when compared to the other clusters). These groups 
+correspond to the quadrants drawn by \code{\link[beyondcell]{bc4Squares}}.
+}
+\details{
+This function categorizes the signatures into 5 groups according to
+the chosen residuals' mean (\code{resm.cutoff}) and switch point 
+(\code{sp.cutoff}) cut-offs:
+
+\itemize{
+\item{TOP-LowSensitivity: signatures with a switch point > 
+\code{max(sp.cutoff)} and a residuals' mean < \code{min(resm.cutoff)}.}
+\item{TOP-HighSensitivity: signatures with a switch point < 
+\code{min(sp.cutoff)} and a residuals' mean > \code{max(resm.cutoff)}.}
+\item{TOP-Differential-LowSensitivity: signatures with a switch point 
+between \code{sp.cutoff[2]} and \code{sp.cutoff[3]} and a residuals' mean <
+\code{min(resm.cutoff)}.}
+\item{TOP-Differential-HighSensitivity: signatures with a switch point 
+between \code{sp.cutoff[2]} and \code{sp.cutoff[3]} and a residuals' mean >
+\code{max(resm.cutoff)}.}
+\item{\code{NA}: signatures that do not meet the previous criteria.}
+}
+Default residuals' mean cut-offs: first and last deciles; default switch 
+point cut-offs: 0.1, 0.4, 0.6 and 0.9.
 }
