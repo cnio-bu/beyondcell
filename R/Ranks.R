@@ -142,7 +142,7 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE,
     dplyr::inner_join(sp, by = "IDs") %>%
     dplyr::inner_join(meta, by = "cells")
   Sys.sleep(0.1)
-  setTxtProgressBar(pb, value = 20)
+  setTxtProgressBar(pb, value = 25)
   # Compute mean BCS and residual's mean per signature.
   invisible(capture.output(
     stats.long <- normalized.long %>%
@@ -154,7 +154,7 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE,
       ungroup()
   ))
   Sys.sleep(0.1)
-  setTxtProgressBar(pb, value = 35)
+  setTxtProgressBar(pb, value = 45)
   # If extended == TRUE, compute the median, standard deviation, variance, min, 
   # max and proportion of NaNs per signature.
   if (extended) {
@@ -169,7 +169,7 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE,
       ungroup()
   }
   Sys.sleep(0.1)
-  setTxtProgressBar(pb, value = 40)
+  setTxtProgressBar(pb, value = 50)
   # Residual's deciles.
   res.decil <- stats.long %>%
     group_by(group.var) %>%
@@ -181,7 +181,7 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE,
     select(-cells, -enrichment, -resid) %>%
     unique()
   Sys.sleep(0.1)
-  setTxtProgressBar(pb, value = 60)
+  setTxtProgressBar(pb, value = 75)
   # Group annotation.
   stats.long.annotated <- stats.long %>%
     mutate(group = case_when(switch.point < sp.cutoff[1] & 
@@ -200,7 +200,7 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE,
                                "TOP-Differential-HighSensitivity",
                              TRUE ~ NA_character_))
   Sys.sleep(0.1)
-  setTxtProgressBar(pb, value = 65)
+  setTxtProgressBar(pb, value = 80)
   # Order.
   rank <- stats.long.annotated %>%
     mutate(in.range = switch.point > sp.cutoff[2] & switch.point < sp.cutoff[3],
