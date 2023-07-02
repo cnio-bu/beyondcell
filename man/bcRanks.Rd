@@ -58,8 +58,9 @@ between \code{sp.cutoff[2]} and \code{sp.cutoff[3]} and a residuals' mean <
 \item{TOP-Differential-HighSensitivity: signatures with a switch point 
 between \code{sp.cutoff[2]} and \code{sp.cutoff[3]} and a residuals' mean >
 \code{max(resm.cutoff)}.}
-\item{\code{NA}: signatures that do not meet the previous criteria.}
 }
+The signatures that do not meet the previous criteria are marked as
+\code{NA}s.
 Default residuals' mean cut-offs: first and last deciles; default switch 
 point cut-offs: 0.1, 0.4, 0.6 and 0.9.
 }
