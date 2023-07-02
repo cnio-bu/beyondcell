@@ -93,6 +93,9 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE,
     sp.cutoff <- sorted.sp.cutoff
   }
   # --- Code ---
+  # Progress bar.
+  pb <- txtProgressBar(min = 0, max = 100, style = 3, file = stderr())
+  bins <- 10
   # Signatures in bc.
   sigs <- rownames(bc@normalized)
   # Cells in bc.
@@ -105,6 +108,8 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE,
     mutate(group.var = factor(group.var)) %>%
     unique()
   lvls <- levels(meta$group.var)
+  Sys.sleep(0.1)
+  setTxtProgressBar(pb, value = 5)
   # Column to order by.
   order.col <- paste0("rank.", levels(meta$group.var)[1])
   # Final column order.
@@ -123,6 +128,8 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE,
   # Get switch points.
   sp <- data.frame(switch.point = bc@switch.point) %>%
     rownames_to_column("IDs")
+  Sys.sleep(0.1)
+  setTxtProgressBar(pb, value = 10)
   # Compute long normalized BCS.
   normalized.long <- bc@normalized %>%
     t() %>%
@@ -134,6 +141,8 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE,
   normalized.long <- normalized.long %>%
     dplyr::inner_join(sp, by = "IDs") %>%
     dplyr::inner_join(meta, by = "cells")
+  Sys.sleep(0.1)
+  setTxtProgressBar(pb, value = 20)
   # Compute mean BCS and residual's mean per signature.
   stats.long <- normalized.long %>%
     group_by(IDs) %>%
@@ -142,6 +151,8 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE,
     group_by(IDs, group.var) %>%
     mutate(residuals.mean = mean(resid, na.rm = TRUE)) %>%
     ungroup()
+  Sys.sleep(0.1)
+  setTxtProgressBar(pb, value = 35)
   # If extended == TRUE, compute the median, standard deviation, variance, min, 
   # max and proportion of NaNs per signature.
   if (extended) {
@@ -155,6 +166,8 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE,
              prop.na = round(sum(is.na(enrichment))/length(cells), digits = 2)) %>%
       ungroup()
   }
+  Sys.sleep(0.1)
+  setTxtProgressBar(pb, value = 40)
   # Residual's deciles.
   res.decil <- stats.long %>%
     group_by(group.var) %>%
@@ -165,6 +178,8 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE,
     inner_join(res.decil, by = "group.var") %>%
     select(-cells, -enrichment, -resid) %>%
     unique()
+  Sys.sleep(0.1)
+  setTxtProgressBar(pb, value = 60)
   # Group annotation.
   stats.long.annotated <- stats.long %>%
     mutate(group = case_when(switch.point < sp.cutoff[1] & 
@@ -182,6 +197,8 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE,
                                residuals.mean > Pmax ~ 
                                "TOP-Differential-HighSensitivity",
                              TRUE ~ NA_character_))
+  Sys.sleep(0.1)
+  setTxtProgressBar(pb, value = 65)
   # Order.
   rank <- stats.long.annotated %>%
     mutate(in.range = switch.point > sp.cutoff[2] & switch.point < sp.cutoff[3],
@@ -201,12 +218,16 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE,
     unique()
   stats.long.ranked <- stats.long.annotated %>%
     inner_join(rank, by = c("IDs", "group.var"))
+  Sys.sleep(0.1)
+  setTxtProgressBar(pb, value = 85)
   # Pivot wider
   final.stats <- stats.long.ranked %>%
     select(IDs, group.var, all_of(cols.stats)) %>%
     unique() %>%
     pivot_wider(names_from = group.var, values_from = all_of(cols.stats),
                 names_sep = ".")
+  Sys.sleep(0.1)
+  setTxtProgressBar(pb, value = 90)
   # Add Drug name and MoA to final.stats.
   info <- drugInfo$IDs %>%
     filter(IDs %in% final.stats$IDs) %>%
@@ -226,11 +247,15 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE,
     inner_join(info, by = "IDs") %>%
     column_to_rownames("IDs") %>%
     unique()
+  Sys.sleep(0.1)
+  setTxtProgressBar(pb, value = 95)
   # Order by rank and reorder columns.
   final.stats <- final.stats[order(final.stats[, order.col], decreasing = FALSE),
                              c(cols.druginfo, cols.stats.level)]
   # Add to beyondcell object.
   bc@ranks[[idents]] <- final.stats
+  Sys.sleep(0.1)
+  setTxtProgressBar(pb, value = 100)
   return(bc)
 }
 
