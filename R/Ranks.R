@@ -103,10 +103,10 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE,
   cells <- colnames(bc@normalized)
   # Keep column to group by.
   meta <- bc@meta.data %>%
-    rownames_to_column("cells") %>%
-    select(cells, all_of(idents)) %>%
-    rename(group.var := !!idents) %>%
-    mutate(group.var = factor(group.var)) %>%
+    tibble::rownames_to_column("cells") %>%
+    dplyr::select(cells, all_of(idents)) %>%
+    dplyr::rename(group.var := !!idents) %>%
+    dplyr::mutate(group.var = factor(group.var)) %>%
     unique()
   lvls <- levels(meta$group.var)
   Sys.sleep(0.1)
@@ -123,21 +123,21 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE,
                      "studies")
   cols.stats <- c("rank", "switch.point", "mean", cols.additional, 
                   "residuals.mean", "group")
-  cols.stats.level <- expand_grid(lvls, cols.stats) %>%
-    mutate(col.name = paste(cols.stats, lvls, sep = ".")) %>%
-    pull(col.name)
+  cols.stats.level <- tidyr::expand_grid(lvls, cols.stats) %>%
+    dplyr::mutate(col.name = paste(cols.stats, lvls, sep = ".")) %>%
+    dplyr::pull(col.name)
   # Get switch points.
   sp <- data.frame(switch.point = bc@switch.point) %>%
-    rownames_to_column("IDs")
+    tibble::rownames_to_column("IDs")
   Sys.sleep(0.1)
   setTxtProgressBar(pb, value = 10)
   # Compute long normalized BCS.
   normalized.long <- bc@normalized %>%
     t() %>%
     as.data.frame() %>%
-    rownames_to_column("cells") %>%
-    pivot_longer(cols = all_of(sigs), names_to = "IDs", 
-                 values_to = "enrichment", values_drop_na = FALSE)
+    tibble::rownames_to_column("cells") %>%
+    tidyr::pivot_longer(cols = all_of(sigs), names_to = "IDs", 
+                        values_to = "enrichment", values_drop_na = FALSE)
   # Add grouping information and switch point.
   normalized.long <- normalized.long %>%
     dplyr::inner_join(sp, by = "IDs") %>%
@@ -147,12 +147,12 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE,
   # Compute mean BCS and residual's mean per signature.
   invisible(capture.output(
     stats.long <- normalized.long %>%
-      group_by(IDs) %>%
-      mutate(mean = round(mean(enrichment), 2)) %>%
-      do(data.frame(., resid = residuals(lm(enrichment ~ group.var, data = .)))) %>%
-      group_by(IDs, group.var) %>%
-      mutate(residuals.mean = mean(resid, na.rm = TRUE)) %>%
-      ungroup()
+      dplyr::group_by(IDs) %>%
+      dplyr::mutate(mean = round(mean(enrichment), 2)) %>%
+      dplyr::do(data.frame(., resid = residuals(lm(enrichment ~ group.var, data = .)))) %>%
+      dplyr::group_by(IDs, group.var) %>%
+      dplyr::mutate(residuals.mean = mean(resid, na.rm = TRUE)) %>%
+      dplyr::ungroup()
   ))
   Sys.sleep(0.1)
   setTxtProgressBar(pb, value = 45)
@@ -160,81 +160,84 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE,
   # max and proportion of NaNs per signature.
   if (extended) {
     stats.long <- stats.long %>%
-      group_by(IDs) %>%
-      mutate(median = round(median(enrichment, na.rm = TRUE), digits = 2),
-             sd = round(sd(enrichment, na.rm = TRUE), digits = 2),
-             variance = round(var(enrichment, na.rm = TRUE), digits = 2),
-             min = round(min(enrichment, na.rm = TRUE), digits = 2),
-             max = round(max(enrichment, na.rm = TRUE), digits = 2),
-             prop.na = round(sum(is.na(enrichment))/length(cells), digits = 2)) %>%
-      ungroup()
+      dplyr::group_by(IDs) %>%
+      dplyr::mutate(median = round(median(enrichment, na.rm = TRUE), digits = 2),
+                    sd = round(sd(enrichment, na.rm = TRUE), digits = 2),
+                    variance = round(var(enrichment, na.rm = TRUE), digits = 2),
+                    min = round(min(enrichment, na.rm = TRUE), digits = 2),
+                    max = round(max(enrichment, na.rm = TRUE), digits = 2),
+                    prop.na = round(sum(is.na(enrichment))/length(cells), 
+                                    digits = 2)) %>%
+      dplyr::ungroup()
   }
   Sys.sleep(0.1)
   setTxtProgressBar(pb, value = 50)
   # Residual's deciles.
   res.decil <- stats.long %>%
-    group_by(group.var) %>%
-    group_modify(~as.data.frame(t(quantile(.$residuals.mean, resm.cutoff)))) %>%
-    ungroup()
+    dplyr::group_by(group.var) %>%
+    dplyr::group_modify(~as.data.frame(t(quantile(.$residuals.mean, resm.cutoff)))) %>%
+    dplyr::ungroup()
   colnames(res.decil)[2:3] <- c("Pmin", "Pmax")
   stats.long <- stats.long %>%
-    inner_join(res.decil, by = "group.var") %>%
-    select(-cells, -enrichment, -resid) %>%
+    dplyr::inner_join(res.decil, by = "group.var") %>%
+    dplyr::select(-cells, -enrichment, -resid) %>%
     unique()
   Sys.sleep(0.1)
   setTxtProgressBar(pb, value = 75)
   # Group annotation.
   stats.long.annotated <- stats.long %>%
-    mutate(group = case_when(switch.point < sp.cutoff[1] & 
-                               residuals.mean > Pmax ~ 
-                               "TOP-HighSensitivity",
-                             switch.point > sp.cutoff[4] & 
-                               residuals.mean < Pmin ~ 
-                               "TOP-LowSensitivity",
-                             switch.point > sp.cutoff[2] & 
-                               switch.point < sp.cutoff[3] & 
-                               residuals.mean < Pmin ~ 
-                               "TOP-Differential-LowSensitivity",
-                             switch.point > sp.cutoff[2] & 
-                               switch.point < sp.cutoff[3] & 
-                               residuals.mean > Pmax ~ 
-                               "TOP-Differential-HighSensitivity",
-                             TRUE ~ NA_character_))
+    dplyr::mutate(
+      group = dplyr::case_when(switch.point < sp.cutoff[1] & 
+                                 residuals.mean > Pmax ~ 
+                                 "TOP-HighSensitivity",
+                               switch.point > sp.cutoff[4] & 
+                                 residuals.mean < Pmin ~ 
+                                 "TOP-LowSensitivity",
+                               switch.point > sp.cutoff[2] & 
+                                 switch.point < sp.cutoff[3] & 
+                                 residuals.mean < Pmin ~ 
+                                 "TOP-Differential-LowSensitivity",
+                               switch.point > sp.cutoff[2] &
+                                 switch.point < sp.cutoff[3] & 
+                                 residuals.mean > Pmax ~ 
+                                 "TOP-Differential-HighSensitivity",
+                               TRUE ~ NA_character_))
   Sys.sleep(0.1)
   setTxtProgressBar(pb, value = 80)
   # Order.
   rank <- stats.long.annotated %>%
-    mutate(in.range = switch.point > sp.cutoff[2] & switch.point < sp.cutoff[3],
-           sp.rank = switch.point * as.numeric(in.range)) %>%
-    select(IDs, group.var, sp.rank, residuals.mean, in.range) %>%
+    dplyr::mutate(in.range = switch.point > sp.cutoff[2] & 
+                    switch.point < sp.cutoff[3],
+                  sp.rank = switch.point * as.numeric(in.range)) %>%
+    dplyr::select(IDs, group.var, sp.rank, residuals.mean, in.range) %>%
     unique() %>%
-    group_split(group.var)
+    dplyr::group_split(group.var)
   rank <- lapply(rank, FUN = function(x) {
-    dt <- as.data.table(x)
+    dt <- data.table::as.data.table(x)
     dt[, rank := data.table::frank(dt, -sp.rank, -residuals.mean, 
                                    ties.method = "dense")]
     return(dt)
   }) %>%
-    bind_rows() %>%
-    mutate(rank = if_else(in.range, rank, NA_integer_)) %>%
-    select(IDs, group.var, rank) %>%
+    dplyr::bind_rows() %>%
+    dplyr::mutate(rank = dplyr::if_else(in.range, rank, NA_integer_)) %>%
+    dplyr::select(IDs, group.var, rank) %>%
     unique()
   stats.long.ranked <- stats.long.annotated %>%
-    inner_join(rank, by = c("IDs", "group.var"))
+    dplyr::inner_join(rank, by = c("IDs", "group.var"))
   Sys.sleep(0.1)
   setTxtProgressBar(pb, value = 85)
   # Pivot wider
   final.stats <- stats.long.ranked %>%
-    select(IDs, group.var, all_of(cols.stats)) %>%
+    dplyr::select(IDs, group.var, all_of(cols.stats)) %>%
     unique() %>%
-    pivot_wider(names_from = group.var, values_from = all_of(cols.stats),
-                names_sep = ".")
+    tidyr::pivot_wider(names_from = group.var, values_from = all_of(cols.stats),
+                       names_sep = ".")
   Sys.sleep(0.1)
   setTxtProgressBar(pb, value = 90)
   # Add Drug name and MoA to final.stats.
   info <- drugInfo$IDs %>%
-    filter(IDs %in% final.stats$IDs) %>%
-    select(IDs, preferred.drug.names, studies) %>%
+    dplyr::filter(IDs %in% final.stats$IDs) %>%
+    dplyr::select(IDs, preferred.drug.names, studies) %>%
     dplyr::left_join(y = drugInfo$MoAs[, c("IDs", "MoAs")], by = "IDs",
                      relationship = "many-to-many") %>%
     dplyr::left_join(y = drugInfo$Targets, by = "IDs",
@@ -247,8 +250,8 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE,
     })
   }
   final.stats <- final.stats %>%
-    inner_join(info, by = "IDs") %>%
-    column_to_rownames("IDs") %>%
+    dplyr::inner_join(info, by = "IDs") %>%
+    tibble::column_to_rownames("IDs") %>%
     unique()
   Sys.sleep(0.1)
   setTxtProgressBar(pb, value = 95)
