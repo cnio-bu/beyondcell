@@ -14,7 +14,7 @@ conditions using the Seurat pipeline. To follow this tutorial, the resulting
 ## Using Beyondcell
 For a correct analysis with **Beyondcell**, users should follow these steps: 
 
- 1. Read a single-cell expression object
+ 1. Read a single-cell or a ST object
  2. Compute the Beyondcell Scores (BCS)
  3. Compute the Therapeutic Clusters (TCs)
     * Check the clustering and look for unwanted sources of variation
@@ -24,12 +24,8 @@ For a correct analysis with **Beyondcell**, users should follow these steps:
  5. [Visualize](https://github.com/cnio-bu/beyondcell/blob/master/tutorial/visualization/README.md) 
  the results
 
-### 1. Read a single-cell expression object
-Beyondcell can accept both a single-cell matrix or a `Seurat` object. In order 
-to correctly compute the scores, the transcriptomics data needs to be 
-pre-processed. This means that proper cell-based quality control filters, as 
-well as normalization and scaling of the data, should be applied prior to the 
-analysis with Beyondcell.
+### 1. Read a single-cell or a ST object
+Beyondcell can accept both a single-cell matrix or a `Seurat` object containing a single-cell or a ST experiment. In order to correctly compute the scores, the transcriptomics data needs to be pre-processed. This means that proper cell/spot-based quality control filters, as well as normalization and scaling of the data, should be applied prior to the analysis with Beyondcell.
 
 > Note: We recommend using a `Seurat` object.
 
@@ -56,8 +52,9 @@ We need to perform two steps:
 #### Get a geneset object with the signatures of interest
 In order to compute the BCS, we also need a `geneset` object containing the drug 
 (and optionally the functional) signatures we are interested in evaluating. To 
-create this object, the `GenerateGenesets` function needs to be called. 
-Beyondcell includes two drug signature collections that are ready to use:
+create this object, either the `GetCollection` or the `GenerateGenesets` functions need to be called. 
+
+`GetCollection` allows you to load one of the two Beyondcell's drug signature collections that are ready to use:
 
  * **Drug Perturbation Signatures collection (PSc):** Captures the 
  transcriptional changes induced by a drug.
@@ -75,9 +72,7 @@ gs <- GetCollection(PSc)
 nopath <- GetCollection(PSc, include.pathways = FALSE)
 ```
 
-Moreover, Beyondcell allows the user to input a GMT file containing the functional 
-pathways/signatures of interest as well as numeric matrices containing a ranking 
-criteria such as the t-statistic or logFoldChange. If x is a path to a GMT file, all gene sets must end in "_UP" or "_DOWN" to indicate the mode of each one. When x is a pre-loaded matrix, comparison is set automatically.
+On the other hand, `GenerateGenesets` allows you to load signature of interest from an external GMT file. Please, note that in this GMT all the gene set names must end in "_UP" or "_DN" to indicate the mode. 
 
 ```r
 # Generate geneset object with a custom GMT file. For direct comparisons:
@@ -88,26 +83,25 @@ custom_reversed <- GenerateGenesets(x = "path_to_file.gmt", perform.reversal = T
 
 #### Compute the BCS
 ```r
-# Compute score for the PSc. This might take a few minutes depending on the size of your dataset.
+# Compute BCS for the PSc. This might take a few minutes depending on the size of your dataset.
 bc <- bcScore(sc, gs, expr.thres = 0.1) 
 ```
-> TIP: We recommend to input cells with at least 1000-1500 genes detected.
+> TIP: We recommend inputting cells/spots with at least 1000-1500 genes detected.
 
 
 ### 3. Compute the TCs
-The ouput of the `bcScore` computation is a `beyondcell` object. This object 
+The output of the `bcScore` computation is a `beyondcell` object. This object 
 contains the normalized and scaled **Beyondcell Scores** and the 
 **Switch Points** (SPs), as well as information concerning the parameters used 
-for the analysis. The `beyondcell` object can be used as an input for a 
-dimensionality reduction and clustering analysis using the `bcUMAP`function. 
-With this analysis, cells can be classified into distinct 
-**Therapeutic Clusters**, that represent sets of cells sharing a common response 
+for the analysis. The `beyondcell` object can be used as an input for dimensionality reduction and clustering analysis using the `bcUMAP` function. 
+With this analysis, cells or spots can be classified into distinct 
+**Therapeutic Clusters**, that represent sets of cells/spots sharing a common response 
 to a particular drug exposition. The Uniform Manifold Approximation and 
 Projection (UMAP) will allow the visualization of the identified clusters. 
 
-> TIP: If `pc = NULL` (default), the function will stop prior to compute the 
-UMAP projection and the TCs. This first step will print and elbow plot in your 
-screen and will help you chose the number of components needed for the UMAP 
+> TIP: If `pc = NULL` (default), the function will stop prior to computing the 
+UMAP projection and the TCs. This first step will print an elbow plot on your 
+screen and will help you choose the number of components needed for the UMAP 
 computation.
 
 ```r
@@ -117,10 +111,10 @@ bc <- bcUMAP(bc, k.neighbors = 4, res = 0.2)
 bc <- bcUMAP(bc, pc = 10, k.neighbors = 4, res = 0.2)
 ```
 
-**Check clustering**\
+**Check the clustering**\
 It is important to check whether any unwanted source of variation is guiding the 
 clustering analysis. The `bcClusters` function allows us to colour the UMAP 
-based on the metadata variables that migth be influencing this clustering. We 
+based on the metadata variables that might be influencing this clustering. We 
 recommend checking these sources of variation among others:
 
  * Number of detected genes per cell (`nFeature_RNA`)
@@ -144,20 +138,20 @@ bcClusters(bc, UMAP = "beyondcell", idents = "Phase", factor.col = TRUE, pt.size
 obtained using Seurat's function `CellCycleScoring`
 
 **Regress out unwanted sources of variation**\
-The `bcRegressOut` function will allow us to correct existing sources of 
-variation. Have in mind that the number of detected genes per cell will 
-*always* have an inpact in the final score.
+The `bcRegressOut` function will allow you to correct existing sources of 
+variation. Have in mind that the number of detected genes per cell or spot will 
+*always* have an impact on the final score.
 
 ```r
 bc <- bcRegressOut(bc, vars.to.regress = "nFeature_RNA")
 ```
 > TIP: Is the regression step taking too long? Check the amount of NAs per cell 
-of your `bc@normalized matrix`. You migth need to refine the filtering of your 
-single-cell experiment based on the amount of detected features.
+of your `bc@normalized` matrix. You might need to refine the filtering of your 
+single-cell experiment based on the number of detected features.
 
 **Recompute the TCs**\
 Once corrected, you will need to recompute the dimensionality reduction and 
-clustering, in order to find the *true* **Therapeutic Clusters** present in your 
+clustering in order to find the *true* **Therapeutic Clusters** present in your 
 sample. 
 
 ```r
@@ -175,15 +169,13 @@ bcClusters(bc, UMAP = "beyondcell", idents = "bc_clusters_res.0.2", pt.size = 1.
 </p>
 
 ### 4. Compute ranks
-A summary table can be obtained using the `bcRanks`function. This table includes 
-metrics such as the SP, mean, median, sd, variance, min, max, proportion of NaN 
+A summary table can be obtained using the `bcRanks` function. This table includes 
+metrics such as the SP, mean, median, sd, variance, min, max, proportion of NaNs 
 and residuals' mean of each signature. Also, a signature rank is computed taking 
-into account the SP and the mean. This table aims to help you in the 
-prioritization of drug candidates. 
+into account the SP and the residual's mean. This table aims to help you in the 
+prioritization of drug candidates for specific groups of cells/spots. 
 
 ```r
-# Obtain general statistics.
-bc <- bcRanks(bc)
 # Obtain condition-based statistics.
 bc <- bcRanks(bc, idents = "condition")
 # Obtain unextended therapeutic cluster-based statistics.
@@ -194,20 +186,12 @@ can access them as follows:
 
 ```r
 # Explore the statistics table.
-head(bc@ranks$general) 
 head(bc@ranks$condition)
 head(bc@ranks$bc_clusters_res.0.2)
 ```
 
 > TIP: The ranking returned by `bcRanks` orders the drug signatures from most to 
-least sensitive. This kind of rank might be useful if you want to find a drug to 
-treat all your cells simultaneously. However, as Beyondcell allows to inspect 
-the intratumoural heterogeneity (ITH) in a single-cell RNA-seq experiment, you 
-may be interested in the specific drugs that are most/least effective against a 
-particular cluster. In the later scenario, we recommend prioritizing drugs 
-taking into account both the SP and residuals' mean. In order to facilitate the 
-computation and visualization of this kind of rank, we have included the 
-function `bc4Squares` in Beyondcell (see [visualization](https://github.com/cnio-bu/beyondcell/blob/master/tutorial/visualization/README.md) 
+least sensitive for a specific group of cells/spots. This kind of rank might be useful to inspect intratumoural heterogeneity (ITH). In order to facilitate the visualization of this kind of rank, we have included the function `bc4Squares` in Beyondcell (see [visualization](https://github.com/cnio-bu/beyondcell/blob/master/tutorial/visualization/README.md) 
 for more information).
 
 > Concerning the SP: It is the scaled value where normalized negative scores 
@@ -224,4 +208,4 @@ susceptible and non-susceptible cells.
 
 ## Support
 Additional information can be found in the package's documentation. If you have 
-any question regarding the use of **Beyondcell**, feel free to submit an [issue](https://github.com/cnio-bu/beyondcell/issues).
+any questions regarding the use of **Beyondcell**, feel free to submit an [issue](https://github.com/cnio-bu/beyondcell/issues).
