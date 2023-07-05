@@ -5,7 +5,7 @@
 ## Data access:
 We have validated Beyondcell in a population of MCF7-AA cells exposed to 500nM 
 of bortezomib and collected at different time points: t0 (before treatment), 
-t12, t48 and t96 (72h treatment followed by drug wash and 24h of recovery) 
+t12, t48, and t96 (72h treatment followed by drug wash and 24h of recovery) 
 obtained from *Ben-David U, et al., Nature, 2018*. We integrated all four 
 conditions using the Seurat pipeline. To follow this tutorial, the resulting 
 `Seurat` object can be accessed through the following 

@@ -50,12 +50,12 @@ mamba install -c bu_cnio r-beyondcell
 ## Results
 We have validated Beyondcell in a population of MCF7-AA cells exposed to 500nM 
 of bortezomib and collected at different time points: t0 (before treatment), 
-t12, t48 and t96 (72h treatment followed by drug wash and 24h of recovery) 
+t12, t48, and t96 (72h treatment followed by drug wash and 24h of recovery) 
 obtained from *Ben-David U, et al., Nature, 2018*. We integrated all four 
 conditions using the Seurat pipeline (left). After calculating the BCS for each 
 cell using PSc, a clustering analysis was applied. Beyondcell was able to 
 cluster the cells based on their treatment time point, to separate untreated 
-cells from treated cells (center) and to recapitulate the changes arising from the 
+cells from treated cells (center), and to recapitulate the changes arising from the 
 treatment with bortezomib (right). 
 
 ![results_golub](./.img/integrated_bendavid.png)
