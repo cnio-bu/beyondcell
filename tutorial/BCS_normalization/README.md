@@ -1,8 +1,8 @@
 # Beyondcell Score Normalization
 
-Beyondcell scores are normalised in order to **penalise** cells with a
-great number of **zeros** and/or cells with **outliers** (genes whose
-expression is much higher than the rest of genes within the same cell).
+Beyondcell scores are normalized in order to **penalize** cells/spots with a
+great number of **zeros** and/or cells/spots with **outliers** (genes whose
+expression is much higher than the rest of genes within the same cell/spot).
 
 In this vignette we try to demonstrate the effect of this normalization
 using a mock single-cell experiment.
@@ -13,7 +13,7 @@ To compute the Beyondcell score (BCS) for a mode *M = {UP, DN}*
 we perform two steps:
 
 1.  Compute raw BCS
-2.  Normalise these scores
+2.  Normalize these scores
 
 ### Compute raw BCS
 
@@ -45,9 +45,9 @@ mean expression of the genes in *G*<sub>*M*, *S*<sub>*M*</sub></sub>.
 raw_{M,S_M,j} = \frac{1}{|G_{M,S_M}|} \cdot \sum_{k=1}^q{y_{kj}} = \bar{y_j}
 ```
 
-### Normalise raw BCS
+### Normalize raw BCS
 
-Finally, we normalise the raw scores using the sum, mean and standard
+Finally, we normalize the raw scores using the sum, mean and standard
 deviation of the total gene expression per cell.
 
 ```math
@@ -68,7 +68,7 @@ Thus, **the higher the standard deviation the lower *f***. This results
 in a higher penalization of the raw score for cells with genes that are
 much more expressed than the rest of genes within the same cell.
 Moreover, **the lower the *mean* and *sumexpr*, the lower *f***, which further 
-penalises cells with a great number of zeros.
+penalizes cells with a great number of zeros.
 
 ## Example
 
@@ -100,7 +100,7 @@ head(assay(X)[, 1:5])
 #> Gene_0006        0       58        0      123        0
 ```
 
-We draw the histogram of the counts to see its distribution. We can
+We draw the histogram of the counts to see their distribution. We can
 observe that there is a high proportion of zeros, as one would expect
 from a single-cell experiment.
 
@@ -151,7 +151,7 @@ head(assay(X)[, 1:5])
 #> Gene_0006        0       58        0      123        0
 ```
 
-Then, we create a Seurat object
+Then, we create a Seurat object.
 
 ``` r
 X <- CreateSeuratObject(counts = assay(X))
@@ -206,7 +206,7 @@ ggplot(stats_df, aes(x = Cells, y = nzeros)) + geom_bar(stat = "identity") +
 We can observe than `Cell_0001` and `Cell_0003` have much more zeros
 than the rest of cells.
 
-Then, we compute the raw score (mean of expression) of each cell.
+Then, we compute the raw score (mean of expression) per each cell.
 
 ``` r
 stats_df <- stats_df %>% mutate(raw = colMeans(Y))
@@ -246,7 +246,7 @@ to the mean. On the other hand, in the second bar plot we observe that
 `Cell_0001` has the minimum and `Cell_0002` and `Cell_0003` have the
 maximum standard deviation.
 
-Finally, we compute *f* and compare the raw and the normalised BCS.
+Finally, we compute *f* and compare the raw and the normalized BCS.
 
 ``` r
 stats_df <- stats_df %>% mutate(f = (sumexpr - sd)/(raw + sd))
@@ -259,7 +259,7 @@ ggplot(stats_df, aes(x = Cells, y = raw)) + geom_bar(stat = "identity") +
 ![](.img/compareBCS-1.png)
 
 ``` r
-# Normalised score per cell
+# Normalized score per cell
 ggplot(stats_df, aes(x = Cells, y = norm)) + geom_bar(stat = "identity") +
   theme(axis.text.x = element_text(angle = 90, size = 7)) + 
   ylab("Normalised BCS")
@@ -268,7 +268,7 @@ ggplot(stats_df, aes(x = Cells, y = norm)) + geom_bar(stat = "identity") +
 ![](.img/compareBCS-2.png)
 
 When comparing these two last bar plots, we can observe than
-Beyondcell’s normalization step penalises cells with a great number of
+Beyondcell’s normalization step penalizes cells with a great number of
 zeros (`Cell_0001`), cells with outliers (`Cell_0002`) or cells that
 satisfy these two conditions simultaneously (`Cell_0003`).
 
@@ -288,7 +288,7 @@ ggplot(stats_df, aes(x = Cells, y = log2FC)) + geom_bar(stat = "identity") +
 
 As we can see, the BCS is reduced drastically after normalization for
 cells 1 to 3. This means that these three cells are the ones most
-penalised by the normalization method.
+penalized by the normalization method.
 
 ``` r
 sessionInfo()
