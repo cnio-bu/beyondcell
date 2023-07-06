@@ -120,7 +120,7 @@ In this case, we can clearly see how the tool predicts an heterogeneous response
 of bortezomib-naïve cells. 
 
 ```r
-bc4Squares(bc, idents = "condition", lvl = "t0", top = 5)
+bc4Squares(bc, idents = "condition", lvl = "t0", top = 3)
 ```
 <img src=".img/bc4squares_t0.png" width="800">
 
