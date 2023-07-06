@@ -7,7 +7,7 @@
 
 ## Introduction
 **Beyondcell** is a methodology for the identification of drug vulnerabilities 
-in single-cell RNA-seq (scRNA-seq) and Spatial Transcriptomics (ST) data. To this end, Beyondcell focuses on the analysis of drug-related commonalities between cells/spots by classifying them into distinct Therapeutic Clusters (TCs).
+in single-cell RNA-seq (scRNA-seq) and Spatial Transcriptomics (ST) data. To this end, beyondcell focuses on the analysis of drug-related commonalities between cells/spots by classifying them into distinct Therapeutic Clusters (TCs).
 
 ## Workflow overview
 
@@ -34,8 +34,8 @@ status.
  * If time points are available, identify the changes in drug tolerance
  * Identify mechanisms of resistance
 
-## Installing Beyondcell
-The Beyondcell package is implemented in R >= 4.0.0. We recommend 
+## Installing beyondcell
+The beyondcell package is implemented in R >= 4.0.0. We recommend 
 running the installation via mamba: 
 
 ```r
@@ -43,12 +43,12 @@ running the installation via mamba:
 conda create -n beyondcell 
 # Activate the environment.
 conda activate beyondcell
-# Install Beyondcell package and dependencies.
+# Install beyondcell package and dependencies.
 mamba install -c bu_cnio r-beyondcell
 ```
 
 ## Results
-We have validated Beyondcell in a population of MCF7-AA cells exposed to 500nM 
+We have validated beyondcell in a population of MCF7-AA cells exposed to 500nM 
 of bortezomib and collected at different time points: t0 (before treatment), 
 t12, t48, and t96 (72h treatment followed by drug wash and 24h of recovery) 
 obtained from *Ben-David U, et al., Nature, 2018*. We integrated all four 
@@ -62,8 +62,8 @@ treatment with bortezomib (right).
 
 
 ## How to run
-For general instructions on running Beyondcell, check out the [analysis workflow](https://github.com/cnio-bu/beyondcell/blob/master/tutorial/analysis_workflow/README.md) and [visualization](https://github.com/cnio-bu/beyondcell/blob/master/tutorial/visualization/README.md) tutorials.
-For more information about how Beyondcell normalization works, please refer to [this vignette](https://github.com/cnio-bu/beyondcell/blob/master/tutorial/BCS_normalization/README.md). 
+For general instructions on running beyondcell, check out the [analysis workflow](https://github.com/cnio-bu/beyondcell/blob/master/tutorial/analysis_workflow/README.md) and [visualization](https://github.com/cnio-bu/beyondcell/blob/master/tutorial/visualization/README.md) tutorials.
+For more information about how beyondcell normalization works, please refer to [this vignette](https://github.com/cnio-bu/beyondcell/blob/master/tutorial/BCS_normalization/README.md). 
 
 
 ## Authors
@@ -82,4 +82,4 @@ For more information about how Beyondcell normalization works, please refer to [
 Fustero-Torre, C., Jiménez-Santos, M.J., García-Martín, S. et al. Beyondcell: targeting cancer therapeutic heterogeneity in single-cell RNA-seq data. Genome Med 13, 187 (2021). https://doi.org/10.1186/s13073-021-01001-x
 
 ## Support
-If you have any questions regarding the use of Beyondcell, feel free to submit an [issue](https://github.com/cnio-bu/beyondcell/issues).
+If you have any questions regarding the use of beyondcell, feel free to submit an [issue](https://github.com/cnio-bu/beyondcell/issues).

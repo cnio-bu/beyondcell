@@ -1,15 +1,15 @@
 # Beyondcell Score Normalization
 
-Beyondcell scores are normalized in order to **penalize** cells/spots with a
+Beyondcell Scores are normalized in order to **penalize** cells/spots with a
 great number of **zeros** and/or cells/spots with **outliers** (genes whose
 expression is much higher than the rest of genes within the same cell/spot).
 
 In this vignette we try to demonstrate the effect of this normalization
 using a mock single-cell experiment.
 
-## Beyondcell score calculation
+## Beyondcell Score calculation
 
-To compute the Beyondcell score (BCS) for a mode *M = {UP, DN}*
+To compute the Beyondcell Score (BCS) for a mode *M = {UP, DN}*
 we perform two steps:
 
 1.  Compute raw BCS
@@ -160,7 +160,7 @@ X <- CreateSeuratObject(counts = assay(X))
 #> ('-')
 ```
 
-Note that these counts are raw, and Beyondcell requires normalized
+Note that these counts are raw, and beyondcell requires normalized
 counts. So the next step is to normalize *X*.
 
 ``` r
@@ -268,7 +268,7 @@ ggplot(stats_df, aes(x = Cells, y = norm)) + geom_bar(stat = "identity") +
 ![](.img/compareBCS-2.png)
 
 When comparing these two last bar plots, we can observe than
-Beyondcell’s normalization step penalizes cells with a great number of
+beyondcell’s normalization step penalizes cells with a great number of
 zeros (`Cell_0001`), cells with outliers (`Cell_0002`) or cells that
 satisfy these two conditions simultaneously (`Cell_0003`).
 

@@ -3,7 +3,7 @@
 # Analysis workflow
 
 ## Data access:
-We have validated Beyondcell in a population of MCF7-AA cells exposed to 500nM 
+We have validated beyondcell in a population of MCF7-AA cells exposed to 500nM 
 of bortezomib and collected at different time points: t0 (before treatment), 
 t12, t48, and t96 (72h treatment followed by drug wash and 24h of recovery) 
 obtained from *Ben-David U, et al., Nature, 2018*. We integrated all four 
@@ -11,10 +11,10 @@ conditions using the Seurat pipeline. To follow this tutorial, the resulting
 `Seurat` object can be accessed through the following 
 [link](https://zenodo.org/record/4438620). 
 
-## Using Beyondcell
-For a correct analysis with **Beyondcell**, users should follow these steps: 
+## Using beyondcell
+For a correct analysis with **beyondcell**, users should follow these steps: 
 
- 1. Read a single-cell or a ST object
+ 1. Read a single-cell or an ST object
  2. Compute the Beyondcell Scores (BCS)
  3. Compute the Therapeutic Clusters (TCs)
     * Check the clustering and look for unwanted sources of variation
@@ -24,8 +24,8 @@ For a correct analysis with **Beyondcell**, users should follow these steps:
  5. [Visualize](https://github.com/cnio-bu/beyondcell/blob/master/tutorial/visualization/README.md) 
  the results
 
-### 1. Read a single-cell or a ST object
-Beyondcell can accept both a single-cell matrix or a `Seurat` object containing a single-cell or a ST experiment. In order to correctly compute the scores, the transcriptomics data needs to be pre-processed. This means that proper cell/spot-based quality control filters, as well as normalization and scaling of the data, should be applied prior to the analysis with Beyondcell.
+### 1. Read a single-cell or an ST object
+Beyondcell can accept both a single-cell matrix or a `Seurat` object containing a single-cell or an ST experiment. In order to correctly compute the scores, the transcriptomics data needs to be pre-processed. This means that proper cell/spot-based quality control filters, as well as normalization and scaling of the data, should be applied prior to the analysis with beyondcell.
 
 > Note: We recommend using a `Seurat` object.
 
@@ -54,7 +54,7 @@ In order to compute the BCS, we also need a `geneset` object containing the drug
 (and optionally the functional) signatures we are interested in evaluating. To 
 create this object, either the `GetCollection` or the `GenerateGenesets` functions need to be called. 
 
-`GetCollection` allows you to load one of the two Beyondcell's drug signature collections that are ready to use:
+`GetCollection` allows you to load one of the two beyondcell's drug signature collections that are ready to use:
 
  * **Drug Perturbation Signatures collection (PSc):** Captures the 
  transcriptional changes induced by a drug.
@@ -191,7 +191,7 @@ head(bc@ranks$bc_clusters_res.0.2)
 ```
 
 > TIP: The ranking returned by `bcRanks` orders the drug signatures from most to 
-least sensitive for a specific group of cells/spots. This kind of rank might be useful to inspect intratumoural heterogeneity (ITH). In order to facilitate the visualization of this kind of rank, we have included the function `bc4Squares` in Beyondcell (see [visualization](https://github.com/cnio-bu/beyondcell/blob/master/tutorial/visualization/README.md) 
+least sensitive for a specific group of cells/spots. This kind of rank might be useful to inspect intratumoural heterogeneity (ITH). In order to facilitate the visualization of this kind of rank, we have included the function `bc4Squares` in beyondcell (see [visualization](https://github.com/cnio-bu/beyondcell/blob/master/tutorial/visualization/README.md) 
 for more information).
 
 > Concerning the SP: It is the scaled value where normalized negative scores 
@@ -208,4 +208,4 @@ susceptible and non-susceptible cells.
 
 ## Support
 Additional information can be found in the package's documentation. If you have 
-any questions regarding the use of **Beyondcell**, feel free to submit an [issue](https://github.com/cnio-bu/beyondcell/issues).
+any questions regarding the use of **beyondcell**, feel free to submit an [issue](https://github.com/cnio-bu/beyondcell/issues).
