@@ -119,8 +119,6 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE,
   } else {
     cols.additional <- NULL
   }
-  cols.druginfo <- c("drugs", "preferred.drug.names", "MoAs", "targets", 
-                     "studies")
   cols.stats <- c("rank", "switch.point", "mean", cols.additional, 
                   "residuals.mean", "group")
   cols.stats.level <- tidyr::expand_grid(lvls, cols.stats) %>%
@@ -257,6 +255,11 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE,
     info <- aggregate(.~ IDs, data = info, na.action = NULL, FUN = function(x) {
       paste(na.omit(unique(x)), collapse = "; ")
     })
+    cols.druginfo <- c("drugs", "preferred.drug.names", "MoAs", "targets", 
+                       "studies")
+  } else {
+    info <- data.frame(IDs = rownames(bc@normalized))
+    cols.druginfo <- NULL
   }
   final.stats <- final.stats %>%
     dplyr::inner_join(info, by = "IDs") %>%
