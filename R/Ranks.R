@@ -151,6 +151,7 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE,
   invisible(capture.output(
     res.long <- normalized.long %>%
       dplyr::filter(!is.na(enrichment)) %>%
+      dplyr::group_by(IDs) %>%
       dplyr::do(data.frame(., resid = residuals(lm(enrichment ~ group.var, data = .)))) %>%
       dplyr::group_by(IDs, group.var) %>%
       dplyr::mutate(residuals.mean = mean(resid, na.rm = TRUE)) %>%
@@ -262,7 +263,7 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE,
     cols.druginfo <- NULL
   }
   final.stats <- final.stats %>%
-    dplyr::inner_join(info, by = "IDs") %>%
+    dplyr::left_join(info, by = "IDs") %>%
     tibble::column_to_rownames("IDs") %>%
     unique()
   Sys.sleep(0.1)
