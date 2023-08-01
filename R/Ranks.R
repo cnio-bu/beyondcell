@@ -263,7 +263,7 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE,
     cols.druginfo <- NULL
   }
   final.stats <- final.stats %>%
-    dplyr::inner_join(info, by = "IDs") %>%
+    dplyr::left_join(info, by = "IDs") %>%
     tibble::column_to_rownames("IDs") %>%
     unique()
   Sys.sleep(0.1)
