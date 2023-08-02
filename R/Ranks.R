@@ -142,25 +142,15 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE,
     dplyr::inner_join(meta, by = "cells")
   Sys.sleep(0.1)
   setTxtProgressBar(pb, value = 25)
-  # Compute mean BCS 
+  # Compute mean BCS and residual's mean per signature.
   stats.long <- normalized.long %>%
     dplyr::group_by(IDs) %>%
     dplyr::mutate(mean = round(mean(enrichment, na.omit = TRUE), digits = 2)) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(resid = enrichment - mean) %>%
+    dplyr::group_by(IDs, group.var) %>%
+    dplyr::mutate(residuals.mean = round(mean(resid, na.rm = TRUE), digits = 2)) %>%
     dplyr::ungroup()
-  # Compute residual's mean per signature.
-  invisible(capture.output(
-    res.long <- normalized.long %>%
-      dplyr::filter(!is.na(enrichment)) %>%
-      dplyr::group_by(IDs) %>%
-      dplyr::do(data.frame(., resid = residuals(lm(enrichment ~ group.var, data = .)))) %>%
-      dplyr::group_by(IDs, group.var) %>%
-      dplyr::mutate(residuals.mean = mean(resid, na.rm = TRUE)) %>%
-      dplyr::ungroup() %>%
-      dplyr::select(IDs, group.var, residuals.mean) %>%
-      unique()
-  ))
-  stats.long <- stats.long %>%
-    dplyr::left_join(res.long, by = c("IDs", "group.var"))
   Sys.sleep(0.1)
   setTxtProgressBar(pb, value = 45)
   # If extended == TRUE, compute the median, standard deviation, variance, min, 
