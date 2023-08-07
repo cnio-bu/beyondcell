@@ -6,4 +6,6 @@ channels:
   - defaults
 
 dependencies:
-  - boa=0.6.2
+  - boa
+
+channel_priority: strict

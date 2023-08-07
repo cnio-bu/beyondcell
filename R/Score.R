@@ -22,11 +22,11 @@ bcScore <- function(sc, gs, expr.thres = 0.1) {
     if(default %in% c("RNA", "SCT", "Spatial")) {
       message(paste0('Using ', default, ' assay as input.'))
       # If counts == data, then the sc obj. is not normalized
-      if(all(sc[[default]]@counts@x != sc[[default]]@data@x)) {
-        expr.matrix <- as.matrix(Seurat::GetAssayData(sc, slot = "data",
-                                                      assay = default))
+      if(all(sc[[default]]@counts@x == sc[[default]]@data@x)) {
+        stop('@counts and @data matrices are identical. Is @data normalized?.')
         } else {
-          stop('@counts and @data matrices are identical. Is @data normalized?.')
+          expr.matrix <- as.matrix(Seurat::GetAssayData(sc, slot = "data",
+                                                        assay = default))
         }
     } else {
       stop('Seurat default assay must be either RNA, Spatial or SCT.')

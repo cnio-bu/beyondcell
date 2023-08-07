@@ -942,7 +942,7 @@ bc4Squares <- function(bc, idents, lvl = NULL, top = 3, topnames = NULL,
     df <- transform(merge(res, sp, by = 0), row.names = Row.names, Row.names = NULL)
     if (is.null(x.cutoff)) {
       ### Residual's deciles.
-      res.decil <- quantile(as.numeric(res$residuals.mean),
+      res.decil <- quantile(as.numeric(res$residuals.mean), na.rm = TRUE,
                             prob = seq(from = 0, to = 1, length = 11))
       x.cutoff <- c(res.decil[["10%"]], res.decil[["90%"]])
       x.cutoff.caption <- "first and last deciles"
