@@ -32,8 +32,10 @@ requirements:
     - r-scales >=1.1.1
     - r-see >=0.7.4
     - r-tidyverse >=1.3.2
-    - r-Seurat >=4.0.0
+    - r-seurat >=4.0.0,<5.0.0
+    - r-seuratobject >=4.0.0,<5.0.0
     - r-viridis >=0.5.1
+    - r-matrix == 1.6_1.1
 
   run:
     - r-base >=4.0.0
@@ -45,8 +47,10 @@ requirements:
     - r-scales >=1.1.1
     - r-see >=0.7.4
     - r-tidyverse >=1.3.2
-    - r-Seurat >=4.0.0
+    - r-seurat >=4.0.0,<5.0.0
+    - r-seuratobject >=4.0.0,<5.0.0
     - r-viridis >=0.5.1
+    - r-matrix == 1.6_1.1
     
 test:
   commands:
