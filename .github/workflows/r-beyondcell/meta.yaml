@@ -35,7 +35,7 @@ requirements:
     - r-seurat >=4.0.0,<5.0.0
     - r-seuratobject >=4.0.0,<5.0.0
     - r-viridis >=0.5.1
-    - r-matrix == 1.6_1.1
+    - r-matrix ==1.6_1.1
 
   run:
     - r-base >=4.0.0
@@ -50,7 +50,7 @@ requirements:
     - r-seurat >=4.0.0,<5.0.0
     - r-seuratobject >=4.0.0,<5.0.0
     - r-viridis >=0.5.1
-    - r-matrix =1.6_1.1
+    - r-matrix ==1.6_1.1
     
 test:
   commands:
