@@ -43,9 +43,9 @@ jobs:
         shell: bash -l {0}
         run: |
           conda activate bc_builds
-          mamba install boa -y
+          mamba --no-plugins install boa -y
           mamba mambabuild ./.github/workflows/r-beyondcell
-          mamba install --use-local r-beyondcell
+          mamba install --no-plugins --use-local r-beyondcell
 
       - name: Test beyondcell
         shell: bash -l {0}
