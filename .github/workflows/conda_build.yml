@@ -26,14 +26,15 @@ jobs:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v2
 
       - name: Setup Mambaforge
-        uses: conda-incubator/setup-miniconda@v3
+        uses: conda-incubator/setup-miniconda@v2
         with:
             miniforge-variant: Mambaforge
             miniforge-version: latest
             activate-environment: bc_builds
+            conda-version: "23.5.2"
             use-mamba: true
 
       - name: Update beyondcell environment
