@@ -34,6 +34,7 @@ jobs:
             miniforge-variant: Mambaforge
             miniforge-version: latest
             activate-environment: bc_builds
+            conda-version: "23.5.2"
             use-mamba: true
 
       - name: Update beyondcell environment
