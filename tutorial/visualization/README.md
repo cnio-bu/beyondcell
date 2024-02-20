@@ -50,7 +50,7 @@ bcClusters(bc, UMAP = "Seurat", idents = "seurat_clusters", pt.size = 1.5)
 ```
 <img src=".img/seurat_clusters.png" width="500">
 
-> TIP: When analyzing an ST experiment, you can specify the parameter `spatial = TRUE` to plot any of these variables on top of the tissue slice.
+> TIP: When analyzing an ST experiment, you can specify the parameter `spatial = TRUE` to plot any of these variables on top of the tissue slice. You can find an example ST analysis [here](https://github.com/cnio-bu/beyondcell/blob/master/tutorial/ST_analysis/README.md).
 
 ## Visualize drug signatures and markers
 In this example, we have analyzed the *Ben-David et al.* dataset using the drug 
@@ -101,7 +101,7 @@ bcSignatures(bc, UMAP = "beyondcell", genes = list(values = "PSMA5"), pt.size = 
 ```
 <img src=".img/psma5_expr.png" width="500">
 
-> TIP: When analyzing an ST experiment, you can specify the parameter `spatial = TRUE` to plot any of these variables on top of the tissue slice.
+> TIP: When analyzing an ST experiment, you can specify the parameter `spatial = TRUE` to plot any of these variables on top of the tissue slice. You can find an example ST analysis [here](https://github.com/cnio-bu/beyondcell/blob/master/tutorial/ST_analysis/README.md). 
 
 ## Ranking visualization
 We can compute a drug rank and summarize the results using the `bc4Squares` 

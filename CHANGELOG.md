@@ -1,3 +1,7 @@
+# [2.2.1] - 2024-02-20
+* **Fixed** dependency errors. Beyondcell requires `Seurat` >=4.0.0,<5.0.0 and `Matrix` ==1.6_1.1. Related to issue [#151](https://github.com/cnio-bu/beyondcell/issues/151).
+* **Added** Spatial Transcriptomics tutorial example.
+
 # [2.2.0] - 2023-07-06
 * **Fixed** an issue ([#132](https://github.com/cnio-bu/beyondcell/issues/132)) where `bcScore`'s check for normalized data failed.
 * **Fixed** an issue ([#135](https://github.com/cnio-bu/beyondcell/issues/135)) where `bcRanks` was not computing the residual's mean.
@@ -29,7 +33,7 @@
 * **Removed** the `method` argument from `bcUMAP`. Only the UWOT library implementation of UMAP is available.
 
 # [1.3.3] - 2022-01-12
-* **Fixed** an error in `bcSubset` when filtering by the proportion of `NaN` values. Previously, the beyondcell object wasn't a subset when using `nan.sigs` or `nan.cells`. Now those signatures/cells below or equal to the `NaN` threshold are kept. Related to issue #21.
+* **Fixed** an error in `bcSubset` when filtering by the proportion of `NaN` values. Previously, the beyondcell object wasn't a subset when using `nan.sigs` or `nan.cells`. Now those signatures/cells below or equal to the `NaN` threshold are kept. Related to issue [#21](https://github.com/cnio-bu/beyondcell/issues/21).
 
 # [1.3.2] - 2021-12-20
 * **Fixed** an issue ([#17](https://github.com/cnio-bu/beyondcell/issues/17)) where if all the cells have a number of expressed genes < `expr.thres`, 

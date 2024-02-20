@@ -25,7 +25,9 @@ For a correct analysis with **beyondcell**, users should follow these steps:
  the results
 
 ### 1. Read a single-cell or an ST object
-Beyondcell can accept both a single-cell matrix or a `Seurat` object containing a single-cell or an ST experiment. In order to correctly compute the scores, the transcriptomics data needs to be pre-processed. This means that proper cell/spot-based quality control filters, as well as normalization and scaling of the data, should be applied prior to the analysis with beyondcell.
+Beyondcell can accept both a single-cell matrix or a `Seurat` object containing a single-cell or an ST experiment. You can find an example ST analysis [here](https://github.com/cnio-bu/beyondcell/blob/master/tutorial/ST_analysis/README.md). 
+
+In order to correctly compute the scores, the transcriptomics data needs to be pre-processed. This means that proper cell/spot-based quality control filters, as well as normalization and scaling of the data, should be applied prior to the analysis with beyondcell.
 
 > Note: We recommend using a `Seurat` object.
 
@@ -198,7 +200,7 @@ for more information).
 switch to positive scores and vice versa. As an example, an all-sensitive 
 dataset will have *SP = 0*, as there won’t be any negative normalized scores for 
 that specific drug in the whole population. On the other hand, a dataset 
-insensitive to a certain drug will be expected to have a *SP $\approx$ 1*. 
+insensitive to a certain drug will be expected to have a *SP &asymp; 1*. 
 Intermediate SPs, as a contrast, will reflect that the dataset contains both 
 susceptible and non-susceptible cells.
 
