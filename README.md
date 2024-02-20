@@ -2,7 +2,7 @@
 
 [Package status](https://github.com/cnio-bu/beyondcell/commits/master)
 
-> **News:** Beyondcell 2.2.0 has been added to bu_cnio conda channel. 
+> **News:** Beyondcell 2.2.1 has been added to bu_cnio conda channel. 
 <!--and from now on it will be updated exclusively in that channel. -->
 
 ## Introduction
@@ -63,8 +63,8 @@ treatment with bortezomib (right).
 
 ## How to run
 For general instructions on running beyondcell, check out the [analysis workflow](https://github.com/cnio-bu/beyondcell/blob/master/tutorial/analysis_workflow/README.md) and [visualization](https://github.com/cnio-bu/beyondcell/blob/master/tutorial/visualization/README.md) tutorials.
-For more information about how beyondcell normalization works, please refer to [this vignette](https://github.com/cnio-bu/beyondcell/blob/master/tutorial/BCS_normalization/README.md). 
-
+For more information about how beyondcell normalization works, please refer to [this vignette](https://github.com/cnio-bu/beyondcell/blob/master/tutorial/BCS_normalization/README.md). You can 
+also find an example ST analysis [here](https://github.com/cnio-bu/beyondcell/blob/master/tutorial/ST_analysis/README.md).
 
 ## Authors
 
