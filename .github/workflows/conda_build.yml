@@ -65,11 +65,11 @@ jobs:
       - name: Archive beyondcell package for GNU/Linux
         uses: actions/upload-artifact@v3
         with:
-          name: Linux_r-beyondcell-v2.2.0
-          path: /usr/share/miniconda3/envs/bc_builds/conda-bld/linux-64/r-beyondcell-2.2.0-r43_0.tar.bz2
+          name: Linux_r-beyondcell-v2.2.1
+          path: /usr/share/miniconda3/envs/bc_builds/conda-bld/linux-64/r-beyondcell-2.2.1-r43_0.tar.bz2
           
       - name: Archive beyondcell package for macOS
         uses: actions/upload-artifact@v3
         with:
-          name: macOS_r-beyondcell-v2.2.0
-          path: /Users/runner/miniconda3/envs/bc_builds/conda-bld/osx-64/r-beyondcell-2.2.0-r43_0.tar.bz2
+          name: macOS_r-beyondcell-v2.2.1
+          path: /Users/runner/miniconda3/envs/bc_builds/conda-bld/osx-64/r-beyondcell-2.2.1-r43_0.tar.bz2
