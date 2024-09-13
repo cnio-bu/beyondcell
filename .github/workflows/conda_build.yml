@@ -17,7 +17,7 @@ jobs:
         include:
           - os: ubuntu-latest
             label: linux-64
-            prefix: /usr/share/miniconda3/envs/bc_builds
+            prefix: /home/runner/miniconda3/envs/bc_builds
 
           - os: macos-13
             label: osx-64
@@ -63,19 +63,19 @@ jobs:
           Rscript --vanilla ./.github/workflows/helpers/call_tests.R
 
       - name: Archive package test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-report
           path: test_summary.txt
       
       - name: Archive beyondcell package for GNU/Linux
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Linux_r-beyondcell-v2.2.2
-          path: /usr/share/miniconda3/envs/bc_builds/conda-bld/linux-64/r-beyondcell-2.2.2-r43_0.tar.bz2
+          path: /home/runner/miniconda3/envs/bc_builds/conda-bld/linux-64/r-beyondcell-2.2.2-r43_0.tar.bz2
           
       - name: Archive beyondcell package for macOS
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: macOS_r-beyondcell-v2.2.2
           path: /Users/runner/miniconda3/envs/bc_builds/conda-bld/osx-64/r-beyondcell-2.2.2-r43_0.tar.bz2
