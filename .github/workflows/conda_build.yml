@@ -2,9 +2,9 @@ name: conda_build
 
 on:
   push:
-    branches: [master, development, fix_CI]
+    branches: [master, development]
   pull_request:
-    branches:  [master, development, fix_CI]
+    branches:  [master, development]
 
 
 env:
@@ -34,7 +34,6 @@ jobs:
             miniforge-variant: Miniforge3
             miniforge-version: latest
             activate-environment: bc_builds
-            #conda-version: "23.5.2"
             use-mamba: true
 
       - name: Ensure Python 3.11 is installed in base environment
