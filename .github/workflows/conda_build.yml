@@ -2,9 +2,9 @@ name: conda_build
 
 on:
   push:
-    branches: [master, development]
+    branches: [master, development, fix_CI]
   pull_request:
-    branches:  [master, development]
+    branches:  [master, development, fix_CI]
 
 
 env:
@@ -19,7 +19,7 @@ jobs:
             label: linux-64
             prefix: /usr/share/miniconda3/envs/bc_builds
 
-          - os: macos-latest
+          - os: macos-13
             label: osx-64
             prefix: /Users/runner/miniconda3/envs/bc_builds
 
