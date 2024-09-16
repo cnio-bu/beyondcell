@@ -78,4 +78,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: macOS_r-beyondcell-v2.2.2
-          path: r-beyondcell-2.2.2-r43_0.tar.bz2
+          path: /Users/runner/miniconda3/envs/bc_builds/conda-bld/osx-64/r-beyondcell-2.2.1-r43_0.tar.bz2
