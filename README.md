@@ -2,8 +2,9 @@
 
 [Package status](https://github.com/cnio-bu/beyondcell/commits/master)
 
-> **News:** Beyondcell 2.2.1 has been added to bu_cnio conda channel. 
-<!--and from now on it will be updated exclusively in that channel. -->
+> **News:**
+> - Beyondcell 2.2.2 has been added to bu_cnio conda channel. 
+> - Beyondcell now features the `immunotherapy` geneset to compute BCS of immunotherapy-related signatures.
 
 ## Introduction
 **Beyondcell** is a methodology for the identification of drug vulnerabilities 
