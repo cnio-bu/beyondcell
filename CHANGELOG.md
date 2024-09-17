@@ -1,5 +1,8 @@
+# [2.2.2] - 2024-09-13
+* **Added** `immunotherapy` `geneset` to compute BCS of immunotherapy-related signatures.
+
 # [2.2.1] - 2024-02-20
-* **Fixed** dependency errors. Beyondcell requires `Seurat` >=4.0.0,<5.0.0 and `Matrix` ==1.6_1.1. Related to issue [#151](https://github.com/cnio-bu/beyondcell/issues/151).
+* **Fixed** dependency errors. Beyondcell requires `Seurat` >=4.0.0,<5.0.0 and `Matrix` ==1.6_1.1. Related to issue [rgb(17, 85, 17)](https://github.com/cnio-bu/beyondcell/issues/151).
 * **Added** Spatial Transcriptomics tutorial example.
 
 # [2.2.0] - 2023-07-06
