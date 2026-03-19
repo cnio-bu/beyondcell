@@ -147,6 +147,14 @@ variation. Have in mind that the number of detected genes per cell or spot will
 ```r
 bc <- bcRegressOut(bc, vars.to.regress = "nFeature_RNA")
 ```
+If you run into the following error: `#Error in rep(1, ncol(dist)) : nvalid 'times' argument.`, as of now the team recommendation is to replace NaNs with 0s and then recomputing scores before regressing out. 
+```
+bc@normalized[is.na(bc@normalized)] <- 0
+bc <- bcRecompute(bc, slot = "normalized")
+bc <- bcRegressOut(bc = bc, vars.to.regress = c("nFeature_RNA"))
+```
+(Source: [Issue #149](https://github.com/cnio-bu/beyondcell/issues/149))
+
 > TIP: Is the regression step taking too long? Check the amount of NAs per cell 
 of your `bc@normalized` matrix. You might need to refine the filtering of your 
 single-cell experiment based on the number of detected features.
