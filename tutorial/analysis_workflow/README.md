@@ -148,7 +148,7 @@ variation. Have in mind that the number of detected genes per cell or spot will
 bc <- bcRegressOut(bc, vars.to.regress = "nFeature_RNA")
 ```
 If you run into the following error: `#Error in rep(1, ncol(dist)) : nvalid 'times' argument.`, as of now the team recommendation is to replace NaNs with 0s and then recomputing scores before regressing out. 
-```
+```r
 bc@normalized[is.na(bc@normalized)] <- 0
 bc <- bcRecompute(bc, slot = "normalized")
 bc <- bcRegressOut(bc = bc, vars.to.regress = c("nFeature_RNA"))
