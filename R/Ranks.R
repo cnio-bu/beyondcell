@@ -145,7 +145,7 @@ bcRanks <- function(bc, idents = NULL, extended = TRUE,
   # Compute mean BCS and residual's mean per signature.
   stats.long <- normalized.long %>%
     dplyr::group_by(IDs) %>%
-    dplyr::mutate(mean = round(mean(enrichment, na.omit = TRUE), digits = 2)) %>%
+    dplyr::mutate(mean = round(mean(enrichment, na.rm = TRUE), digits = 2)) %>%
     dplyr::ungroup() %>%
     dplyr::mutate(resid = enrichment - mean) %>%
     dplyr::group_by(IDs, group.var) %>%
